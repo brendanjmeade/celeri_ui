@@ -5,7 +5,7 @@ module.exports = {
 			files: ['*.ts?(x)'],
 			parser: '@typescript-eslint/parser',
 			parserOptions: {
-				project: './tsconfig.json',
+				project: './mocha/tsconfig.json',
 				tsconfigRootDir: __dirname
 			},
 			env: {
