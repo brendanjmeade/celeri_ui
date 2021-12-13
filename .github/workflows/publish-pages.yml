@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: ./.github/workflows/test.yml@v1
+      - uses: ./.github/workflows/test.yml
 
       - name: Build
         run: npm run build
