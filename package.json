@@ -1,0 +1,127 @@
+{
+	"name": "vitamin",
+	"license": "MIT",
+	"private": true,
+	"version": "0.0.0",
+	"scripts": {
+		"build": "tsc && vite build",
+		"commit": "cz",
+		"dev": "vite --open",
+		"prepare": "husky install",
+		"serve": "vite preview",
+		"serve:test": "start-server-and-test serve http://localhost:5000",
+		"test": "cross-env TS_NODE_PROJECT=\"mocha/tsconfig.json\" mocha --exit -r ts-node/register -r global-jsdom/register 'mocha/tests/**/*.{ts,tsx}'",
+		"test:ci": "yarn test",
+		"test:e2e": "yarn serve:test 'cypress open'",
+		"test:e2e:headless": "yarn serve:test 'cypress run'",
+		"test:e2e:ci": "vite build && yarn serve:test 'cypress run --record'",
+		"format": "prettier -uw --ignore-path .gitignore .",
+		"run-tsc": "tsc",
+		"run-eslint": "eslint --cache --fix --ignore-path .gitignore --ext .ts,.tsx src",
+		"run-stylelint": "stylelint --cache --fix --ignore-path .gitignore '**/*.css'",
+		"lint": "run-p run-tsc run-eslint run-stylelint",
+		"validate": "run-p lint test:ci test:e2e:headless"
+	},
+	"dependencies": {
+		"react": "17.0.2",
+		"react-dom": "17.0.2",
+		"react-query": "3.34.2",
+		"react-router-dom": "5.3.0"
+	},
+	"devDependencies": {
+		"@babel/core": "7.16.0",
+		"@babel/preset-env": "7.16.4",
+		"@babel/preset-react": "7.16.0",
+		"@babel/preset-typescript": "7.16.0",
+		"@cypress/code-coverage": "3.9.12",
+		"@nabla/vite-plugin-eslint": "1.3.5",
+		"@tailwindcss/forms": "0.4.0",
+		"@testing-library/cypress": "8.0.2",
+		"@testing-library/dom": "8.11.1",
+		"@testing-library/react": "12.1.2",
+		"@testing-library/react-hooks": "7.0.2",
+		"@testing-library/user-event": "13.5.0",
+		"@types/chai": "^4.3.0",
+		"@types/css-mediaquery": "0.1.1",
+		"@types/mocha": "^9.0.0",
+		"@types/react": "17.0.37",
+		"@types/react-dom": "17.0.11",
+		"@types/react-router-dom": "5.3.2",
+		"@types/sinon": "^10.0.6",
+		"@typescript-eslint/eslint-plugin": "5.6.0",
+		"@typescript-eslint/parser": "5.6.0",
+		"@vitejs/plugin-react": "1.1.2",
+		"autoprefixer": "10.4.0",
+		"chai": "^4.3.4",
+		"cross-env": "^7.0.3",
+		"css-mediaquery": "0.1.2",
+		"cypress": "9.1.1",
+		"cz-conventional-changelog": "3.3.0",
+		"eslint": "8.4.1",
+		"eslint-config-airbnb": "19.0.2",
+		"eslint-config-airbnb-base": "15.0.0",
+		"eslint-config-airbnb-typescript": "16.1.0",
+		"eslint-config-prettier": "8.3.0",
+		"eslint-import-resolver-node": "^0.3.6",
+		"eslint-plugin-cypress": "2.12.1",
+		"eslint-plugin-import": "2.25.3",
+		"eslint-plugin-jest": "25.3.0",
+		"eslint-plugin-jest-dom": "3.9.2",
+		"eslint-plugin-jsx-a11y": "6.5.1",
+		"eslint-plugin-react": "7.27.1",
+		"eslint-plugin-react-hooks": "4.3.0",
+		"eslint-plugin-react-prefer-function-component": "0.0.7",
+		"eslint-plugin-testing-library": "5.0.1",
+		"eslint-plugin-unicorn": "39.0.0",
+		"global-jsdom": "^8.4.0",
+		"husky": "7.0.4",
+		"lint-staged": "12.1.2",
+		"mocha": "^9.1.3",
+		"msw": "0.36.3",
+		"npm-run-all": "4.1.5",
+		"postcss": "8.4.5",
+		"prettier": "2.5.1",
+		"rollup": "2.61.1",
+		"rollup-plugin-istanbul": "3.0.0",
+		"sinon": "^12.0.1",
+		"start-server-and-test": "1.14.0",
+		"stylelint": "14.1.0",
+		"stylelint-config-prettier": "9.0.3",
+		"stylelint-config-standard": "24.0.0",
+		"tailwindcss": "3.0.2",
+		"ts-node": "^10.4.0",
+		"typescript": "4.5.3",
+		"vite": "2.7.2",
+		"vite-plugin-pwa": "0.11.11",
+		"vite-tsconfig-paths": "3.3.17",
+		"whatwg-fetch": "3.6.2",
+		"workbox-build": "6.4.2",
+		"workbox-window": "6.4.2"
+	},
+	"browserslist": {
+		"production": "Edge >= 18, Firefox >= 60, Chrome >= 61, Safari >= 11, Opera >= 48",
+		"development": [
+			"last 1 chrome version",
+			"last 1 firefox version"
+		]
+	},
+	"config": {
+		"commitizen": {
+			"path": "./node_modules/cz-conventional-changelog"
+		}
+	},
+	"lint-staged": {
+		"*": "prettier -uw",
+		"*.css": "stylelint --cache --fix",
+		"*.{ts,tsx}": [
+			"eslint --cache --fix"
+		]
+	},
+	"nyc": {
+		"report-dir": "coverage/cypress",
+		"reporter": [
+			"lcov"
+		]
+	},
+	"packageManager": "yarn@3.1.1"
+}
