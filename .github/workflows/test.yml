@@ -22,8 +22,3 @@ jobs:
 
       - name: Validate
         run: npm run lint test:ci test:e2e:ci
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v2
-        with:
-          fail_ci_if_error: true
