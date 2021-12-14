@@ -1,9 +1,12 @@
+import Map from 'Components/Map'
+import TopBar from 'Components/TopBar'
 import type { ReactElement } from 'react'
 
 export default function App(): ReactElement {
 	return (
-		<div>
-			<h1>Test</h1>
+		<div className='w-screen h-screen flex flex-col'>
+			<TopBar />
+			<Map />
 		</div>
 	)
 }
