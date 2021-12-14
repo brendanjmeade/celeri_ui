@@ -76,6 +76,7 @@
 		"eslint-plugin-react-prefer-function-component": "0.0.7",
 		"eslint-plugin-testing-library": "5.0.1",
 		"eslint-plugin-unicorn": "39.0.0",
+		"jsdom": "^19.0.0",
 		"global-jsdom": "^8.4.0",
 		"husky": "7.0.4",
 		"lint-staged": "12.1.2",
