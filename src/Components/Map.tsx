@@ -9,7 +9,7 @@ function MapElement(): ReactElement {
 	const mapReference = useRef<HTMLDivElement>(null)
 	const [map, setMap] = useState<Map>()
 	useEffect(() => {
-		if (!map && mapReference.current) {
+		if (!map && mapboxgl.accessToken && mapReference.current) {
 			const innerMap = new Map({
 				container: mapReference.current,
 				style: 'mapbox://styles/mapbox/streets-v11',
