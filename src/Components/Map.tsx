@@ -14,9 +14,9 @@ function MapElement(): ReactElement {
 				container: mapReference.current,
 				style: 'mapbox://styles/mapbox/streets-v11',
 				// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-				center: [-74.5, 40],
+				center: [0, 0],
 				// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-				zoom: 9
+				zoom: 2
 			})
 			innerMap.addControl(new NavigationControl())
 			setMap(innerMap)
