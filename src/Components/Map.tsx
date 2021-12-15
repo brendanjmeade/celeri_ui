@@ -15,7 +15,7 @@ function MapElement(): ReactElement {
 		if (!map && mapboxgl.accessToken && mapReference.current) {
 			const innerMap = new Map({
 				container: mapReference.current,
-				style: 'mapbox://styles/mapbox/streets-v11',
+				style: 'mapbox://styles/mapbox-public/ckngin2db09as17p84ejhe24y',
 				// eslint-disable-next-line @typescript-eslint/no-magic-numbers
 				center: [0, 0],
 				// eslint-disable-next-line @typescript-eslint/no-magic-numbers
