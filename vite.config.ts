@@ -7,12 +7,6 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig(({ mode }) => ({
 	base: './',
-	server: {
-		hmr: {
-			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-			clientPort: 443
-		}
-	},
 	plugins: [
 		tsconfigPaths(),
 		react(),
