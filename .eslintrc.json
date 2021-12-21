@@ -76,6 +76,7 @@
 		"@typescript-eslint/member-ordering": "off",
 		"@typescript-eslint/prefer-includes": "off",
 		"@typescript-eslint/no-restricted-imports": "off",
+		"@typescript-eslint/no-type-alias": "off",
 
 		"import/no-deprecated": "error",
 		"import/order": "off",

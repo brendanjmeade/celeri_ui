@@ -28,7 +28,7 @@ function MapElement(): ReactElement {
 			setDraw(innerDraw)
 		}
 	}, [map, draw])
-	return <div className='w-full h-full' ref={mapReference} />
+	return <div data-testid='map' className='w-full h-full' ref={mapReference} />
 }
 
 export default MapElement
