@@ -22,3 +22,5 @@ jobs:
 
       - name: Validate
         run: npm run lint test:ci test:e2e:ci
+        env:
+          VITE_MAPBOX_TOKEN: ${{ secrets.CELERI_MAPBOX_TOKEN }}
