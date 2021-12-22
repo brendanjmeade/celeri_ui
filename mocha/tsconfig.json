@@ -2,9 +2,10 @@
 	"compilerOptions": {
 		"allowSyntheticDefaultImports": true,
 		"forceConsistentCasingInFileNames": true,
-		"lib": ["ESNext"],
-		"module": "ESNext",
+		"lib": ["DOM", "DOM.Iterable", "ESNext"],
+		"module": "CommonJS",
 		"moduleResolution": "Node",
+		"jsx": "react-jsx",
 		"noEmit": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
@@ -12,5 +13,5 @@
 		"target": "ESNext",
 		"types": ["mocha", "chai", "jsdom"]
 	},
-	"include": ["."]
+	"include": ["tests/**/*.ts", "tests/**/*.tsx"]
 }
