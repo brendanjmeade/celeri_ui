@@ -41,7 +41,6 @@ export default function Files({
 									chosenFileName as FileName
 								)
 								const contents = await chosenFile.getContents()
-								console.log(`Choosing: '${chosenFile.name}' '${contents}'`)
 								setFile(key, chosenFile.name, contents)
 							} catch {
 								setFile(key, '', '')
