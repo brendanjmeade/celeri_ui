@@ -11,7 +11,7 @@
 		"skipLibCheck": true,
 		"strict": true,
 		"target": "ESNext",
-		"types": ["mocha", "chai", "jsdom"]
+		"types": ["mocha", "chai", "jsdom", "sinon"]
 	},
 	"include": ["tests/**/*.ts", "tests/**/*.tsx"]
 }

@@ -82,6 +82,7 @@ module.exports = {
 				'@typescript-eslint/prefer-includes': 'off',
 				'@typescript-eslint/no-restricted-imports': 'off',
 				'@typescript-eslint/no-type-alias': 'off',
+				'@typescript-eslint/no-unused-expressions': 'off',
 
 				'import/no-deprecated': 'error',
 				'import/order': 'off',

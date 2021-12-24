@@ -123,15 +123,7 @@
 			}
 		],
 		"react/no-unstable-nested-components": "error",
-		"react/jsx-handler-names": [
-			"error",
-			{
-				"eventHandlerPrefix": "on",
-				"eventHandlerPropPrefix": "on",
-				"checkLocalVariables": true,
-				"checkInlineFunction": true
-			}
-		],
+		"react/jsx-handler-names": "off",
 		"react/jsx-key": "error",
 		"react/jsx-no-bind": [
 			"error",
@@ -145,7 +137,7 @@
 		],
 		"react/jsx-no-constructed-context-values": "error",
 		"react/jsx-no-script-url": "error",
-		"react/jsx-no-useless-fragment": "error",
+		"react/jsx-no-useless-fragment": "off",
 
 		"unicorn/filename-case": [
 			"error",
