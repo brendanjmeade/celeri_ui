@@ -13,7 +13,8 @@
 		"skipLibCheck": true,
 		"strict": true,
 		"target": "ESNext",
-		"useUnknownInCatchVariables": true
+		"useUnknownInCatchVariables": true,
+		"esModuleInterop": true
 	},
 	"include": ["src", "vite.config.ts", "global.d.ts"]
 }

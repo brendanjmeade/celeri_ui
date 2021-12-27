@@ -1,5 +1,9 @@
 import type { ReactElement } from 'react'
-import type { Directory, FileName } from '../Utilities/FileSystemInterfaces'
+import type {
+	Directory,
+	File,
+	FileName
+} from '../Utilities/FileSystemInterfaces'
 
 export interface OpenableFile {
 	name: string
@@ -15,7 +19,7 @@ export default function Files({
 }: {
 	folder: Directory
 	files: Record<string, OpenableFile>
-	setFile: (type: string, file: string, content: string) => void
+	setFile: (type: string, file: string, fileHandle?: File) => void
 }): ReactElement {
 	const fileElements = Object.keys(files).map((key): ReactElement => {
 		const file = files[key]
@@ -40,10 +44,9 @@ export default function Files({
 								const chosenFile = await folder.getFile(
 									chosenFileName as FileName
 								)
-								const contents = await chosenFile.getContents()
-								setFile(key, chosenFile.name, contents)
+								setFile(key, chosenFile.name, chosenFile)
 							} catch {
-								setFile(key, '', '')
+								setFile(key, '')
 							}
 						}}
 					>

@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import type { Directory } from 'Utilities/FileSystem'
+import type { Directory } from 'Utilities/FileSystemInterfaces'
 
 function TopBar({
 	folder,

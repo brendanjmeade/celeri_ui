@@ -5,6 +5,7 @@ import { expect } from 'chai'
 import React from 'react'
 import { stub } from 'sinon'
 import Files from '../../src/Components/Files'
+import type { File } from '../../src/Utilities/FileSystemInterfaces'
 import OpenDirectory from '../../src/Utilities/InMemoryFileSystem'
 
 describe('The files panel displays openable files & their descriptions, and allows setting their paths/content', () => {
@@ -13,7 +14,7 @@ describe('The files panel displays openable files & their descriptions, and allo
 
 		const directory = await OpenDirectory(directoryStructure)
 		// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-		const setFile = stub<[string, string, string], void>()
+		const setFile = stub<[string, string], void>()
 
 		render(
 			<Files
@@ -43,12 +44,21 @@ describe('The files panel displays openable files & their descriptions, and allo
 
 		const directory = await OpenDirectory(directoryStructure)
 		// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-		const setFile = stub<[string, string, string], void>()
+		const setFile = stub<[string, string, File | undefined], void>()
 		setFile.returns()
-		setFile.callsFake((type, name, contents) => {
+		setFile.callsFake((type, name, file) => {
 			expect(type).to.equal('main')
 			expect(name).to.equal('file.test')
-			expect(contents).to.equal('file contents')
+			if (file) {
+				file
+					.getContents()
+					.then(content => {
+						expect(content).to.equal('file contents')
+					})
+					.catch(() => expect(false).to.be.true)
+			} else {
+				expect(file).to.not.be.undefined
+			}
 		})
 
 		render(
@@ -74,7 +84,7 @@ describe('The files panel displays openable files & their descriptions, and allo
 
 		const directory = await OpenDirectory(directoryStructure)
 		// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-		const setFile = stub<[string, string, string], void>()
+		const setFile = stub<[string, string], void>()
 
 		render(
 			<Files

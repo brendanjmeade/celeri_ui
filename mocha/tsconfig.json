@@ -5,6 +5,7 @@
 		"lib": ["DOM", "DOM.Iterable", "ESNext"],
 		"module": "CommonJS",
 		"moduleResolution": "Node",
+		"esModuleInterop": true,
 		"jsx": "react-jsx",
 		"noEmit": true,
 		"resolveJsonModule": true,
