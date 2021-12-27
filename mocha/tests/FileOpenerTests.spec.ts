@@ -1,4 +1,5 @@
 import { expect } from 'chai'
+import { BlockFile, createBlock } from '../../src/Utilities/BlockFile'
 import type { FileName } from '../../src/Utilities/FileSystemInterfaces'
 import OpenDirectory from '../../src/Utilities/InMemoryFileSystem'
 import { createSegment, SegmentFile } from '../../src/Utilities/SegmentFile'
@@ -45,6 +46,47 @@ BRb                                                                ,245.927,44.7
 			expect(directoryStructure.root['segment.csv']).to.contain('test,100')
 		} else {
 			expect(segment.data).to.not.be.undefined
+		}
+	})
+	it('Can Open Block Files Properly', async () => {
+		const directoryStructure = {
+			root: {
+				'block.csv': `other1,other2,other3,other4,other5,other6,name,interior_lon,interior_lat,euler_lon,euler_lon_sig,euler_lat,euler_lat_sig,rotation_rate,rotation_rate_sig,rotation_flag,apriori_flag,strain_rate,strain_rate_sig,strain_rate_flag
+0,0,0,0,0,0,"ele56         ",245.241,39.099,65.697,2.71,-49.701,2.084,0.222,0.013, 0, 0, 0, 0, 0`
+			}
+		}
+		const directory = await OpenDirectory(directoryStructure)
+		const file = await directory.getFile('block.csv' as FileName)
+		const block = new BlockFile(file)
+		await block.initialize()
+		if (block.data) {
+			expect(block.data[0].name).to.contain('ele56')
+			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+			expect(block.data).to.have.length(1)
+		} else {
+			expect(block.data).to.not.be.undefined
+		}
+	})
+	it('Can Write Block Files Properly', async () => {
+		const directoryStructure = {
+			root: {
+				'block.csv': `other1,other2,other3,other4,other5,other6,name,interior_lon,interior_lat,euler_lon,euler_lon_sig,euler_lat,euler_lat_sig,rotation_rate,rotation_rate_sig,rotation_flag,apriori_flag,strain_rate,strain_rate_sig,strain_rate_flag`
+			}
+		}
+		const directory = await OpenDirectory(directoryStructure)
+		const file = await directory.getFile('block.csv' as FileName)
+		const block = new BlockFile(file)
+		await block.initialize()
+		if (block.data) {
+			expect(block.data).to.have.length(0)
+			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+			const test = createBlock({ name: 'test', interior_lat: 100 })
+			block.data = [test]
+			await block.save()
+			expect(directoryStructure.root['block.csv']).to.contain('test')
+			expect(directoryStructure.root['block.csv']).to.contain('100')
+		} else {
+			expect(block.data).to.not.be.undefined
 		}
 	})
 })
