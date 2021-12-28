@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { OpenableFile } from 'Components/Files'
 import Files from 'Components/Files'
 import InspectorPanel from 'Components/InspectorPanel'
@@ -5,12 +6,22 @@ import Map from 'Components/Map'
 import TopBar from 'Components/TopBar'
 import type { ReactElement } from 'react'
 import { useState } from 'react'
+import type { BlockFile } from 'Utilities/BlockFile'
+import type { CommandFile } from 'Utilities/CommandFile'
+import {
+	OpenBlockFile,
+	OpenCommandFile,
+	OpenSegmentFile,
+	OpenVelocityFile
+} from 'Utilities/FileOpeners'
 import FSOpenDirectory from 'Utilities/FileSystem'
 import type { Directory } from 'Utilities/FileSystemInterfaces'
 import OpenDirectory, {
 	SetDirectoryHandle
 } from 'Utilities/FileSystemInterfaces'
 import type { InMemoryFS } from 'Utilities/InMemoryFileSystem'
+import type { SegmentFile } from 'Utilities/SegmentFile'
+import type { VelocityFile } from 'Utilities/VelocityFile'
 
 const global = window as unknown as { FakeDirectory: InMemoryFS | undefined }
 if (!global.FakeDirectory) {
@@ -56,6 +67,11 @@ export default function App(): ReactElement {
 		}
 	})
 
+	const [commandFile, setCommandFile] = useState<CommandFile>()
+	const [segmentFile, setSegmentFile] = useState<SegmentFile>()
+	const [blockFile, setBlockFile] = useState<BlockFile>()
+	const [velocityFile, setVelocityFile] = useState<VelocityFile>()
+
 	let view = <span />
 
 	switch (activeTab) {
@@ -64,10 +80,38 @@ export default function App(): ReactElement {
 				<Files
 					folder={folderHandle}
 					files={files}
-					setFile={(file, name): void => {
-						const updated = { ...files }
-						updated[file] = { ...updated[file], currentFilePath: name }
-						setFiles(updated)
+					setFile={async (file, name, handle): Promise<void> => {
+						if (handle) {
+							let updated = { ...files }
+							updated[file] = { ...updated[file], currentFilePath: name }
+							switch (file) {
+								case 'segment':
+									setSegmentFile(await OpenSegmentFile(handle))
+									break
+								case 'block':
+									setBlockFile(await OpenBlockFile(handle))
+									break
+								case 'velocity':
+									setVelocityFile(await OpenVelocityFile(handle))
+									break
+								case 'command':
+									// eslint-disable-next-line no-case-declarations
+									const commandResult = await OpenCommandFile(
+										folderHandle,
+										handle,
+										files
+									)
+									setCommandFile(commandResult.commands)
+									setSegmentFile(commandResult.segments)
+									setBlockFile(commandResult.blocks)
+									setVelocityFile(commandResult.velocities)
+									updated = commandResult.openableFiles
+									break
+								default:
+									break
+							}
+							setFiles(updated)
+						}
 					}}
 				/>
 			) : (

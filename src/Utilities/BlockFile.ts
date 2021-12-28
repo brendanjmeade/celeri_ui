@@ -1,4 +1,4 @@
-import { parseString, writeToString } from 'fast-csv'
+import { parse, stringify } from './CsvUtils'
 import type { ParsedFile } from './FileOpeners'
 import type { File } from './FileSystemInterfaces'
 
@@ -88,37 +88,19 @@ export class BlockFile implements ParsedFile<Block[]> {
 
 	public async initialize(): Promise<void> {
 		const contents = await this.handle.getContents()
-		const data: Block[] = []
-		// eslint-disable-next-line unicorn/consistent-function-scoping
-		let resolve: () => void = (): void => {}
-		const promise = new Promise<void>(r => {
-			resolve = r
+		const parser = parse(contents)
+		const data = parser.map((row): Block => {
+			const result: Record<string, number | string> = {}
+			for (const field of fieldNames) {
+				result[field] = row[field] || (field === 'name' ? '' : 0)
+			}
+			return result as unknown as Block
 		})
-		parseString<Record<string, number | string>, Block>(contents, {
-			headers: true
-		})
-			.transform((row: Record<string, number | string>): Block => {
-				const result: Record<string, number | string> = {}
-				for (const field of fieldNames) {
-					result[field] = row[field] || (field === 'name' ? '' : 0)
-				}
-				return result as unknown as Block
-			})
-			.on('data', (row: Block) => {
-				data.push(row)
-			})
-			.on('end', resolve)
-			.on('close', resolve)
-			.on('error', resolve)
-
-		await promise
 		this.data = data
 	}
 
 	public async save(): Promise<void> {
-		const contents = await writeToString(this.data ?? [], {
-			headers: fieldNames
-		})
+		const contents = stringify(this.data ?? [], fieldNames)
 		await this.handle.setContents(contents)
 	}
 }
