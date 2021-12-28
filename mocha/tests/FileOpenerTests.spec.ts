@@ -1,5 +1,6 @@
 import { expect } from 'chai'
 import { BlockFile, createBlock } from '../../src/Utilities/BlockFile'
+import { CommandFile, createCommand } from '../../src/Utilities/CommandFile'
 import type { FileName } from '../../src/Utilities/FileSystemInterfaces'
 import OpenDirectory from '../../src/Utilities/InMemoryFileSystem'
 import { createSegment, SegmentFile } from '../../src/Utilities/SegmentFile'
@@ -129,6 +130,179 @@ BRb                                                                ,245.927,44.7
 			expect(directoryStructure.root['velocity.csv']).to.contain('100')
 		} else {
 			expect(velocity.data).to.not.be.undefined
+		}
+	})
+	it('Can Open Command Files Properly', async () => {
+		const directoryStructure = {
+			root: {
+				'command.json': `{
+					"file_name": "basic_command_default_values.json",
+					"reuse_elastic": "no",
+					"reuse_elastic_file": "./celeri_elastic_operators.hdf5",
+					"save_elastic": "yes",
+					"save_elastic_file": "./celeri_elastic_operators.hdf5",
+					"material_lambda": 3.0E+10,
+					"material_mu": 3.0E+10,
+					"unit_sigmas": "no",
+					"locking_depth_flag2": 0,
+					"locking_depth_flag3": 0,
+					"locking_depth_flag4": 0,
+					"locking_depth_flag5": 0,
+					"locking_depth_override_flag": "no",
+					"locking_depth_overide_value": 0,
+					"apriori_block_name": "",
+					"tri_smooth": 10000,
+					"pmag_tri_smooth": 0,
+					"smooth_type": 1,
+					"n_iterations": 1,
+					"tri_edge": [
+							0,
+							0,
+							0
+					],
+					"tri_depth_tolerance": 0,
+					"tri_con_weight": 1,
+					"strain_method": 0,
+					"sar_file_name": "",
+					"sar_ramp": 0,
+					"sar_weight": 0,
+					"tri_slip_constraint_type": 0,
+					"inversion_type": "standard",
+					"inversion_param01": 0,
+					"inversion_param02": 0,
+					"inversion_param03": 0,
+					"inversion_param04": 0,
+					"inversion_param05": 0,
+					"save_all": "yes",
+					"mogi_file_name": "",
+					"solution_method": "backslash",
+					"ridge_param": 0,
+					"tri_full_coupling": "no",
+					"tvr_lambda": 1,
+					"tri_slip_sign": [
+							0,
+							0
+					],
+					"n_eigs": 0,
+					"segment_file_name": "segment_file_name.csv",
+					"station_file_name": "station_file_name.csv",
+					"block_file_name": "block_file_name.csv",
+					"mesh_parameters_file_name": "mesh_parameters.json",
+					"fault_resolution": 1,
+					"station_data_weight": 1,
+					"station_data_weight_min": 1,
+					"station_data_weight_max": 1,
+					"station_data_weight_steps": 1,
+					"slip_constraint_weight": 1,
+					"slip_constraint_weight_min": 1,
+					"slip_constraint_weight_max": 1,
+					"slip_constraint_weight_steps": 1,
+					"block_constraint_weight": 1,
+					"block_constraint_weight_min": 1,
+					"block_constraint_weight_max": 1,
+					"block_constraint_weight_steps": 1,
+					"slip_file_names": ""
+			}`
+			}
+		}
+		const directory = await OpenDirectory(directoryStructure)
+		const file = await directory.getFile('command.json' as FileName)
+		const command = new CommandFile(file)
+		await command.initialize()
+		if (command.data) {
+			expect(command.data.segment_file_name).to.contain('segment_file_name.csv')
+		} else {
+			expect(command.data).to.not.be.undefined
+		}
+	})
+	it('Can Write Command Files Properly', async () => {
+		const directoryStructure = {
+			root: {
+				'command.json': `{
+					"file_name": "basic_command_default_values.json",
+					"reuse_elastic": "no",
+					"reuse_elastic_file": "./celeri_elastic_operators.hdf5",
+					"save_elastic": "yes",
+					"save_elastic_file": "./celeri_elastic_operators.hdf5",
+					"material_lambda": 3.0E+10,
+					"material_mu": 3.0E+10,
+					"unit_sigmas": "no",
+					"locking_depth_flag2": 0,
+					"locking_depth_flag3": 0,
+					"locking_depth_flag4": 0,
+					"locking_depth_flag5": 0,
+					"locking_depth_override_flag": "no",
+					"locking_depth_overide_value": 0,
+					"apriori_block_name": "",
+					"tri_smooth": 10000,
+					"pmag_tri_smooth": 0,
+					"smooth_type": 1,
+					"n_iterations": 1,
+					"tri_edge": [
+							0,
+							0,
+							0
+					],
+					"tri_depth_tolerance": 0,
+					"tri_con_weight": 1,
+					"strain_method": 0,
+					"sar_file_name": "",
+					"sar_ramp": 0,
+					"sar_weight": 0,
+					"tri_slip_constraint_type": 0,
+					"inversion_type": "standard",
+					"inversion_param01": 0,
+					"inversion_param02": 0,
+					"inversion_param03": 0,
+					"inversion_param04": 0,
+					"inversion_param05": 0,
+					"save_all": "yes",
+					"mogi_file_name": "",
+					"solution_method": "backslash",
+					"ridge_param": 0,
+					"tri_full_coupling": "no",
+					"tvr_lambda": 1,
+					"tri_slip_sign": [
+							0,
+							0
+					],
+					"n_eigs": 0,
+					"segment_file_name": "segment_file_name.csv",
+					"station_file_name": "station_file_name.csv",
+					"block_file_name": "block_file_name.csv",
+					"mesh_parameters_file_name": "mesh_parameters.json",
+					"fault_resolution": 1,
+					"station_data_weight": 1,
+					"station_data_weight_min": 1,
+					"station_data_weight_max": 1,
+					"station_data_weight_steps": 1,
+					"slip_constraint_weight": 1,
+					"slip_constraint_weight_min": 1,
+					"slip_constraint_weight_max": 1,
+					"slip_constraint_weight_steps": 1,
+					"block_constraint_weight": 1,
+					"block_constraint_weight_min": 1,
+					"block_constraint_weight_max": 1,
+					"block_constraint_weight_steps": 1,
+					"slip_file_names": ""
+			}`
+			}
+		}
+		const directory = await OpenDirectory(directoryStructure)
+		const file = await directory.getFile('command.json' as FileName)
+		const command = new CommandFile(file)
+		await command.initialize()
+		if (command.data) {
+			const test = createCommand({
+				segment_file_name: 'another_segment_file.csv'
+			})
+			command.data = test
+			await command.save()
+			expect(directoryStructure.root['command.json']).to.contain(
+				'another_segment_file.csv'
+			)
+		} else {
+			expect(command.data).to.not.be.undefined
 		}
 	})
 })
