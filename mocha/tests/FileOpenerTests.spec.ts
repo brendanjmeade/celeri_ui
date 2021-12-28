@@ -3,6 +3,7 @@ import { BlockFile, createBlock } from '../../src/Utilities/BlockFile'
 import type { FileName } from '../../src/Utilities/FileSystemInterfaces'
 import OpenDirectory from '../../src/Utilities/InMemoryFileSystem'
 import { createSegment, SegmentFile } from '../../src/Utilities/SegmentFile'
+import { createVelocity, VelocityFile } from '../../src/Utilities/VelocityFile'
 
 describe('File Openers Work as Expected', () => {
 	it('Can Open Segment Files Properly', async () => {
@@ -87,6 +88,47 @@ BRb                                                                ,245.927,44.7
 			expect(directoryStructure.root['block.csv']).to.contain('100')
 		} else {
 			expect(block.data).to.not.be.undefined
+		}
+	})
+	it('Can Open Velocity Files Properly', async () => {
+		const directoryStructure = {
+			root: {
+				'velocity.csv': `lon,lat,corr,other1,name,east_vel,north_vel,east_sig,north_sig,flag,up_vel,up_sig,east_adjust,north_adjust,up_adjust,
+183.434,-43.956,0.205,3,"BRAE_GPS",-38.713,50.072,0.461,0.48,1,0,1,0,0,0,`
+			}
+		}
+		const directory = await OpenDirectory(directoryStructure)
+		const file = await directory.getFile('velocity.csv' as FileName)
+		const velocity = new VelocityFile(file)
+		await velocity.initialize()
+		if (velocity.data) {
+			expect(velocity.data[0].name).to.contain('BRAE_GPS')
+			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+			expect(velocity.data).to.have.length(1)
+		} else {
+			expect(velocity.data).to.not.be.undefined
+		}
+	})
+	it('Can Write Velocity Files Properly', async () => {
+		const directoryStructure = {
+			root: {
+				'velocity.csv': `lon,lat,corr,other1,name,east_vel,north_vel,east_sig,north_sig,flag,up_vel,up_sig,east_adjust,north_adjust,up_adjust,`
+			}
+		}
+		const directory = await OpenDirectory(directoryStructure)
+		const file = await directory.getFile('velocity.csv' as FileName)
+		const velocity = new VelocityFile(file)
+		await velocity.initialize()
+		if (velocity.data) {
+			expect(velocity.data).to.have.length(0)
+			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+			const test = createVelocity({ name: 'test', lon: 100 })
+			velocity.data = [test]
+			await velocity.save()
+			expect(directoryStructure.root['velocity.csv']).to.contain('test')
+			expect(directoryStructure.root['velocity.csv']).to.contain('100')
+		} else {
+			expect(velocity.data).to.not.be.undefined
 		}
 	})
 })
