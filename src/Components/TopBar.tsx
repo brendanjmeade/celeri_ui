@@ -17,11 +17,15 @@ function TopBar({
 			className='p-2 bg-gradient-to-r from-blue-700 to-green-700 text-white flex flex-row justify-between'
 		>
 			<h3 className='text-lg font-bold'>Celeri UI</h3>
-			<span>
+			<span data-testid='open-folder-topbar'>
 				{folder ? (
 					<>Working in {folder.name}</>
 				) : (
-					<button type='button' onClick={onClick}>
+					<button
+						type='button'
+						onClick={onClick}
+						data-testid='open-folder-button'
+					>
 						Open Folder
 					</button>
 				)}

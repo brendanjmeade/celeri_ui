@@ -19,12 +19,10 @@ import type { Directory } from 'Utilities/FileSystemInterfaces'
 import OpenDirectory, {
 	SetDirectoryHandle
 } from 'Utilities/FileSystemInterfaces'
-import type { InMemoryFS } from 'Utilities/InMemoryFileSystem'
 import type { SegmentFile } from 'Utilities/SegmentFile'
 import type { VelocityFile } from 'Utilities/VelocityFile'
 
-const global = window as unknown as { FakeDirectory: InMemoryFS | undefined }
-if (!global.FakeDirectory) {
+if (!window.location.search.includes('fake-dir')) {
 	SetDirectoryHandle(FSOpenDirectory)
 }
 
@@ -132,7 +130,24 @@ export default function App(): ReactElement {
 					setActiveTab('files')
 				}}
 			/>
-			<Map />
+			<Map
+				pointSources={[
+					{
+						name: 'blocks',
+						color: 'blue',
+						points: blockFile?.data
+							? blockFile.data.map(block => ({
+									longitude: block.interior_lon,
+									latitude: block.interior_lat,
+									name: block.name,
+									description: ``
+							  }))
+							: [],
+						clickPoint: (index, name): void =>
+							console.log(`Clicked ${index}: ${name}`)
+					}
+				]}
+			/>
 			<InspectorPanel
 				view={view}
 				buttons={folderHandle ? windows : undefined}

@@ -18,7 +18,7 @@ export function parse(contents: string): Record<string, number | string>[] {
 				value.startsWith(`"`) &&
 				value.endsWith(`"`)
 			) {
-				value = value.slice(0, -1)
+				value = value.slice(1, -1)
 			}
 			item[header] = value
 		}
