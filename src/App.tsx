@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { OpenableFile } from 'Components/Files'
 import Files from 'Components/Files'
@@ -135,6 +136,7 @@ export default function App(): ReactElement {
 					{
 						name: 'blocks',
 						color: 'blue',
+						radius: 6,
 						points: blockFile?.data
 							? blockFile.data.map(block => ({
 									longitude: block.interior_lon,
@@ -145,6 +147,33 @@ export default function App(): ReactElement {
 							: [],
 						clickPoint: (index, name): void =>
 							console.log(`Clicked ${index}: ${name}`)
+					}
+				]}
+				arrowSources={[
+					{
+						name: 'velocity',
+						color: 'yellow',
+						scale: 0.02,
+						arrowHeadScale: 0.3,
+						arrows: velocityFile?.data
+							? velocityFile.data.map(velocity => {
+									const scale = Math.sqrt(
+										velocity.east_vel * velocity.east_vel +
+											velocity.north_vel * velocity.north_vel
+									)
+									return {
+										longitude: velocity.lon,
+										latitude: velocity.lat,
+										direction: [
+											velocity.east_vel / scale,
+											velocity.north_vel / scale
+										],
+										scale,
+										name: velocity.name,
+										description: `north: ${velocity.north_vel}, east: ${velocity.east_vel}`
+									}
+							  })
+							: []
 					}
 				]}
 			/>
