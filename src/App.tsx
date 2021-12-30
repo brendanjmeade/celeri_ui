@@ -5,6 +5,10 @@ import Files from 'Components/Files'
 import InspectorPanel from 'Components/InspectorPanel'
 import Map from 'Components/Map'
 import TopBar from 'Components/TopBar'
+import type { VelocitiesDisplaySettings } from 'Components/VelocitiesPanel'
+import VelocitiesPanel, {
+	initialVelocityDisplaySettings
+} from 'Components/VelocitiesPanel'
 import type { ReactElement } from 'react'
 import { useState } from 'react'
 import type { BlockFile } from 'Utilities/BlockFile'
@@ -71,6 +75,9 @@ export default function App(): ReactElement {
 	const [blockFile, setBlockFile] = useState<BlockFile>()
 	const [velocityFile, setVelocityFile] = useState<VelocityFile>()
 
+	const [velocitiesSettings, setVelocitiesSettings] =
+		useState<VelocitiesDisplaySettings>(initialVelocityDisplaySettings)
+
 	let view = <span />
 
 	switch (activeTab) {
@@ -117,6 +124,14 @@ export default function App(): ReactElement {
 				<span />
 			)
 			break
+		case 'velocities':
+			view = (
+				<VelocitiesPanel
+					settings={velocitiesSettings}
+					setSettings={setVelocitiesSettings}
+				/>
+			)
+			break
 		default:
 			break
 	}
@@ -152,9 +167,10 @@ export default function App(): ReactElement {
 				arrowSources={[
 					{
 						name: 'velocity',
-						color: 'yellow',
-						scale: 0.02,
-						arrowHeadScale: 0.3,
+						color: velocitiesSettings.color,
+						scale: velocitiesSettings.scale,
+						arrowHeadScale: velocitiesSettings.arrowHead,
+						width: velocitiesSettings.width,
 						arrows: velocityFile?.data
 							? velocityFile.data.map(velocity => {
 									const scale = Math.sqrt(

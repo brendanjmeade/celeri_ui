@@ -26,6 +26,7 @@ export interface ArrowSource {
 	name: string
 	color: string
 	scale: number
+	width: number
 	arrowHeadScale: number
 	arrows: {
 		longitude: number
@@ -290,7 +291,7 @@ function MapElement({
 						},
 						paint: {
 							'line-color': source.color,
-							'line-width': 4
+							'line-width': source.width
 						}
 					})
 					if (isNewLayer) {
