@@ -9,7 +9,7 @@ export interface VelocitiesDisplaySettings {
 }
 
 const defaultVelocityDisplaySettings: VelocitiesDisplaySettings = {
-	color: 'yellow',
+	color: '#ffff00',
 	scale: 0.02,
 	width: 1,
 	arrowHead: 1
