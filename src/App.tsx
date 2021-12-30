@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import type { BlockDisplaySettings } from 'Components/BlockPanel'
+import BlockPanel, { initialBlockDisplaySettings } from 'Components/BlockPanel'
 import type { OpenableFile } from 'Components/Files'
 import Files from 'Components/Files'
 import InspectorPanel from 'Components/InspectorPanel'
@@ -77,6 +79,9 @@ export default function App(): ReactElement {
 
 	const [velocitiesSettings, setVelocitiesSettings] =
 		useState<VelocitiesDisplaySettings>(initialVelocityDisplaySettings)
+	const [blockSettings, setBlockSettings] = useState<BlockDisplaySettings>(
+		initialBlockDisplaySettings
+	)
 
 	let view = <span />
 
@@ -132,6 +137,11 @@ export default function App(): ReactElement {
 				/>
 			)
 			break
+		case 'block':
+			view = (
+				<BlockPanel settings={blockSettings} setSettings={setBlockSettings} />
+			)
+			break
 		default:
 			break
 	}
@@ -150,8 +160,8 @@ export default function App(): ReactElement {
 				pointSources={[
 					{
 						name: 'blocks',
-						color: 'blue',
-						radius: 6,
+						color: blockSettings.color,
+						radius: blockSettings.radius,
 						points: blockFile?.data
 							? blockFile.data.map(block => ({
 									longitude: block.interior_lon,
