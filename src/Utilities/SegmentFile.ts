@@ -157,4 +157,8 @@ export class SegmentFile implements ParsedFile<Segment[]> {
 		const contents = stringify(this.data ?? [], fieldNames)
 		await this.handle.setContents(contents)
 	}
+
+	public clone(): SegmentFile {
+		return new SegmentFile(this.handle)
+	}
 }

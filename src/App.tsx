@@ -14,6 +14,7 @@ import VelocitiesPanel, {
 import type { ReactElement } from 'react'
 import { useState } from 'react'
 import type { BlockFile } from 'Utilities/BlockFile'
+import { createBlock } from 'Utilities/BlockFile'
 import type { CommandFile } from 'Utilities/CommandFile'
 import {
 	OpenBlockFile,
@@ -37,8 +38,8 @@ const windows = {
 	files: 'Files',
 	segment: 'Segment',
 	block: 'Block',
-	velocities: 'Velocities',
-	mesh: 'Mesh'
+	velocities: 'Velocities'
+	//  mesh: 'Mesh'
 }
 
 export default function App(): ReactElement {
@@ -82,6 +83,8 @@ export default function App(): ReactElement {
 	const [blockSettings, setBlockSettings] = useState<BlockDisplaySettings>(
 		initialBlockDisplaySettings
 	)
+
+	const [selectedBlock, setSelectedBlock] = useState<number>(-1)
 
 	let view = <span />
 
@@ -139,7 +142,26 @@ export default function App(): ReactElement {
 			break
 		case 'block':
 			view = (
-				<BlockPanel settings={blockSettings} setSettings={setBlockSettings} />
+				<BlockPanel
+					settings={blockSettings}
+					setSettings={setBlockSettings}
+					selected={selectedBlock}
+					blocks={blockFile?.data ?? []}
+					setBlockData={(index, data): void => {
+						if (blockFile !== undefined) {
+							const block =
+								// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+								blockFile.data && blockFile.data[index]
+									? { ...blockFile.data[index], ...data }
+									: createBlock(data)
+							const dataArray = blockFile.data ? [...blockFile.data] : []
+							dataArray[index] = block
+							const file = blockFile.clone()
+							file.data = dataArray
+							setBlockFile(file)
+						}
+					}}
+				/>
 			)
 			break
 		default:
@@ -161,17 +183,23 @@ export default function App(): ReactElement {
 					{
 						name: 'blocks',
 						color: blockSettings.color,
+						selectedColor: blockSettings.selectedColor,
 						radius: blockSettings.radius,
 						points: blockFile?.data
-							? blockFile.data.map(block => ({
+							? blockFile.data.map((block, index) => ({
 									longitude: block.interior_lon,
 									latitude: block.interior_lat,
 									name: block.name,
-									description: ``
+									description: ``,
+									selected: index === selectedBlock,
+									index
 							  }))
 							: [],
-						clickPoint: (index, name): void =>
-							console.log(`Clicked ${index}: ${name}`)
+						clickPoint: (index, name): void => {
+							console.log('Selected', name, index)
+							setSelectedBlock(index)
+							setActiveTab('block')
+						}
 					}
 				]}
 				arrowSources={[

@@ -93,4 +93,8 @@ export class CommandFile implements ParsedFile<Command> {
 			await this.handle.setContents(contents)
 		}
 	}
+
+	public clone(): CommandFile {
+		return new CommandFile(this.handle)
+	}
 }

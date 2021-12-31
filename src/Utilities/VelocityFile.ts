@@ -88,4 +88,8 @@ export class VelocityFile implements ParsedFile<Velocity[]> {
 		const contents = stringify(this.data ?? [], fieldNames)
 		await this.handle.setContents(contents)
 	}
+
+	public clone(): VelocityFile {
+		return new VelocityFile(this.handle)
+	}
 }

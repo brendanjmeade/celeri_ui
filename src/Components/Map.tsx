@@ -12,12 +12,15 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string
 export interface PointSource {
 	name: string
 	color: string
+	selectedColor: string
 	radius: number
 	points: {
 		longitude: number
 		latitude: number
 		name: string
 		description: string
+		selected?: boolean
+		index: number
 	}[]
 	clickPoint?: (index: number, name: string) => void
 }
@@ -101,6 +104,16 @@ function MapElement({
 						})
 					}
 					map.removeLayer(`layer:point:${source.name}`)
+					const selectedMapSource = map.getSource(
+						`point:${source.name}:selected`
+					) as GeoJSONSource | undefined
+					if (selectedMapSource !== undefined) {
+						selectedMapSource.setData({
+							type: 'FeatureCollection',
+							features: []
+						})
+					}
+					map.removeLayer(`layer:point:${source.name}:selected`)
 				}
 				// eslint-disable-next-line unicorn/no-useless-undefined
 				setInternalPointSources(undefined)
@@ -109,6 +122,9 @@ function MapElement({
 					let mapSource = map.getSource(`point:${source.name}`) as
 						| GeoJSONSource
 						| undefined
+					let selectedMapSource = map.getSource(
+						`point:${source.name}:selected`
+					) as GeoJSONSource | undefined
 					const isNewLayer = mapSource === undefined
 					if (isNewLayer) {
 						map.addSource(`point:${source.name}`, {
@@ -119,23 +135,52 @@ function MapElement({
 							}
 						})
 						mapSource = map.getSource(`point:${source.name}`) as GeoJSONSource
+						map.addSource(`point:${source.name}:selected`, {
+							type: 'geojson',
+							data: {
+								type: 'FeatureCollection',
+								features: []
+							}
+						})
+						selectedMapSource = map.getSource(
+							`point:${source.name}:selected`
+						) as GeoJSONSource
 					}
 					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-					if (mapSource !== undefined) {
+					if (mapSource !== undefined && selectedMapSource !== undefined) {
 						mapSource.setData({
 							type: 'FeatureCollection',
-							features: source.points.map((point, index) => ({
-								type: 'Feature',
-								properties: {
-									description: `<strong>${point.name}</strong><p>${point.description}</p>`,
-									index,
-									name: point.name
-								},
-								geometry: {
-									type: 'Point',
-									coordinates: [point.longitude, point.latitude]
-								}
-							}))
+							features: source.points
+								.filter(point => !point.selected)
+								.map(point => ({
+									type: 'Feature',
+									properties: {
+										description: `<strong>${point.name}</strong><p>${point.description}</p>`,
+										index: point.index,
+										name: point.name
+									},
+									geometry: {
+										type: 'Point',
+										coordinates: [point.longitude, point.latitude]
+									}
+								}))
+						})
+						selectedMapSource.setData({
+							type: 'FeatureCollection',
+							features: source.points
+								.filter(point => point.selected)
+								.map(point => ({
+									type: 'Feature',
+									properties: {
+										description: `<strong>${point.name}</strong><p>${point.description}</p>`,
+										index: point.index,
+										name: point.name
+									},
+									geometry: {
+										type: 'Point',
+										coordinates: [point.longitude, point.latitude]
+									}
+								}))
 						})
 					}
 					map.addLayer({
@@ -144,6 +189,17 @@ function MapElement({
 						source: `point:${source.name}`,
 						paint: {
 							'circle-color': source.color,
+							'circle-radius': source.radius,
+							'circle-stroke-width': 1,
+							'circle-stroke-color': '#ffffff'
+						}
+					})
+					map.addLayer({
+						id: `layer:point:${source.name}:selected`,
+						type: 'circle',
+						source: `point:${source.name}:selected`,
+						paint: {
+							'circle-color': source.selectedColor,
 							'circle-radius': source.radius,
 							'circle-stroke-width': 1,
 							'circle-stroke-color': '#ffffff'

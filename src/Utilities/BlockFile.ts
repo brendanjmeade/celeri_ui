@@ -103,4 +103,8 @@ export class BlockFile implements ParsedFile<Block[]> {
 		const contents = stringify(this.data ?? [], fieldNames)
 		await this.handle.setContents(contents)
 	}
+
+	public clone(): BlockFile {
+		return new BlockFile(this.handle)
+	}
 }
