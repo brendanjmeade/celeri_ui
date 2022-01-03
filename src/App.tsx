@@ -171,6 +171,12 @@ export default function App(): ReactElement {
 	return (
 		<div className='w-screen h-screen flex flex-col'>
 			<TopBar
+				filesOpen={(commandFile ?? segmentFile ?? blockFile) !== undefined}
+				saveFiles={async (): Promise<void> => {
+					if (commandFile) await commandFile.save()
+					if (segmentFile) await segmentFile.save()
+					if (blockFile) await blockFile.save()
+				}}
 				folder={folderHandle}
 				openFolder={async (): Promise<void> => {
 					const directory = await OpenDirectory()

@@ -3,10 +3,14 @@ import type { Directory } from 'Utilities/FileSystemInterfaces'
 
 function TopBar({
 	folder,
-	openFolder
+	openFolder,
+	filesOpen,
+	saveFiles
 }: {
 	folder: Directory | undefined
 	openFolder: () => void
+	filesOpen: boolean
+	saveFiles: () => void
 }): ReactElement {
 	function onClick(): void {
 		openFolder()
@@ -17,9 +21,12 @@ function TopBar({
 			className='p-2 bg-gradient-to-r from-blue-700 to-green-700 text-white flex flex-row justify-between'
 		>
 			<h3 className='text-lg font-bold'>Celeri UI</h3>
-			<span data-testid='open-folder-topbar'>
+			<span
+				data-testid='open-folder-topbar'
+				className='flex flex-row gap-2 items-center'
+			>
 				{folder ? (
-					<>Working in {folder.name}</>
+					<span>Working in {folder.name}</span>
 				) : (
 					<button
 						type='button'
@@ -28,6 +35,17 @@ function TopBar({
 					>
 						Open Folder
 					</button>
+				)}
+				{filesOpen ? (
+					<button
+						type='button'
+						onClick={saveFiles}
+						data-testid='save-file-button'
+					>
+						Safe Files
+					</button>
+				) : (
+					<></>
 				)}
 			</span>
 		</div>

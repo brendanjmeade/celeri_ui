@@ -77,7 +77,14 @@ function MapElement({
 				zoom: 2
 			})
 			innerMap.addControl(new NavigationControl())
-			const innerDraw = new MapboxDraw({})
+			const innerDraw = new MapboxDraw({
+				displayControlsDefault: false,
+				controls: {
+					line_string: true,
+					trash: true
+				},
+				defaultMode: 'simple_select'
+			})
 			innerMap.addControl(innerDraw)
 			setMap(innerMap)
 			setDraw(innerDraw)
