@@ -42,7 +42,7 @@ function TopBar({
 						onClick={saveFiles}
 						data-testid='save-file-button'
 					>
-						Safe Files
+						Save Files
 					</button>
 				) : (
 					<></>

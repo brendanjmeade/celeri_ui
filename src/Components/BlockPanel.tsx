@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { ReactElement } from 'react'
 import type { Block } from 'Utilities/BlockFile'
+import EditableItem from './EditableItem'
 
 export interface BlockDisplaySettings {
 	color: string
@@ -41,23 +42,19 @@ function BlockPanel({
 	const selectedBlock: Block | undefined = blocks[selected]
 
 	const selectedDisplay = selectedBlock ? (
-		<div className='flex flex-col gap-2 border-2 rounded p-2'>
-			<span className='text-xl font-bold'>{selectedBlock.name}</span>
-
-			<div className='flex flex-row justify-between items-center'>
-				<span className='text-l font-bold'>Name</span>
-				<span className='w-2/5 flex-shrink-0'>
-					<input
-						className='rounded w-full'
-						type='text'
-						value={selectedBlock.name}
-						onChange={(event): void => {
-							setBlockData(selected, { name: event.target.value })
-						}}
-					/>
-				</span>
-			</div>
-		</div>
+		<EditableItem
+			title={selectedBlock.name}
+			item={selectedBlock}
+			setItem={(partial): void => setBlockData(selected, partial)}
+			fieldDefinitions={{
+				name: {
+					order: 0,
+					name: 'Name',
+					description: 'The Block Name',
+					type: 'string'
+				}
+			}}
+		/>
 	) : (
 		<></>
 	)
