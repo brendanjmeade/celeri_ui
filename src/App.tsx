@@ -6,6 +6,10 @@ import type { OpenableFile } from 'Components/Files'
 import Files from 'Components/Files'
 import InspectorPanel from 'Components/InspectorPanel'
 import Map from 'Components/Map'
+import type { SegmentsDisplaySettings } from 'Components/SegmentsPanel'
+import SegmentsPanel, {
+	initialSegmentDisplaySettings
+} from 'Components/SegmentsPanel'
 import TopBar from 'Components/TopBar'
 import type { VelocitiesDisplaySettings } from 'Components/VelocitiesPanel'
 import VelocitiesPanel, {
@@ -83,6 +87,8 @@ export default function App(): ReactElement {
 	const [blockSettings, setBlockSettings] = useState<BlockDisplaySettings>(
 		initialBlockDisplaySettings
 	)
+	const [segmentSettings, setSegmentSettings] =
+		useState<SegmentsDisplaySettings>(initialSegmentDisplaySettings)
 
 	const [selectedBlock, setSelectedBlock] = useState<number>(-1)
 
@@ -164,6 +170,14 @@ export default function App(): ReactElement {
 				/>
 			)
 			break
+		case 'segment':
+			view = (
+				<SegmentsPanel
+					settings={segmentSettings}
+					setSettings={setSegmentSettings}
+				/>
+			)
+			break
 		default:
 			break
 	}
@@ -236,6 +250,24 @@ export default function App(): ReactElement {
 							: []
 					}
 				]}
+				drawnLineSource={{
+					color: segmentSettings.color,
+					activeColor: segmentSettings.activeColor,
+					activeWidth: segmentSettings.activeWidth,
+					width: segmentSettings.width,
+					active: segmentFile !== undefined,
+					lines: segmentFile?.data
+						? segmentFile.data.map((segment, index) => ({
+								startLongitude: segment.lon1,
+								endLongitude: segment.lon2,
+								startLatitude: segment.lat1,
+								endLatitude: segment.lat2,
+								name: segment.name,
+								index,
+								description: ''
+						  }))
+						: []
+				}}
 			/>
 			<InspectorPanel
 				view={view}
