@@ -56,8 +56,9 @@ export interface DrawnLineSource {
 		name: string
 		description: string
 		index: number
+		selected: boolean
 	}[]
-	clickLine?: (index: number, name: string) => void
+	clickLine?: (index: number) => void
 }
 
 const ARROW_ANGLE_1 = Math.PI / 6
@@ -112,9 +113,27 @@ function MapElement({
 			innerMap.on('load', () => {
 				setMapLoaded(true)
 			})
+			innerMap.on(
+				'draw.selectionchange',
+				({ features }: { features: mapboxgl.MapboxGeoJSONFeature[] }) => {
+					if (!drawnLineSource.clickLine) return
+					let selected = -1
+					for (const feature of features) {
+						if (
+							feature.geometry.type === 'LineString' &&
+							feature.properties &&
+							'index' in feature.properties &&
+							typeof feature.properties.index === 'number'
+						) {
+							selected = feature.properties.index
+						}
+					}
+					drawnLineSource.clickLine(selected)
+				}
+			)
 		}
 		console.log('Updating map...')
-	}, [map, draw])
+	}, [drawnLineSource, map])
 
 	useEffect(() => {
 		if (map && mapLoaded && internalDrawLineSource !== drawnLineSource) {
@@ -218,7 +237,12 @@ function MapElement({
 									'line-join': 'round'
 								},
 								paint: {
-									'line-color': drawnLineSource.color,
+									'line-color': [
+										'case',
+										['==', ['get', 'selected'], 1],
+										drawnLineSource.activeColor,
+										drawnLineSource.color
+									],
 									'line-width': drawnLineSource.width
 								}
 							},
@@ -235,7 +259,12 @@ function MapElement({
 									'line-join': 'round'
 								},
 								paint: {
-									'line-color': drawnLineSource.color,
+									'line-color': [
+										'case',
+										['==', ['get', 'selected'], 1],
+										drawnLineSource.activeColor,
+										drawnLineSource.color
+									],
 									'line-width': drawnLineSource.width
 								}
 							}
@@ -253,7 +282,11 @@ function MapElement({
 					features: drawnLineSource.lines.flatMap(line => [
 						{
 							type: 'Feature',
-							properties: { name: line.name, index: line.index },
+							properties: {
+								name: line.name,
+								index: line.index,
+								selected: line.selected ? 1 : 0
+							},
 							id: line.index,
 							geometry: {
 								type: 'LineString',
@@ -263,24 +296,6 @@ function MapElement({
 								]
 							}
 						}
-						// {
-						// 	type: 'Feature',
-						// 	properties: { name: line.name, index: line.index },
-						// 	id: line.index,
-						// 	geometry: {
-						// 		type: 'Point',
-						// 		coordinates: [line.startLongitude, line.startLatitude]
-						// 	}
-						// },
-						// {
-						// 	type: 'Feature',
-						// 	properties: { name: line.name, index: line.index },
-						// 	id: line.index,
-						// 	geometry: {
-						// 		type: 'Point',
-						// 		coordinates: [line.endLongitude, line.endLatitude]
-						// 	}
-						// }
 					])
 				})
 			}

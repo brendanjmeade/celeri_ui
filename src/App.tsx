@@ -32,6 +32,7 @@ import OpenDirectory, {
 	SetDirectoryHandle
 } from 'Utilities/FileSystemInterfaces'
 import type { SegmentFile } from 'Utilities/SegmentFile'
+import { createSegment } from 'Utilities/SegmentFile'
 import type { VelocityFile } from 'Utilities/VelocityFile'
 
 if (!window.location.search.includes('fake-dir')) {
@@ -91,6 +92,7 @@ export default function App(): ReactElement {
 		useState<SegmentsDisplaySettings>(initialSegmentDisplaySettings)
 
 	const [selectedBlock, setSelectedBlock] = useState<number>(-1)
+	const [selectedSegment, setSelectedSegment] = useState<number>(-1)
 
 	let view = <span />
 
@@ -175,6 +177,22 @@ export default function App(): ReactElement {
 				<SegmentsPanel
 					settings={segmentSettings}
 					setSettings={setSegmentSettings}
+					segments={segmentFile?.data ?? []}
+					selected={selectedSegment}
+					setSegmentData={(index, data): void => {
+						if (segmentFile !== undefined) {
+							const segment =
+								// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+								segmentFile.data && segmentFile.data[index]
+									? { ...segmentFile.data[index], ...data }
+									: createSegment(data)
+							const dataArray = segmentFile.data ? [...segmentFile.data] : []
+							dataArray[index] = segment
+							const file = segmentFile.clone()
+							file.data = dataArray
+							setSegmentFile(file)
+						}
+					}}
 				/>
 			)
 			break
@@ -216,7 +234,6 @@ export default function App(): ReactElement {
 							  }))
 							: [],
 						clickPoint: (index, name): void => {
-							console.log('Selected', name, index)
 							setSelectedBlock(index)
 							setActiveTab('block')
 						}
@@ -264,9 +281,13 @@ export default function App(): ReactElement {
 								endLatitude: segment.lat2,
 								name: segment.name,
 								index,
-								description: ''
+								description: '',
+								selected: index === selectedSegment
 						  }))
-						: []
+						: [],
+					clickLine: (index): void => {
+						setSelectedSegment(index)
+					}
 				}}
 			/>
 			<InspectorPanel
