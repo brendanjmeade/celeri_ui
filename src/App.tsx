@@ -5,6 +5,7 @@ import BlockPanel, { initialBlockDisplaySettings } from 'Components/BlockPanel'
 import type { OpenableFile } from 'Components/Files'
 import Files from 'Components/Files'
 import InspectorPanel from 'Components/InspectorPanel'
+import type { ArrowSource, DrawnLineSource, PointSource } from 'Components/Map'
 import Map from 'Components/Map'
 import type { SegmentsDisplaySettings } from 'Components/SegmentsPanel'
 import SegmentsPanel, {
@@ -16,7 +17,7 @@ import VelocitiesPanel, {
 	initialVelocityDisplaySettings
 } from 'Components/VelocitiesPanel'
 import type { ReactElement } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { BlockFile } from 'Utilities/BlockFile'
 import { createBlock } from 'Utilities/BlockFile'
 import type { CommandFile } from 'Utilities/CommandFile'
@@ -93,6 +94,99 @@ export default function App(): ReactElement {
 
 	const [selectedBlock, setSelectedBlock] = useState<number>(-1)
 	const [selectedSegment, setSelectedSegment] = useState<number>(-1)
+
+	const [pointSources, setPointSources] = useState<PointSource[]>([])
+	const [arrowSources, setArrowSources] = useState<ArrowSource[]>([])
+	const [drawnLineSource, setDrawnLineSource] = useState<DrawnLineSource>({
+		color: segmentSettings.color,
+		activeColor: segmentSettings.activeColor,
+		activeWidth: segmentSettings.activeWidth,
+		width: segmentSettings.width,
+		active: segmentFile !== undefined,
+		lines: []
+	})
+
+	useEffect(() => {
+		setPointSources([
+			{
+				name: 'blocks',
+				color: blockSettings.color,
+				selectedColor: blockSettings.selectedColor,
+				radius: blockSettings.radius,
+				points: blockFile?.data
+					? blockFile.data.map((block, index) => ({
+							longitude: block.interior_lon,
+							latitude: block.interior_lat,
+							name: block.name,
+							description: ``,
+							selected: index === selectedBlock,
+							index
+					  }))
+					: [],
+				clickPoint: (index, name): void => {
+					setSelectedBlock(index)
+					setActiveTab('block')
+				}
+			}
+		])
+	}, [blockSettings, blockFile, selectedBlock])
+
+	useEffect(() => {
+		setArrowSources([
+			{
+				name: 'velocity',
+				color: velocitiesSettings.color,
+				scale: velocitiesSettings.scale,
+				arrowHeadScale: velocitiesSettings.arrowHead,
+				width: velocitiesSettings.width,
+				arrows: velocityFile?.data
+					? velocityFile.data.map(velocity => {
+							const scale = Math.sqrt(
+								velocity.east_vel * velocity.east_vel +
+									velocity.north_vel * velocity.north_vel
+							)
+							return {
+								longitude: velocity.lon,
+								latitude: velocity.lat,
+								direction: [
+									velocity.east_vel / scale,
+									velocity.north_vel / scale
+								],
+								scale,
+								name: velocity.name,
+								description: `north: ${velocity.north_vel}, east: ${velocity.east_vel}`
+							}
+					  })
+					: []
+			}
+		])
+	}, [velocitiesSettings, velocityFile])
+
+	useEffect(() => {
+		setDrawnLineSource({
+			color: segmentSettings.color,
+			activeColor: segmentSettings.activeColor,
+			activeWidth: segmentSettings.activeWidth,
+			width: segmentSettings.width,
+			active: segmentFile !== undefined,
+			lines: segmentFile?.data
+				? segmentFile.data.map((segment, index) => ({
+						startLongitude: segment.lon1,
+						endLongitude: segment.lon2,
+						startLatitude: segment.lat1,
+						endLatitude: segment.lat2,
+						name: segment.name,
+						index,
+						description: '',
+						selected: index === selectedSegment
+				  }))
+				: [],
+			clickLine: (index): void => {
+				setSelectedSegment(index)
+				setActiveTab('segment')
+			}
+		})
+	}, [segmentSettings, segmentFile, selectedSegment])
 
 	let view = <span />
 
@@ -217,78 +311,9 @@ export default function App(): ReactElement {
 				}}
 			/>
 			<Map
-				pointSources={[
-					{
-						name: 'blocks',
-						color: blockSettings.color,
-						selectedColor: blockSettings.selectedColor,
-						radius: blockSettings.radius,
-						points: blockFile?.data
-							? blockFile.data.map((block, index) => ({
-									longitude: block.interior_lon,
-									latitude: block.interior_lat,
-									name: block.name,
-									description: ``,
-									selected: index === selectedBlock,
-									index
-							  }))
-							: [],
-						clickPoint: (index, name): void => {
-							setSelectedBlock(index)
-							setActiveTab('block')
-						}
-					}
-				]}
-				arrowSources={[
-					{
-						name: 'velocity',
-						color: velocitiesSettings.color,
-						scale: velocitiesSettings.scale,
-						arrowHeadScale: velocitiesSettings.arrowHead,
-						width: velocitiesSettings.width,
-						arrows: velocityFile?.data
-							? velocityFile.data.map(velocity => {
-									const scale = Math.sqrt(
-										velocity.east_vel * velocity.east_vel +
-											velocity.north_vel * velocity.north_vel
-									)
-									return {
-										longitude: velocity.lon,
-										latitude: velocity.lat,
-										direction: [
-											velocity.east_vel / scale,
-											velocity.north_vel / scale
-										],
-										scale,
-										name: velocity.name,
-										description: `north: ${velocity.north_vel}, east: ${velocity.east_vel}`
-									}
-							  })
-							: []
-					}
-				]}
-				drawnLineSource={{
-					color: segmentSettings.color,
-					activeColor: segmentSettings.activeColor,
-					activeWidth: segmentSettings.activeWidth,
-					width: segmentSettings.width,
-					active: segmentFile !== undefined,
-					lines: segmentFile?.data
-						? segmentFile.data.map((segment, index) => ({
-								startLongitude: segment.lon1,
-								endLongitude: segment.lon2,
-								startLatitude: segment.lat1,
-								endLatitude: segment.lat2,
-								name: segment.name,
-								index,
-								description: '',
-								selected: index === selectedSegment
-						  }))
-						: [],
-					clickLine: (index): void => {
-						setSelectedSegment(index)
-					}
-				}}
+				pointSources={pointSources}
+				arrowSources={arrowSources}
+				drawnLineSource={drawnLineSource}
 			/>
 			<InspectorPanel
 				view={view}

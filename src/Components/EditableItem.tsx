@@ -23,7 +23,12 @@ function FieldDefinitionEditor({
 	return (
 		<div className='flex flex-row justify-between items-center'>
 			<div className='flex flex-col'>
-				<span className='text-l font-bold'>{fieldDefinition.name}</span>
+				<span
+					data-testid={`input-title-${fieldDefinition.name}`}
+					className='text-l font-bold'
+				>
+					{fieldDefinition.name}
+				</span>
 				{fieldDefinition.description ? (
 					<span className='text-sm'>{fieldDefinition.description}</span>
 				) : (
@@ -32,6 +37,7 @@ function FieldDefinitionEditor({
 			</div>
 			<span className='w-2/5 flex-shrink-0'>
 				<input
+					data-testid={`input-editor-${fieldDefinition.name}`}
 					className='rounded w-full'
 					type={typeof value === 'number' ? 'number' : 'text'}
 					value={value}
@@ -81,9 +87,15 @@ function EditableItem<T extends object>({
 				: {
 						element: (
 							<div className='flex flex-row justify-between items-center'>
-								<span className='text-l font-bold'>{key}</span>
+								<span
+									data-testid={`input-title-${key}`}
+									className='text-l font-bold'
+								>
+									{key}
+								</span>
 								<span className='w-2/5 flex-shrink-0'>
 									<input
+										data-testid={`input-editor-${key}`}
 										className='rounded w-full'
 										type={typeof value === 'number' ? 'number' : 'text'}
 										value={value}
@@ -107,7 +119,9 @@ function EditableItem<T extends object>({
 		.map(value => value.element)
 	return (
 		<div className='flex flex-col gap-2 border-2 rounded p-2 max-h-96 overflow-y-auto'>
-			<span className='text-xl font-bold'>{title}</span>
+			<span data-testid='editable-item-title' className='text-xl font-bold'>
+				{title}
+			</span>
 			{fieldEditors}
 		</div>
 	)

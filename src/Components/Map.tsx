@@ -59,6 +59,8 @@ export interface DrawnLineSource {
 		selected: boolean
 	}[]
 	clickLine?: (index: number) => void
+	createLine?: (coordinates: number[]) => void
+	deleteLine?: (index: number) => void
 }
 
 const ARROW_ANGLE_1 = Math.PI / 6
@@ -126,6 +128,10 @@ function MapElement({
 							typeof feature.properties.index === 'number'
 						) {
 							selected = feature.properties.index
+							draw?.changeMode('direct_select', {
+								featureId: feature.id as string
+							})
+							break
 						}
 					}
 					drawnLineSource.clickLine(selected)
@@ -133,10 +139,11 @@ function MapElement({
 			)
 		}
 		console.log('Updating map...')
-	}, [drawnLineSource, map])
+	}, [draw, drawnLineSource, map])
 
 	useEffect(() => {
 		if (map && mapLoaded && internalDrawLineSource !== drawnLineSource) {
+			console.log('Drawning lines')
 			setInternalDrawnLineSource(drawnLineSource)
 			let localDraw = draw
 			if (
@@ -159,8 +166,7 @@ function MapElement({
 					localDraw = new MapboxDraw({
 						displayControlsDefault: false,
 						controls: {
-							line_string: true,
-							trash: true
+							line_string: true
 						},
 						defaultMode: 'simple_select',
 						styles: [
@@ -310,7 +316,6 @@ function MapElement({
 	])
 
 	useEffect(() => {
-		console.log('Adding layers')
 		if (map && mapLoaded && internalPointSources !== pointSources) {
 			console.log('Setting points in map!')
 			if (internalPointSources) {
@@ -472,7 +477,6 @@ function MapElement({
 	}, [map, internalPointSources, pointSources, mapLoaded, popup])
 
 	useEffect(() => {
-		console.log('Adding layers')
 		if (map && mapLoaded && internalArrowSources !== arrowSources) {
 			console.log('Setting arrows in map!')
 			if (internalArrowSources) {
