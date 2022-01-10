@@ -19,7 +19,6 @@ export interface PointSource {
 		latitude: number
 		name: string
 		description: string
-		selected?: boolean
 		index: number
 	}[]
 	clickPoint?: (index: number, name: string) => void
@@ -56,7 +55,6 @@ export interface DrawnLineSource {
 		name: string
 		description: string
 		index: number
-		selected: boolean
 	}[]
 	clickLine?: (index: number) => void
 	createLine?: (coordinates: number[]) => void
@@ -69,11 +67,13 @@ const ARROW_ANGLE_2 = 2 * Math.PI - ARROW_ANGLE_1
 function MapElement({
 	pointSources,
 	arrowSources,
-	drawnLineSource
+	drawnLineSource,
+	selections
 }: {
 	pointSources: PointSource[]
 	arrowSources: ArrowSource[]
 	drawnLineSource: DrawnLineSource
+	selections: Record<string, number>
 }): ReactElement {
 	const mapReference = useRef<HTMLDivElement>(null)
 
@@ -291,7 +291,7 @@ function MapElement({
 							properties: {
 								name: line.name,
 								index: line.index,
-								selected: line.selected ? 1 : 0
+								selected: selections.drawnLine === line.index
 							},
 							id: line.index,
 							geometry: {
@@ -312,7 +312,8 @@ function MapElement({
 		internalDrawLineSource,
 		drawnLineSource,
 		drawLineSettings,
-		draw
+		draw,
+		selections.drawnLine
 	])
 
 	useEffect(() => {
@@ -377,7 +378,7 @@ function MapElement({
 						mapSource.setData({
 							type: 'FeatureCollection',
 							features: source.points
-								.filter(point => !point.selected)
+								.filter(point => point.index !== selections[source.name])
 								.map(point => ({
 									type: 'Feature',
 									properties: {
@@ -394,7 +395,7 @@ function MapElement({
 						selectedMapSource.setData({
 							type: 'FeatureCollection',
 							features: source.points
-								.filter(point => point.selected)
+								.filter(point => point.index === selections[source.name])
 								.map(point => ({
 									type: 'Feature',
 									properties: {
@@ -474,7 +475,7 @@ function MapElement({
 				setInternalPointSources(pointSources)
 			}
 		}
-	}, [map, internalPointSources, pointSources, mapLoaded, popup])
+	}, [map, internalPointSources, pointSources, mapLoaded, popup, selections])
 
 	useEffect(() => {
 		if (map && mapLoaded && internalArrowSources !== arrowSources) {

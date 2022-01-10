@@ -103,7 +103,11 @@ export default function App(): ReactElement {
 		activeWidth: segmentSettings.activeWidth,
 		width: segmentSettings.width,
 		active: segmentFile !== undefined,
-		lines: []
+		lines: [],
+		clickLine: (index): void => {
+			setSelectedSegment(index)
+			setActiveTab('segment')
+		}
 	})
 
 	useEffect(() => {
@@ -119,7 +123,6 @@ export default function App(): ReactElement {
 							latitude: block.interior_lat,
 							name: block.name,
 							description: ``,
-							selected: index === selectedBlock,
 							index
 					  }))
 					: [],
@@ -129,7 +132,7 @@ export default function App(): ReactElement {
 				}
 			}
 		])
-	}, [blockSettings, blockFile, selectedBlock])
+	}, [blockSettings, blockFile])
 
 	useEffect(() => {
 		setArrowSources([
@@ -177,8 +180,7 @@ export default function App(): ReactElement {
 						endLatitude: segment.lat2,
 						name: segment.name,
 						index,
-						description: '',
-						selected: index === selectedSegment
+						description: ''
 				  }))
 				: [],
 			clickLine: (index): void => {
@@ -186,7 +188,7 @@ export default function App(): ReactElement {
 				setActiveTab('segment')
 			}
 		})
-	}, [segmentSettings, segmentFile, selectedSegment])
+	}, [segmentSettings, segmentFile])
 
 	let view = <span />
 
@@ -314,6 +316,7 @@ export default function App(): ReactElement {
 				pointSources={pointSources}
 				arrowSources={arrowSources}
 				drawnLineSource={drawnLineSource}
+				selections={{ drawnLine: selectedSegment, blocks: selectedBlock }}
 			/>
 			<InspectorPanel
 				view={view}
