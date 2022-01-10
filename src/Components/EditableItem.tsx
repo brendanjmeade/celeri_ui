@@ -73,6 +73,7 @@ function EditableItem<T extends object>({
 				? {
 						element: (
 							<FieldDefinitionEditor
+								key={key}
 								value={value}
 								fieldDefinition={fieldDefinition}
 								setField={(updated): void =>
@@ -86,7 +87,10 @@ function EditableItem<T extends object>({
 				  }
 				: {
 						element: (
-							<div className='flex flex-row justify-between items-center'>
+							<div
+								key={key}
+								className='flex flex-row justify-between items-center'
+							>
 								<span
 									data-testid={`input-title-${key}`}
 									className='text-l font-bold'

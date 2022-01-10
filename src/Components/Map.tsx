@@ -99,6 +99,10 @@ function MapElement({
 	const [internalDrawLineSource, setInternalDrawnLineSource] =
 		useState<DrawnLineSource>()
 
+	const [internalSelections, setInternalSelections] = useState<
+		Record<string, number>
+	>({})
+
 	useEffect(() => {
 		if (!map && mapboxgl.accessToken && mapReference.current) {
 			const innerMap = new Map({
@@ -317,7 +321,8 @@ function MapElement({
 	])
 
 	useEffect(() => {
-		if (map && mapLoaded && internalPointSources !== pointSources) {
+		if (!map || !mapLoaded) return
+		if (internalPointSources !== pointSources) {
 			console.log('Setting points in map!')
 			if (internalPointSources) {
 				for (const source of internalPointSources) {
@@ -331,16 +336,6 @@ function MapElement({
 						})
 					}
 					map.removeLayer(`layer:point:${source.name}`)
-					const selectedMapSource = map.getSource(
-						`point:${source.name}:selected`
-					) as GeoJSONSource | undefined
-					if (selectedMapSource !== undefined) {
-						selectedMapSource.setData({
-							type: 'FeatureCollection',
-							features: []
-						})
-					}
-					map.removeLayer(`layer:point:${source.name}:selected`)
 				}
 				// eslint-disable-next-line unicorn/no-useless-undefined
 				setInternalPointSources(undefined)
@@ -349,9 +344,6 @@ function MapElement({
 					let mapSource = map.getSource(`point:${source.name}`) as
 						| GeoJSONSource
 						| undefined
-					let selectedMapSource = map.getSource(
-						`point:${source.name}:selected`
-					) as GeoJSONSource | undefined
 					const isNewLayer = mapSource === undefined
 					if (isNewLayer) {
 						map.addSource(`point:${source.name}`, {
@@ -362,52 +354,24 @@ function MapElement({
 							}
 						})
 						mapSource = map.getSource(`point:${source.name}`) as GeoJSONSource
-						map.addSource(`point:${source.name}:selected`, {
-							type: 'geojson',
-							data: {
-								type: 'FeatureCollection',
-								features: []
-							}
-						})
-						selectedMapSource = map.getSource(
-							`point:${source.name}:selected`
-						) as GeoJSONSource
 					}
 					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-					if (mapSource !== undefined && selectedMapSource !== undefined) {
+					if (mapSource !== undefined) {
 						mapSource.setData({
 							type: 'FeatureCollection',
-							features: source.points
-								.filter(point => point.index !== selections[source.name])
-								.map(point => ({
-									type: 'Feature',
-									properties: {
-										description: `<strong>${point.name}</strong><p>${point.description}</p>`,
-										index: point.index,
-										name: point.name
-									},
-									geometry: {
-										type: 'Point',
-										coordinates: [point.longitude, point.latitude]
-									}
-								}))
-						})
-						selectedMapSource.setData({
-							type: 'FeatureCollection',
-							features: source.points
-								.filter(point => point.index === selections[source.name])
-								.map(point => ({
-									type: 'Feature',
-									properties: {
-										description: `<strong>${point.name}</strong><p>${point.description}</p>`,
-										index: point.index,
-										name: point.name
-									},
-									geometry: {
-										type: 'Point',
-										coordinates: [point.longitude, point.latitude]
-									}
-								}))
+							features: source.points.map(point => ({
+								type: 'Feature',
+								properties: {
+									description: `<strong>${point.name}</strong><p>${point.description}</p>`,
+									index: point.index,
+									name: point.name,
+									selected: point.index !== selections[source.name]
+								},
+								geometry: {
+									type: 'Point',
+									coordinates: [point.longitude, point.latitude]
+								}
+							}))
 						})
 					}
 					map.addLayer({
@@ -415,18 +379,12 @@ function MapElement({
 						type: 'circle',
 						source: `point:${source.name}`,
 						paint: {
-							'circle-color': source.color,
-							'circle-radius': source.radius,
-							'circle-stroke-width': 1,
-							'circle-stroke-color': '#ffffff'
-						}
-					})
-					map.addLayer({
-						id: `layer:point:${source.name}:selected`,
-						type: 'circle',
-						source: `point:${source.name}:selected`,
-						paint: {
-							'circle-color': source.selectedColor,
+							'circle-color': [
+								'case',
+								['get', 'selected'],
+								source.selectedColor,
+								source.color
+							],
 							'circle-radius': source.radius,
 							'circle-stroke-width': 1,
 							'circle-stroke-color': '#ffffff'
@@ -475,7 +433,54 @@ function MapElement({
 				setInternalPointSources(pointSources)
 			}
 		}
-	}, [map, internalPointSources, pointSources, mapLoaded, popup, selections])
+		const updatedInternalSelections = { ...internalSelections }
+		let selectionChanged = false
+
+		for (const sourcename of Object.keys(selections)) {
+			if (selections[sourcename] !== internalSelections[sourcename]) {
+				for (const source of pointSources) {
+					if (source.name === sourcename) {
+						selectionChanged = true
+						updatedInternalSelections[sourcename] = selections[sourcename]
+						const mapSource = map.getSource(`point:${source.name}`) as
+							| GeoJSONSource
+							| undefined
+						if (mapSource) {
+							const index = selections[sourcename]
+							mapSource.setData({
+								type: 'FeatureCollection',
+								features: source.points.map(point => ({
+									type: 'Feature',
+									properties: {
+										description: `<strong>${point.name}</strong><p>${point.description}</p>`,
+										index: point.index,
+										name: point.name,
+										selected: point.index !== index
+									},
+									geometry: {
+										type: 'Point',
+										coordinates: [point.longitude, point.latitude]
+									}
+								}))
+							})
+						}
+					}
+				}
+			}
+		}
+
+		if (selectionChanged) {
+			setInternalSelections(updatedInternalSelections)
+		}
+	}, [
+		map,
+		internalPointSources,
+		pointSources,
+		mapLoaded,
+		popup,
+		selections,
+		internalSelections
+	])
 
 	useEffect(() => {
 		if (map && mapLoaded && internalArrowSources !== arrowSources) {
