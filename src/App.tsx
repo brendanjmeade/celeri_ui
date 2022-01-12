@@ -33,7 +33,10 @@ import OpenDirectory, {
 	SetDirectoryHandle
 } from 'Utilities/FileSystemInterfaces'
 import type { SegmentFile } from 'Utilities/SegmentFile'
-import { createSegment } from 'Utilities/SegmentFile'
+import {
+	createSegment,
+	createSegmentsFromCoordinates
+} from 'Utilities/SegmentFile'
 import type { VelocityFile } from 'Utilities/VelocityFile'
 
 if (!window.location.search.includes('fake-dir')) {
@@ -107,6 +110,28 @@ export default function App(): ReactElement {
 		clickLine: (index): void => {
 			setSelectedSegment(index)
 			setActiveTab('segment')
+		},
+		createLine: (coordinates): void => {
+			console.log('Creating line @', coordinates)
+			if (segmentFile?.data) {
+				const createdSegment = createSegmentsFromCoordinates(coordinates)
+				const data = [...segmentFile.data, ...createdSegment]
+				const updatedSegmentFile = segmentFile.clone()
+				updatedSegmentFile.data = data
+				setSegmentFile(updatedSegmentFile)
+			}
+		},
+		updateLine: (index, coordinates): void => {
+			console.log('update line @', index)
+			if (segmentFile?.data?.[index]) {
+				const old = segmentFile.data[index]
+				const createdSegment = createSegmentsFromCoordinates(coordinates, old)
+				const data = [...segmentFile.data]
+				data.splice(index, 1, ...createdSegment)
+				const updatedSegmentFile = segmentFile.clone()
+				updatedSegmentFile.data = data
+				setSegmentFile(updatedSegmentFile)
+			}
 		}
 	})
 
@@ -186,6 +211,27 @@ export default function App(): ReactElement {
 			clickLine: (index): void => {
 				setSelectedSegment(index)
 				setActiveTab('segment')
+			},
+			createLine: (coordinates): void => {
+				if (segmentFile?.data) {
+					const createdSegment = createSegmentsFromCoordinates(coordinates)
+					const data = [...segmentFile.data, ...createdSegment]
+					const updatedSegmentFile = segmentFile.clone()
+					updatedSegmentFile.data = data
+					setSegmentFile(updatedSegmentFile)
+				}
+			},
+			updateLine: (index, coordinates): void => {
+				console.log('update line @', index)
+				if (segmentFile?.data?.[index]) {
+					const old = segmentFile.data[index]
+					const createdSegment = createSegmentsFromCoordinates(coordinates, old)
+					const data = [...segmentFile.data]
+					data.splice(index, 1, ...createdSegment)
+					const updatedSegmentFile = segmentFile.clone()
+					updatedSegmentFile.data = data
+					setSegmentFile(updatedSegmentFile)
+				}
 			}
 		})
 	}, [segmentSettings, segmentFile])

@@ -85,7 +85,7 @@ const fieldNames = [
 ]
 
 const defaultSegment: Segment = {
-	name: '',
+	name: 'unnamed segment',
 	lon1: 0,
 	lat1: 0,
 	lon2: 0,
@@ -123,6 +123,29 @@ const defaultSegment: Segment = {
 	patch_flag: 0,
 	patch_slip_file: 0,
 	patch_slip_flag: 0
+}
+
+export function createSegmentsFromCoordinates(
+	coordinates: { lat: number; lon: number }[],
+	old?: Segment
+): Segment[] {
+	const original = old ?? defaultSegment
+	let lastCoordinate = coordinates[0]
+	const segments: Segment[] = []
+	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+	for (let index = 1; index < coordinates.length; index += 1) {
+		const coordinate = coordinates[index]
+		const segment = {
+			...original,
+			lon1: lastCoordinate.lon,
+			lat1: lastCoordinate.lat,
+			lon2: coordinate.lon,
+			lat2: coordinate.lat
+		}
+		segments.push(segment)
+		lastCoordinate = coordinate
+	}
+	return segments
 }
 
 export function createSegment(partial: Partial<Segment>): Segment {

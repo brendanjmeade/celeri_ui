@@ -57,8 +57,11 @@ export interface DrawnLineSource {
 		index: number
 	}[]
 	clickLine?: (index: number) => void
-	createLine?: (coordinates: number[]) => void
-	deleteLine?: (index: number) => void
+	createLine?: (coordinates: { lat: number; lon: number }[]) => void
+	updateLine?: (
+		index: number,
+		coordinates: { lat: number; lon: number }[]
+	) => void
 }
 
 const ARROW_ANGLE_1 = Math.PI / 6
@@ -96,8 +99,9 @@ function MapElement({
 		useState<PointSource[]>()
 	const [internalArrowSources, setInternalArrowSources] =
 		useState<ArrowSource[]>()
-	const [internalDrawLineSource, setInternalDrawnLineSource] =
-		useState<DrawnLineSource>()
+	const [internalDrawLineSource, setInternalDrawnLineSource] = useState<{
+		source?: DrawnLineSource
+	}>({})
 
 	const [internalSelections, setInternalSelections] = useState<
 		Record<string, number>
@@ -122,7 +126,7 @@ function MapElement({
 			innerMap.on(
 				'draw.selectionchange',
 				({ features }: { features: mapboxgl.MapboxGeoJSONFeature[] }) => {
-					if (!drawnLineSource.clickLine) return
+					if (!internalDrawLineSource.source?.clickLine) return
 					let selected = -1
 					for (const feature of features) {
 						if (
@@ -138,17 +142,71 @@ function MapElement({
 							break
 						}
 					}
-					drawnLineSource.clickLine(selected)
+					internalDrawLineSource.source.clickLine(selected)
+				}
+			)
+			innerMap.on(
+				'draw.create',
+				({ features }: { features: mapboxgl.MapboxGeoJSONFeature[] }) => {
+					console.log('CREATING LINE')
+					if (!internalDrawLineSource.source?.createLine) return
+					const coordinates: { lat: number; lon: number }[] = []
+					for (const feature of features) {
+						if (feature.geometry.type === 'LineString') {
+							for (const point of feature.geometry.coordinates) {
+								coordinates.push({ lon: point[0], lat: point[1] })
+							}
+						}
+					}
+					if (coordinates.length > 1) {
+						internalDrawLineSource.source.createLine(coordinates)
+					}
+				}
+			)
+			innerMap.on(
+				'draw.update',
+				({
+					features
+				}: {
+					features: mapboxgl.MapboxGeoJSONFeature[]
+					action: 'change_coordinates' | 'move'
+				}) => {
+					console.log('UPDATING LINE')
+					if (!internalDrawLineSource.source?.updateLine) return
+					console.log('Got the function')
+					const coordinates: { lat: number; lon: number }[] = []
+					let selected = -1
+					for (const feature of features) {
+						if (
+							feature.geometry.type === 'LineString' &&
+							feature.properties &&
+							'index' in feature.properties &&
+							typeof feature.properties.index === 'number'
+						) {
+							console.log('Found the feature')
+							selected = feature.properties.index
+							for (const point of feature.geometry.coordinates) {
+								coordinates.push({ lon: point[0], lat: point[1] })
+							}
+							break
+						}
+					}
+					console.log('will call update function')
+					if (coordinates.length > 1 && selected > -1) {
+						console.log('Calling update function')
+						internalDrawLineSource.source.updateLine(selected, coordinates)
+					}
 				}
 			)
 		}
 		console.log('Updating map...')
-	}, [draw, drawnLineSource, map])
+	}, [draw, internalDrawLineSource, map])
 
 	useEffect(() => {
-		if (map && mapLoaded && internalDrawLineSource !== drawnLineSource) {
+		if (map && mapLoaded && internalDrawLineSource.source !== drawnLineSource) {
 			console.log('Drawning lines')
-			setInternalDrawnLineSource(drawnLineSource)
+			internalDrawLineSource.source = drawnLineSource
+			setInternalDrawnLineSource(internalDrawLineSource)
 			let localDraw = draw
 			if (
 				drawnLineSource.activeColor !== drawLineSettings.activeColor ||
