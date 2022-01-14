@@ -58,11 +58,13 @@ function EditableItem<T extends object>({
 	title,
 	item,
 	setItem,
-	fieldDefinitions
+	fieldDefinitions,
+	deletable
 }: {
 	title: string
 	item: T
-	setItem: (value: Partial<T>) => void
+	deletable: boolean
+	setItem: (value?: Partial<T>) => void
 	fieldDefinitions: Record<string, FieldDefinition>
 }): ReactElement {
 	const fieldEditors = Object.keys(item)
@@ -123,9 +125,24 @@ function EditableItem<T extends object>({
 		.map(value => value.element)
 	return (
 		<div className='flex flex-col gap-2 border-2 rounded p-2 max-h-96 overflow-y-auto'>
-			<span data-testid='editable-item-title' className='text-xl font-bold'>
-				{title}
-			</span>
+			<div className='flex flex-row justify-between items-center'>
+				<span data-testid='editable-item-title' className='text-xl font-bold'>
+					{title}
+				</span>
+				{deletable ? (
+					<button
+						type='button'
+						className='rounded bg-white hover:bg-gray-200 p-2'
+						onClick={(): void => {
+							setItem()
+						}}
+					>
+						Delete
+					</button>
+				) : (
+					<></>
+				)}
+			</div>
 			{fieldEditors}
 		</div>
 	)

@@ -28,13 +28,15 @@ function SegmentsPanel({
 	setSettings,
 	segments,
 	selected,
-	setSegmentData
+	setSegmentData,
+	addNewSegment
 }: {
 	settings: SegmentsDisplaySettings
 	setSettings: (settings: SegmentsDisplaySettings) => void
 	segments: Segment[]
 	selected: number
-	setSegmentData: (index: number, data: Partial<Segment>) => void
+	setSegmentData: (index: number, data?: Partial<Segment>) => void
+	addNewSegment: () => void
 }): ReactElement {
 	const set = (s: SegmentsDisplaySettings): void => {
 		setSettings(s)
@@ -47,6 +49,7 @@ function SegmentsPanel({
 		<EditableItem
 			title={selectedSegment.name}
 			item={selectedSegment}
+			deletable
 			setItem={(partial): void => setSegmentData(selected, partial)}
 			fieldDefinitions={{
 				name: {
@@ -129,6 +132,16 @@ function SegmentsPanel({
 						}}
 					/>
 				</span>
+			</div>
+			<div className='flex flex-row justify-between items-center'>
+				<span className='text-l font-bold'>Add New Segment</span>
+				<button
+					type='button'
+					className='rounded bg-white hover:bg-gray-200 p-2'
+					onClick={addNewSegment}
+				>
+					New Segment
+				</button>
 			</div>
 			{selectedDisplay}
 		</div>

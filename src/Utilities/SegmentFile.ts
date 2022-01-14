@@ -88,8 +88,10 @@ const defaultSegment: Segment = {
 	name: 'unnamed segment',
 	lon1: 0,
 	lat1: 0,
-	lon2: 0,
-	lat2: 0,
+	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+	lon2: 10,
+	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+	lat2: 10,
 	dip: 0,
 	res: 0,
 	other3: 0,

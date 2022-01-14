@@ -297,18 +297,36 @@ export default function App(): ReactElement {
 					setSettings={setBlockSettings}
 					selected={selectedBlock}
 					blocks={blockFile?.data ?? []}
-					setBlockData={(index, data): void => {
+					addNewBlock={(): void => {
 						if (blockFile !== undefined) {
-							const block =
-								// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-								blockFile.data && blockFile.data[index]
-									? { ...blockFile.data[index], ...data }
-									: createBlock(data)
 							const dataArray = blockFile.data ? [...blockFile.data] : []
-							dataArray[index] = block
+							const block = createBlock({})
+							dataArray.push(block)
 							const file = blockFile.clone()
 							file.data = dataArray
 							setBlockFile(file)
+						}
+					}}
+					setBlockData={(index, data): void => {
+						if (blockFile !== undefined) {
+							if (data) {
+								const block =
+									// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+									blockFile.data && blockFile.data[index]
+										? { ...blockFile.data[index], ...data }
+										: createBlock(data)
+								const dataArray = blockFile.data ? [...blockFile.data] : []
+								dataArray[index] = block
+								const file = blockFile.clone()
+								file.data = dataArray
+								setBlockFile(file)
+							} else {
+								const dataArray = blockFile.data ? [...blockFile.data] : []
+								dataArray.splice(index, 1)
+								const file = blockFile.clone()
+								file.data = dataArray
+								setBlockFile(file)
+							}
 						}
 					}}
 				/>
@@ -321,18 +339,36 @@ export default function App(): ReactElement {
 					setSettings={setSegmentSettings}
 					segments={segmentFile?.data ?? []}
 					selected={selectedSegment}
-					setSegmentData={(index, data): void => {
+					addNewSegment={(): void => {
 						if (segmentFile !== undefined) {
-							const segment =
-								// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-								segmentFile.data && segmentFile.data[index]
-									? { ...segmentFile.data[index], ...data }
-									: createSegment(data)
 							const dataArray = segmentFile.data ? [...segmentFile.data] : []
-							dataArray[index] = segment
+							const segment = createSegment({})
+							dataArray.push(segment)
 							const file = segmentFile.clone()
 							file.data = dataArray
 							setSegmentFile(file)
+						}
+					}}
+					setSegmentData={(index, data): void => {
+						if (segmentFile !== undefined) {
+							if (data) {
+								const segment =
+									// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+									segmentFile.data && segmentFile.data[index]
+										? { ...segmentFile.data[index], ...data }
+										: createSegment(data)
+								const dataArray = segmentFile.data ? [...segmentFile.data] : []
+								dataArray[index] = segment
+								const file = segmentFile.clone()
+								file.data = dataArray
+								setSegmentFile(file)
+							} else {
+								const dataArray = segmentFile.data ? [...segmentFile.data] : []
+								dataArray.splice(index, 1)
+								const file = segmentFile.clone()
+								file.data = dataArray
+								setSegmentFile(file)
+							}
 						}
 					}}
 				/>

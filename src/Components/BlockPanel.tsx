@@ -26,11 +26,13 @@ function BlockPanel({
 	setSettings,
 	selected,
 	blocks,
-	setBlockData
+	setBlockData,
+	addNewBlock
 }: {
 	selected: number
 	blocks: Block[]
-	setBlockData: (index: number, data: Partial<Block>) => void
+	setBlockData: (index: number, data?: Partial<Block>) => void
+	addNewBlock: () => void
 	settings: BlockDisplaySettings
 	setSettings: (settings: BlockDisplaySettings) => void
 }): ReactElement {
@@ -45,6 +47,7 @@ function BlockPanel({
 		<EditableItem
 			title={selectedBlock.name}
 			item={selectedBlock}
+			deletable
 			setItem={(partial): void => setBlockData(selected, partial)}
 			fieldDefinitions={{
 				name: {
@@ -108,6 +111,16 @@ function BlockPanel({
 						/>
 					</span>
 				</div>
+			</div>
+			<div className='flex flex-row justify-between items-center'>
+				<span className='text-l font-bold'>Add New Block</span>
+				<button
+					type='button'
+					className='rounded bg-white hover:bg-gray-200 p-2'
+					onClick={addNewBlock}
+				>
+					New Block
+				</button>
 			</div>
 			{selectedDisplay}
 		</>
