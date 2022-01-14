@@ -15,6 +15,7 @@ describe('The editable item displays & edits correctly', () => {
 				item={{ string: 'hey', number: 1 }}
 				setItem={(): void => {}}
 				fieldDefinitions={{}}
+				deletable={false}
 			/>
 		)
 		expect(screen.getByTestId('editable-item-title').textContent).to.equal(
