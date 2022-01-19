@@ -347,25 +347,42 @@ function MapElement({
 			if (localDraw) {
 				localDraw.set({
 					type: 'FeatureCollection',
-					features: drawnLineSource.lines.flatMap(line => [
+					features: [
 						{
 							type: 'Feature',
-							properties: {
-								name: line.name,
-								index: line.index,
-								selected: selections.drawnLine === line.index
-							},
-							id: line.index,
+							id: 0,
+							properties: {},
 							geometry: {
-								type: 'LineString',
-								coordinates: [
+								type: 'MultiLineString',
+								coordinates: drawnLineSource.lines.map(line => [
 									[line.startLongitude, line.startLatitude],
 									[line.endLongitude, line.endLatitude]
-								]
+								])
 							}
 						}
-					])
+					]
 				})
+				// localDraw.set({
+				// 	type: 'FeatureCollection',
+				// 	features: drawnLineSource.lines.flatMap(line => [
+				// 		{
+				// 			type: 'Feature',
+				// 			properties: {
+				// 				name: line.name,
+				// 				index: line.index,
+				// 				selected: selections.drawnLine === line.index
+				// 			},
+				// 			id: line.index,
+				// 			geometry: {
+				// 				type: 'LineString',
+				// 				coordinates: [
+				// 					[line.startLongitude, line.startLatitude],
+				// 					[line.endLongitude, line.endLatitude]
+				// 				]
+				// 			}
+				// 		}
+				// 	])
+				// })
 			}
 		}
 	}, [
@@ -555,6 +572,7 @@ function MapElement({
 						})
 					}
 					map.removeLayer(`layer:arrow:${source.name}`)
+					map.removeLayer(`layer:arrow:${source.name}:click`)
 				}
 				// eslint-disable-next-line unicorn/no-useless-undefined
 				setInternalArrowSources(undefined)
@@ -639,8 +657,21 @@ function MapElement({
 							'line-width': source.width
 						}
 					})
+					map.addLayer({
+						id: `layer:arrow:${source.name}:click`,
+						type: 'line',
+						source: `arrow:${source.name}`,
+						layout: {
+							'line-cap': 'round',
+							'line-join': 'miter'
+						},
+						paint: {
+							'line-color': 'rgba(0,0,0,0.01)',
+							'line-width': source.width * 10
+						}
+					})
 					if (isNewLayer) {
-						map.on('mouseenter', `layer:arrow:${source.name}`, event => {
+						map.on('mouseenter', `layer:arrow:${source.name}:click`, event => {
 							if (!event.features) return
 							const feature = event.features[0]
 							if (
@@ -662,10 +693,11 @@ function MapElement({
 								popup.setLngLat(coordinates).setHTML(description).addTo(map)
 							}
 						})
-						map.on('mouseleave', `layer:arrow:${source.name}`, () => {
+						map.on('mouseleave', `layer:arrow:${source.name}:click`, () => {
 							popup.remove()
 						})
-						map.on('click', `layer:arrow:${source.name}`, event => {
+						map.on('click', `layer:arrow:${source.name}:click`, event => {
+							console.log('CLICKED AN ARROW')
 							if (!event.features || !source.clickArrow) return
 							const feature = event.features[0]
 							if (

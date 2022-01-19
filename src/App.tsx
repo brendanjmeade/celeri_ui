@@ -38,6 +38,7 @@ import {
 	createSegmentsFromCoordinates
 } from 'Utilities/SegmentFile'
 import type { VelocityFile } from 'Utilities/VelocityFile'
+import { createVelocity } from 'Utilities/VelocityFile'
 
 if (!window.location.search.includes('fake-dir')) {
 	SetDirectoryHandle(FSOpenDirectory)
@@ -97,6 +98,7 @@ export default function App(): ReactElement {
 
 	const [selectedBlock, setSelectedBlock] = useState<number>(-1)
 	const [selectedSegment, setSelectedSegment] = useState<number>(-1)
+	const [selectedVelocity, setSelectedVelocity] = useState<number>(-1)
 
 	const [pointSources, setPointSources] = useState<PointSource[]>([])
 	const [arrowSources, setArrowSources] = useState<ArrowSource[]>([])
@@ -185,7 +187,11 @@ export default function App(): ReactElement {
 								description: `north: ${velocity.north_vel}, east: ${velocity.east_vel}`
 							}
 					  })
-					: []
+					: [],
+				clickArrow: (index): void => {
+					setSelectedVelocity(index)
+					setActiveTab('velocities')
+				}
 			}
 		])
 	}, [velocitiesSettings, velocityFile])
@@ -287,6 +293,44 @@ export default function App(): ReactElement {
 				<VelocitiesPanel
 					settings={velocitiesSettings}
 					setSettings={setVelocitiesSettings}
+					selected={selectedVelocity}
+					velocitys={velocityFile?.data ?? []}
+					setVelocityData={(index, data): void => {
+						if (velocityFile !== undefined) {
+							if (data) {
+								const velocity =
+									// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+									velocityFile.data && velocityFile.data[index]
+										? { ...velocityFile.data[index], ...data }
+										: createVelocity(data)
+								const dataArray = velocityFile.data
+									? [...velocityFile.data]
+									: []
+								dataArray[index] = velocity
+								const file = velocityFile.clone()
+								file.data = dataArray
+								setVelocityFile(file)
+							} else {
+								const dataArray = velocityFile.data
+									? [...velocityFile.data]
+									: []
+								dataArray.splice(index, 1)
+								const file = velocityFile.clone()
+								file.data = dataArray
+								setVelocityFile(file)
+							}
+						}
+					}}
+					addNewVelocity={(): void => {
+						if (velocityFile !== undefined) {
+							const dataArray = velocityFile.data ? [...velocityFile.data] : []
+							const velocity = createVelocity({})
+							dataArray.push(velocity)
+							const file = velocityFile.clone()
+							file.data = dataArray
+							setVelocityFile(file)
+						}
+					}}
 				/>
 			)
 			break
