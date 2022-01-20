@@ -59,16 +59,25 @@ function EditableItem<T extends object>({
 	item,
 	setItem,
 	fieldDefinitions,
+	ignoreFields,
 	deletable
 }: {
 	title: string
 	item: T
 	deletable: boolean
+	ignoreFields?: string[]
 	setItem: (value?: Partial<T>) => void
 	fieldDefinitions: Record<string, FieldDefinition>
 }): ReactElement {
 	const fieldEditors = Object.keys(item)
 		.map((key, index): { element: ReactElement; order: number } => {
+			if (ignoreFields?.includes(key)) {
+				return {
+					element: <span key={key} style={{ display: 'hidden' }} />,
+					// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+					order: index + 10_000
+				}
+			}
 			const value = (item as unknown as Record<string, number | string>)[key]
 			const fieldDefinition = key in fieldDefinitions && fieldDefinitions[key]
 			return fieldDefinition
@@ -146,6 +155,9 @@ function EditableItem<T extends object>({
 			{fieldEditors}
 		</div>
 	)
+}
+EditableItem.defaultProps = {
+	ignoreFields: []
 }
 
 export default EditableItem

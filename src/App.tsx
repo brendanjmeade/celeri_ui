@@ -5,7 +5,7 @@ import BlockPanel, { initialBlockDisplaySettings } from 'Components/BlockPanel'
 import type { OpenableFile } from 'Components/Files'
 import Files from 'Components/Files'
 import InspectorPanel from 'Components/InspectorPanel'
-import type { ArrowSource, DrawnLineSource, PointSource } from 'Components/Map'
+import type { ArrowSource, LineSource, PointSource } from 'Components/Map'
 import Map from 'Components/Map'
 import type { SegmentsDisplaySettings } from 'Components/SegmentsPanel'
 import SegmentsPanel, {
@@ -33,10 +33,6 @@ import OpenDirectory, {
 	SetDirectoryHandle
 } from 'Utilities/FileSystemInterfaces'
 import type { SegmentFile } from 'Utilities/SegmentFile'
-import {
-	createSegment,
-	createSegmentsFromCoordinates
-} from 'Utilities/SegmentFile'
 import type { VelocityFile } from 'Utilities/VelocityFile'
 import { createVelocity } from 'Utilities/VelocityFile'
 
@@ -102,40 +98,7 @@ export default function App(): ReactElement {
 
 	const [pointSources, setPointSources] = useState<PointSource[]>([])
 	const [arrowSources, setArrowSources] = useState<ArrowSource[]>([])
-	const [drawnLineSource, setDrawnLineSource] = useState<DrawnLineSource>({
-		color: segmentSettings.color,
-		activeColor: segmentSettings.activeColor,
-		activeWidth: segmentSettings.activeWidth,
-		width: segmentSettings.width,
-		active: segmentFile !== undefined,
-		lines: [],
-		clickLine: (index): void => {
-			setSelectedSegment(index)
-			setActiveTab('segment')
-		},
-		createLine: (coordinates): void => {
-			console.log('Creating line @', coordinates)
-			if (segmentFile?.data) {
-				const createdSegment = createSegmentsFromCoordinates(coordinates)
-				const data = [...segmentFile.data, ...createdSegment]
-				const updatedSegmentFile = segmentFile.clone()
-				updatedSegmentFile.data = data
-				setSegmentFile(updatedSegmentFile)
-			}
-		},
-		updateLine: (index, coordinates): void => {
-			console.log('update line @', index)
-			if (segmentFile?.data?.[index]) {
-				const old = segmentFile.data[index]
-				const createdSegment = createSegmentsFromCoordinates(coordinates, old)
-				const data = [...segmentFile.data]
-				data.splice(index, 1, ...createdSegment)
-				const updatedSegmentFile = segmentFile.clone()
-				updatedSegmentFile.data = data
-				setSegmentFile(updatedSegmentFile)
-			}
-		}
-	})
+	const [lineSources, setLineSources] = useState<LineSource[]>([])
 
 	useEffect(() => {
 		setPointSources([
@@ -160,6 +123,35 @@ export default function App(): ReactElement {
 			}
 		])
 	}, [blockSettings, blockFile])
+
+	useEffect(() => {
+		setLineSources([
+			{
+				name: 'segments',
+				color: segmentSettings.color,
+				selectedColor: segmentSettings.activeColor,
+				width: segmentSettings.width,
+				selectedWidth: segmentSettings.activeWidth,
+				lines: segmentFile?.data?.segments
+					? segmentFile.data.segments.map((segment, index) => ({
+							startLongitude:
+								segmentFile.data?.vertecies[segment.start].lon ?? 0,
+							startLatitude:
+								segmentFile.data?.vertecies[segment.start].lat ?? 0,
+							endLongitude: segmentFile.data?.vertecies[segment.end].lon ?? 0,
+							endLatitude: segmentFile.data?.vertecies[segment.end].lat ?? 0,
+							name: segment.name,
+							description: ``,
+							index
+					  }))
+					: [],
+				clickLine: (index): void => {
+					setSelectedSegment(index)
+					setActiveTab('segment')
+				}
+			}
+		])
+	}, [segmentFile, segmentSettings])
 
 	useEffect(() => {
 		setArrowSources([
@@ -195,52 +187,6 @@ export default function App(): ReactElement {
 			}
 		])
 	}, [velocitiesSettings, velocityFile])
-
-	useEffect(() => {
-		setDrawnLineSource({
-			color: segmentSettings.color,
-			activeColor: segmentSettings.activeColor,
-			activeWidth: segmentSettings.activeWidth,
-			width: segmentSettings.width,
-			active: segmentFile !== undefined,
-			lines: segmentFile?.data
-				? segmentFile.data.map((segment, index) => ({
-						startLongitude: segment.lon1,
-						endLongitude: segment.lon2,
-						startLatitude: segment.lat1,
-						endLatitude: segment.lat2,
-						name: segment.name,
-						index,
-						description: ''
-				  }))
-				: [],
-			clickLine: (index): void => {
-				setSelectedSegment(index)
-				setActiveTab('segment')
-			},
-			createLine: (coordinates): void => {
-				if (segmentFile?.data) {
-					const createdSegment = createSegmentsFromCoordinates(coordinates)
-					const data = [...segmentFile.data, ...createdSegment]
-					const updatedSegmentFile = segmentFile.clone()
-					updatedSegmentFile.data = data
-					setSegmentFile(updatedSegmentFile)
-				}
-			},
-			updateLine: (index, coordinates): void => {
-				console.log('update line @', index)
-				if (segmentFile?.data?.[index]) {
-					const old = segmentFile.data[index]
-					const createdSegment = createSegmentsFromCoordinates(coordinates, old)
-					const data = [...segmentFile.data]
-					data.splice(index, 1, ...createdSegment)
-					const updatedSegmentFile = segmentFile.clone()
-					updatedSegmentFile.data = data
-					setSegmentFile(updatedSegmentFile)
-				}
-			}
-		})
-	}, [segmentSettings, segmentFile])
 
 	let view = <span />
 
@@ -381,16 +327,17 @@ export default function App(): ReactElement {
 				<SegmentsPanel
 					settings={segmentSettings}
 					setSettings={setSegmentSettings}
-					segments={segmentFile?.data ?? []}
+					segments={segmentFile?.data?.segments ?? []}
 					selected={selectedSegment}
 					addNewSegment={(): void => {
 						if (segmentFile !== undefined) {
-							const dataArray = segmentFile.data ? [...segmentFile.data] : []
-							const segment = createSegment({})
-							dataArray.push(segment)
-							const file = segmentFile.clone()
-							file.data = dataArray
-							setSegmentFile(file)
+							console.log('NOT IMPLEMENTED')
+							// const dataArray = segmentFile.data ? [...segmentFile.data.segments] : []
+							// const segment = createSegment({})
+							// dataArray.push(segment)
+							// const file = segmentFile.clone()
+							// file.data = dataArray
+							// setSegmentFile(file)
 						}
 					}}
 					setSegmentData={(index, data): void => {
@@ -398,20 +345,28 @@ export default function App(): ReactElement {
 							if (data) {
 								const segment =
 									// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-									segmentFile.data && segmentFile.data[index]
-										? { ...segmentFile.data[index], ...data }
-										: createSegment(data)
-								const dataArray = segmentFile.data ? [...segmentFile.data] : []
-								dataArray[index] = segment
-								const file = segmentFile.clone()
-								file.data = dataArray
-								setSegmentFile(file)
+									segmentFile.data && segmentFile.data.segments[index]
+										? { ...segmentFile.data.segments[index], ...data }
+										: undefined
+								const dataArray = segmentFile.data
+									? [...segmentFile.data.segments]
+									: []
+								if (segment) {
+									dataArray[index] = segment
+									const file = segmentFile.clone()
+									file.data = {
+										vertecies: file.data?.vertecies ?? [],
+										vertexDictionary: file.data?.vertexDictionary ?? {},
+										segments: dataArray
+									}
+									setSegmentFile(file)
+								}
 							} else {
-								const dataArray = segmentFile.data ? [...segmentFile.data] : []
-								dataArray.splice(index, 1)
-								const file = segmentFile.clone()
-								file.data = dataArray
-								setSegmentFile(file)
+								// const dataArray = segmentFile.data ? [...segmentFile.data] : []
+								// dataArray.splice(index, 1)
+								// const file = segmentFile.clone()
+								// file.data = dataArray
+								// setSegmentFile(file)
 							}
 						}
 					}}
@@ -441,8 +396,12 @@ export default function App(): ReactElement {
 			<Map
 				pointSources={pointSources}
 				arrowSources={arrowSources}
-				drawnLineSource={drawnLineSource}
-				selections={{ drawnLine: selectedSegment, blocks: selectedBlock }}
+				lineSources={lineSources}
+				selections={{
+					segments: selectedSegment,
+					blocks: selectedBlock,
+					velocities: selectedVelocity
+				}}
 			/>
 			<InspectorPanel
 				view={view}

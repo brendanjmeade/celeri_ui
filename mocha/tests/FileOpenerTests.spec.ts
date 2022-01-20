@@ -3,6 +3,7 @@ import { BlockFile, createBlock } from '../../src/Utilities/BlockFile'
 import { CommandFile, createCommand } from '../../src/Utilities/CommandFile'
 import type { FileName } from '../../src/Utilities/FileSystemInterfaces'
 import OpenDirectory from '../../src/Utilities/InMemoryFileSystem'
+import type { InMemorySegment } from '../../src/Utilities/SegmentFile'
 import { createSegment, SegmentFile } from '../../src/Utilities/SegmentFile'
 import { createVelocity, VelocityFile } from '../../src/Utilities/VelocityFile'
 
@@ -20,11 +21,11 @@ BRb                                                                ,245.927,44.7
 		const segment = new SegmentFile(file)
 		await segment.initialize()
 		if (segment.data) {
-			expect(segment.data[0].name).to.contain('BRa')
+			expect(segment.data.segments[0].name).to.contain('BRa')
 			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-			expect(segment.data[1].name).to.contain('BRb')
+			expect(segment.data.segments[1].name).to.contain('BRb')
 			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-			expect(segment.data).to.have.length(2)
+			expect(segment.data.segments).to.have.length(2)
 		} else {
 			expect(segment.data).to.not.be.undefined
 		}
@@ -40,10 +41,22 @@ BRb                                                                ,245.927,44.7
 		const segment = new SegmentFile(file)
 		await segment.initialize()
 		if (segment.data) {
-			expect(segment.data).to.have.length(0)
+			expect(segment.data.segments).to.have.length(0)
 			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-			const test = createSegment({ name: 'test', lon1: 100 })
-			segment.data = [test]
+			const test = createSegment({ name: 'test' }) as InMemorySegment
+			test.start = 0
+			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+			test.end = 1
+			segment.data = {
+				vertecies: [
+					// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+					{ lon: 100, lat: 0 },
+					// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+					{ lon: 100, lat: 100 }
+				],
+				segments: [test],
+				vertexDictionary: {}
+			}
 			await segment.save()
 			expect(directoryStructure.root['segment.csv']).to.contain('test,100')
 		} else {

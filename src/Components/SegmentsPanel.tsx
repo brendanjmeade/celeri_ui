@@ -49,6 +49,7 @@ function SegmentsPanel({
 		<EditableItem
 			title={selectedSegment.name}
 			item={selectedSegment}
+			ignoreFields={['lon1', 'lat1', 'lon2', 'lat2', 'start', 'end']}
 			deletable
 			setItem={(partial): void => setSegmentData(selected, partial)}
 			fieldDefinitions={{

@@ -4,10 +4,6 @@ import type { File } from './FileSystemInterfaces'
 
 export interface Segment {
 	name: string
-	lon1: number
-	lat1: number
-	lon2: number
-	lat2: number
 	dip: number
 	res: number
 	other3: number
@@ -41,6 +37,18 @@ export interface Segment {
 	patch_flag: number
 	patch_slip_file: number
 	patch_slip_flag: number
+}
+
+export type FileSegment = Segment & {
+	lon1: number
+	lat1: number
+	lon2: number
+	lat2: number
+}
+
+export type InMemorySegment = Segment & {
+	start: number
+	end: number
 }
 
 const fieldNames = [
@@ -84,7 +92,7 @@ const fieldNames = [
 	'patch_slip_flag'
 ]
 
-const defaultSegment: Segment = {
+const defaultSegment: FileSegment = {
 	name: 'unnamed segment',
 	lon1: 0,
 	lat1: 0,
@@ -127,13 +135,18 @@ const defaultSegment: Segment = {
 	patch_slip_flag: 0
 }
 
+export interface Vertex {
+	lon: number
+	lat: number
+}
+
 export function createSegmentsFromCoordinates(
 	coordinates: { lat: number; lon: number }[],
 	old?: Segment
-): Segment[] {
+): FileSegment[] {
 	const original = old ?? defaultSegment
 	let lastCoordinate = coordinates[0]
-	const segments: Segment[] = []
+	const segments: FileSegment[] = []
 	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
 	for (let index = 1; index < coordinates.length; index += 1) {
 		const coordinate = coordinates[index]
@@ -150,15 +163,48 @@ export function createSegmentsFromCoordinates(
 	return segments
 }
 
-export function createSegment(partial: Partial<Segment>): Segment {
-	const segment = { ...defaultSegment, ...partial } as unknown as Segment
+export function createSegment(partial: Partial<FileSegment>): FileSegment {
+	const segment = { ...defaultSegment, ...partial } as unknown as FileSegment
 	return segment
 }
 
-export class SegmentFile implements ParsedFile<Segment[]> {
+const VERTEX_PRECISION_MULTIPLIER = 1000
+
+function getVertexIdOrInsert(
+	vertex: Vertex,
+	dictionary: Record<string, number>,
+	array: Vertex[]
+): number {
+	const key = `${Math.floor(
+		vertex.lon * VERTEX_PRECISION_MULTIPLIER
+	)},${Math.floor(vertex.lat * VERTEX_PRECISION_MULTIPLIER)}`
+	if (key in dictionary) {
+		return dictionary[key]
+	}
+	const id = array.length
+	array.push(vertex)
+	// eslint-disable-next-line no-param-reassign
+	dictionary[key] = id
+	return id
+}
+
+export class SegmentFile
+	implements
+		ParsedFile<{
+			vertecies: Vertex[]
+			segments: InMemorySegment[]
+			vertexDictionary: Record<string, number>
+		}>
+{
 	public handle: File
 
-	public data: Segment[] | undefined
+	public data:
+		| {
+				vertecies: Vertex[]
+				segments: InMemorySegment[]
+				vertexDictionary: Record<string, number>
+		  }
+		| undefined
 
 	public constructor(handle: File) {
 		this.handle = handle
@@ -168,18 +214,50 @@ export class SegmentFile implements ParsedFile<Segment[]> {
 	public async initialize(): Promise<void> {
 		const contents = await this.handle.getContents()
 		const parser = parse(contents)
-		const data = parser.map((row): Segment => {
+		const rawData = parser.map((row): FileSegment => {
 			const result: Record<string, number | string> = {}
 			for (const field of fieldNames) {
 				result[field] = row[field] || (field === 'name' ? '' : 0)
 			}
-			return result as unknown as Segment
+			return result as unknown as FileSegment
 		})
-		this.data = data
+		const vertexDictionary: Record<string, number> = {}
+		const vertecies: Vertex[] = []
+		const segments: InMemorySegment[] = []
+		for (const segment of rawData) {
+			const start = getVertexIdOrInsert(
+				{ lon: segment.lon1, lat: segment.lat1 },
+				vertexDictionary,
+				vertecies
+			)
+			const end = getVertexIdOrInsert(
+				{ lon: segment.lon2, lat: segment.lat2 },
+				vertexDictionary,
+				vertecies
+			)
+			const inMemorySegment = { ...segment, start, end }
+			segments.push(inMemorySegment)
+		}
+		this.data = { vertecies, segments, vertexDictionary }
 	}
 
 	public async save(): Promise<void> {
-		const contents = stringify(this.data ?? [], fieldNames)
+		let data: FileSegment[] = []
+		if (this.data) {
+			const { vertecies, segments } = this.data
+			data = segments.map(segment => {
+				const start = vertecies[segment.start]
+				const end = vertecies[segment.end]
+				return {
+					...segment,
+					lon1: start.lon,
+					lat1: start.lat,
+					lon2: end.lon,
+					lat2: end.lat
+				}
+			})
+		}
+		const contents = stringify(data, fieldNames)
 		await this.handle.setContents(contents)
 	}
 
