@@ -43,7 +43,7 @@ BRb                                                                ,245.927,44.7
 		if (segment.data) {
 			expect(segment.data.segments).to.have.length(0)
 			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-			const test = createSegment({ name: 'test' }) as InMemorySegment
+			const test = createSegment({ name: 'test' }) as unknown as InMemorySegment
 			test.start = 0
 			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
 			test.end = 1
