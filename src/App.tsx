@@ -5,7 +5,12 @@ import BlockPanel, { initialBlockDisplaySettings } from 'Components/BlockPanel'
 import type { OpenableFile } from 'Components/Files'
 import Files from 'Components/Files'
 import InspectorPanel from 'Components/InspectorPanel'
-import type { ArrowSource, LineSource, PointSource } from 'Components/Map'
+import type {
+	ArrowSource,
+	DrawnPointSource,
+	LineSource,
+	PointSource
+} from 'Components/Map'
 import Map from 'Components/Map'
 import type { SegmentsDisplaySettings } from 'Components/SegmentsPanel'
 import SegmentsPanel, {
@@ -16,6 +21,10 @@ import type { VelocitiesDisplaySettings } from 'Components/VelocitiesPanel'
 import VelocitiesPanel, {
 	initialVelocityDisplaySettings
 } from 'Components/VelocitiesPanel'
+import type { VerticesDisplaySettings } from 'Components/VertexPanel'
+import VerticesPanel, {
+	initialVertexDisplaySettings
+} from 'Components/VertexPanel'
 import type { ReactElement } from 'react'
 import { useEffect, useState } from 'react'
 import type { BlockFile } from 'Utilities/BlockFile'
@@ -32,7 +41,11 @@ import type { Directory } from 'Utilities/FileSystemInterfaces'
 import OpenDirectory, {
 	SetDirectoryHandle
 } from 'Utilities/FileSystemInterfaces'
-import type { SegmentFile } from 'Utilities/SegmentFile'
+import type { SegmentFile, Vertex } from 'Utilities/SegmentFile'
+import {
+	DEFAULT_VERTEX,
+	GetShortestLineCoordinates
+} from 'Utilities/SegmentFile'
 import type { VelocityFile } from 'Utilities/VelocityFile'
 import { createVelocity } from 'Utilities/VelocityFile'
 
@@ -44,7 +57,8 @@ const windows = {
 	files: 'Files',
 	segment: 'Segment',
 	block: 'Block',
-	velocities: 'Velocities'
+	velocities: 'Velocities',
+	vertex: 'Vertices'
 	//  mesh: 'Mesh'
 }
 
@@ -91,14 +105,33 @@ export default function App(): ReactElement {
 	)
 	const [segmentSettings, setSegmentSettings] =
 		useState<SegmentsDisplaySettings>(initialSegmentDisplaySettings)
+	const [vertexSettings, setVertexSettings] = useState<VerticesDisplaySettings>(
+		initialVertexDisplaySettings
+	)
 
 	const [selectedBlock, setSelectedBlock] = useState<number>(-1)
 	const [selectedSegment, setSelectedSegment] = useState<number>(-1)
 	const [selectedVelocity, setSelectedVelocity] = useState<number>(-1)
+	const [selectedVertex, setSelectedVertex] = useState<number>(-1)
+
+	const select = (type: string, index: number): void => {
+		setSelectedBlock(type === 'block' ? index : -1)
+		setSelectedSegment(type === 'segment' ? index : -1)
+		setSelectedVelocity(type === 'velocities' ? index : -1)
+		setSelectedVertex(type === 'vertex' ? index : -1)
+		setActiveTab(type)
+	}
 
 	const [pointSources, setPointSources] = useState<PointSource[]>([])
 	const [arrowSources, setArrowSources] = useState<ArrowSource[]>([])
 	const [lineSources, setLineSources] = useState<LineSource[]>([])
+	const [drawnPointSource, setDrawnPointSource] = useState<DrawnPointSource>({
+		color: '',
+		selectedColor: '',
+		radius: 0,
+		selectedRadius: 0,
+		points: []
+	})
 
 	useEffect(() => {
 		setPointSources([
@@ -116,13 +149,12 @@ export default function App(): ReactElement {
 							index
 					  }))
 					: [],
-				clickPoint: (index, name): void => {
-					setSelectedBlock(index)
-					setActiveTab('block')
+				click: (index): void => {
+					select('block', index)
 				}
 			}
 		])
-	}, [blockSettings, blockFile])
+	}, [blockSettings, blockFile, segmentSettings, segmentFile])
 
 	useEffect(() => {
 		setLineSources([
@@ -133,25 +165,70 @@ export default function App(): ReactElement {
 				width: segmentSettings.width,
 				selectedWidth: segmentSettings.activeWidth,
 				lines: segmentFile?.data?.segments
-					? segmentFile.data.segments.map((segment, index) => ({
-							startLongitude:
-								segmentFile.data?.vertecies[segment.start].lon ?? 0,
-							startLatitude:
-								segmentFile.data?.vertecies[segment.start].lat ?? 0,
-							endLongitude: segmentFile.data?.vertecies[segment.end].lon ?? 0,
-							endLatitude: segmentFile.data?.vertecies[segment.end].lat ?? 0,
-							name: segment.name,
-							description: ``,
-							index
-					  }))
+					? segmentFile.data.segments.map((segment, index) => {
+							const start =
+								segmentFile.data?.vertecies[segment.start] ?? DEFAULT_VERTEX
+							const end =
+								segmentFile.data?.vertecies[segment.end] ?? DEFAULT_VERTEX
+							const [
+								[startLongitude, startLatitude],
+								[endLongitude, endLatitude]
+							] = GetShortestLineCoordinates(start, end)
+							return {
+								startLongitude,
+								startLatitude,
+								endLongitude,
+								endLatitude,
+								name: segment.name,
+								description: `${start.lon},${start.lat} to ${end.lon},${end.lat}`,
+								index
+							}
+					  })
 					: [],
-				clickLine: (index): void => {
-					setSelectedSegment(index)
-					setActiveTab('segment')
+				click: (index): void => {
+					select('segment', index)
 				}
 			}
 		])
 	}, [segmentFile, segmentSettings])
+
+	useEffect(() => {
+		setDrawnPointSource({
+			color: vertexSettings.color,
+			radius: vertexSettings.radius,
+			selectedColor: vertexSettings.activeColor,
+			selectedRadius: vertexSettings.activeRadius,
+			points: segmentFile?.data?.vertecies
+				? (Object.keys(segmentFile.data.vertecies)
+						.map(v => {
+							const index = Number.parseInt(v, 10)
+							const vert = segmentFile.data?.vertecies[index]
+							if (vert) {
+								return {
+									longitude: vert.lon,
+									latitude: vert.lat,
+									index
+								}
+							}
+							return false
+						})
+						.filter(v => !!v) as unknown as {
+						longitude: number
+						latitude: number
+						index: number
+				  }[])
+				: [],
+			update: (index, vertex) => {
+				if (segmentFile) {
+					const file = segmentFile.moveVertex(index, vertex)
+					setSegmentFile(file)
+				}
+			},
+			select: index => {
+				select('vertex', index)
+			}
+		})
+	}, [vertexSettings, segmentFile])
 
 	useEffect(() => {
 		setArrowSources([
@@ -180,9 +257,8 @@ export default function App(): ReactElement {
 							}
 					  })
 					: [],
-				clickArrow: (index): void => {
-					setSelectedVelocity(index)
-					setActiveTab('velocities')
+				click: (index): void => {
+					select('velocities', index)
 				}
 			}
 		])
@@ -370,6 +446,34 @@ export default function App(): ReactElement {
 							}
 						}
 					}}
+					splitSegment={(index): void => {
+						if (segmentFile) {
+							const file = segmentFile.splitSegment(index)
+							setSegmentFile(file)
+						}
+					}}
+				/>
+			)
+			break
+		case 'vertex':
+			view = (
+				<VerticesPanel
+					settings={vertexSettings}
+					setSettings={setVertexSettings}
+					vertices={segmentFile?.data?.vertecies ?? {}}
+					selected={selectedVertex}
+					setVertexData={function (
+						index: number,
+						data?: Partial<Vertex>
+					): void {
+						throw new Error('Function not implemented.')
+					}}
+					addNewVertex={function (): void {
+						throw new Error('Function not implemented.')
+					}}
+					splitVertex={function (index: number): void {
+						throw new Error('Function not implemented.')
+					}}
 				/>
 			)
 			break
@@ -397,6 +501,7 @@ export default function App(): ReactElement {
 				pointSources={pointSources}
 				arrowSources={arrowSources}
 				lineSources={lineSources}
+				drawnPointSource={drawnPointSource}
 				selections={{
 					segments: selectedSegment,
 					blocks: selectedBlock,

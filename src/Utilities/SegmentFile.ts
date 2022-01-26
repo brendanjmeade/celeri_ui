@@ -140,6 +140,56 @@ export interface Vertex {
 	lat: number
 }
 
+export const DEFAULT_VERTEX = {
+	lon: 0,
+	lat: 0
+}
+
+const LON_HALF = 180
+const LON_MAX = 360
+
+export function TransformVertexCoordinates(vertex: Vertex): [number, number] {
+	// eslint-disable-next-line prefer-const
+	let { lon, lat } = vertex
+	while (lon < 0) {
+		lon += LON_MAX
+	}
+	while (lon > LON_MAX) {
+		lon -= LON_MAX
+	}
+	return [lon, lat]
+}
+
+export function InverseTransformVertexCoordinates([lon, lat]: [
+	number,
+	number
+]): Vertex {
+	return {
+		lon: lon < 0 ? lon + LON_MAX : lon,
+		lat
+	}
+}
+
+export function GetShortestLineCoordinates(
+	start: Vertex,
+	end: Vertex
+): [[number, number], [number, number]] {
+	const a = TransformVertexCoordinates(start)
+	const b = TransformVertexCoordinates(end)
+	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+	const balt = [b[0], b[1]] as [number, number]
+	const ba = b[0] - a[0]
+	if (ba >= LON_HALF) {
+		balt[0] -= LON_MAX
+	} else {
+		balt[0] += LON_MAX
+	}
+	if (Math.abs(a[0] - b[0]) > Math.abs(a[0] - balt[0])) {
+		return [a, balt]
+	}
+	return [a, b]
+}
+
 export function createSegmentsFromCoordinates(
 	coordinates: { lat: number; lon: number }[],
 	old?: Segment
@@ -169,11 +219,12 @@ export function createSegment(partial: Partial<FileSegment>): FileSegment {
 }
 
 const VERTEX_PRECISION_MULTIPLIER = 1000
+let LAST_VERTEX_INDEX = 0
 
 function getVertexIdOrInsert(
 	vertex: Vertex,
 	dictionary: Record<string, number>,
-	array: Vertex[]
+	array: Record<number, Vertex>
 ): number {
 	const key = `${Math.floor(
 		vertex.lon * VERTEX_PRECISION_MULTIPLIER
@@ -181,8 +232,11 @@ function getVertexIdOrInsert(
 	if (key in dictionary) {
 		return dictionary[key]
 	}
-	const id = array.length
-	array.push(vertex)
+	const id = LAST_VERTEX_INDEX
+	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+	LAST_VERTEX_INDEX += 1
+	// eslint-disable-next-line no-param-reassign
+	array[id] = vertex
 	// eslint-disable-next-line no-param-reassign
 	dictionary[key] = id
 	return id
@@ -191,7 +245,7 @@ function getVertexIdOrInsert(
 export class SegmentFile
 	implements
 		ParsedFile<{
-			vertecies: Vertex[]
+			vertecies: Record<number, Vertex>
 			segments: InMemorySegment[]
 			vertexDictionary: Record<string, number>
 		}>
@@ -200,7 +254,7 @@ export class SegmentFile
 
 	public data:
 		| {
-				vertecies: Vertex[]
+				vertecies: Record<number, Vertex>
 				segments: InMemorySegment[]
 				vertexDictionary: Record<string, number>
 		  }
@@ -222,7 +276,7 @@ export class SegmentFile
 			return result as unknown as FileSegment
 		})
 		const vertexDictionary: Record<string, number> = {}
-		const vertecies: Vertex[] = []
+		const vertecies: Record<number, Vertex> = {}
 		const segments: InMemorySegment[] = []
 		for (const segment of rawData) {
 			const start = getVertexIdOrInsert(
@@ -263,5 +317,94 @@ export class SegmentFile
 
 	public clone(): SegmentFile {
 		return new SegmentFile(this.handle)
+	}
+
+	public tryRemoveVertex(index: number): SegmentFile {
+		if (this.data) {
+			let found = false
+			for (const segment of this.data.segments) {
+				if (segment.start === index || segment.end === index) {
+					found = true
+					break
+				}
+			}
+			if (!found && this.data.vertecies[index]) {
+				const vertex = this.data.vertecies[index]
+				const key = `${Math.floor(
+					vertex.lon * VERTEX_PRECISION_MULTIPLIER
+				)},${Math.floor(vertex.lat * VERTEX_PRECISION_MULTIPLIER)}`
+				const vertecies = { ...this.data.vertecies }
+				// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+				delete vertecies[index]
+				const vertexDictionary = { ...this.data.vertexDictionary }
+				// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+				delete vertexDictionary[key]
+				const file = this.clone()
+				file.data = { ...this.data, vertecies, vertexDictionary }
+				return file
+			}
+		}
+		return this
+	}
+
+	public moveVertex(index: number, vertex: Vertex): SegmentFile {
+		if (this.data) {
+			const vertecies = { ...this.data.vertecies }
+			const vertexDictionary = { ...this.data.vertexDictionary }
+			const segments = [...this.data.segments]
+
+			const oldVertex = vertecies[index]
+			const key = `${Math.floor(
+				vertex.lon * VERTEX_PRECISION_MULTIPLIER
+			)},${Math.floor(vertex.lat * VERTEX_PRECISION_MULTIPLIER)}`
+			const oldKey = `${Math.floor(
+				oldVertex.lon * VERTEX_PRECISION_MULTIPLIER
+			)},${Math.floor(oldVertex.lat * VERTEX_PRECISION_MULTIPLIER)}`
+
+			// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+			delete vertexDictionary[oldKey]
+			if (key in vertexDictionary) {
+				const oldIndex = vertexDictionary[key]
+				for (const segment of segments) {
+					if (segment.start === oldIndex) segment.start = index
+					if (segment.end === oldIndex) segment.end = index
+				}
+				// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+				delete vertecies[oldIndex]
+			}
+			vertecies[index] = vertex
+			const file = this.clone()
+			file.data = { segments, vertecies, vertexDictionary }
+			return file
+		}
+		return this
+	}
+
+	public splitSegment(index: number): SegmentFile {
+		if (this.data) {
+			const oldSegment = this.data.segments[index]
+			const start = this.data.vertecies[oldSegment.start]
+			const end = this.data.vertecies[oldSegment.end]
+			const midpoint = {
+				// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+				lon: (start.lon + end.lon) / 2,
+				// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+				lat: (start.lat + end.lat) / 2
+			}
+			const midpointId = getVertexIdOrInsert(
+				midpoint,
+				this.data.vertexDictionary,
+				this.data.vertecies
+			)
+			const startSegment = { ...oldSegment, end: midpointId }
+			const endSegment = { ...oldSegment, start: midpointId }
+			const segments = [...this.data.segments]
+			segments[index] = startSegment
+			segments.push(endSegment)
+			const file = this.clone()
+			file.data = { ...this.data, segments }
+			return file
+		}
+		return this
 	}
 }

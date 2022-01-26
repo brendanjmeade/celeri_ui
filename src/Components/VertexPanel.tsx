@@ -1,85 +1,70 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { ReactElement } from 'react'
-import type { Segment } from 'Utilities/SegmentFile'
+import type { Vertex } from 'Utilities/SegmentFile'
 import EditableItem from './EditableItem'
 
-export interface SegmentsDisplaySettings {
+export interface VerticesDisplaySettings {
 	color: string
-	width: number
 	activeColor: string
-	activeWidth: number
-	vertexColor: string
-	activeVertexColor: string
-	vertexRadius: number
-	activeVertexRadius: number
+	radius: number
+	activeRadius: number
 }
 
-const defaultSegmentDisplaySettings: SegmentsDisplaySettings = {
+const defaultVertexDisplaySettings: VerticesDisplaySettings = {
 	color: '#ffff00',
-	width: 1,
 	activeColor: '#00ffff',
-	activeWidth: 2,
-	vertexColor: '#ffff00',
-	activeVertexColor: '#00ffff',
-	vertexRadius: 3,
-	activeVertexRadius: 3
+	radius: 3,
+	activeRadius: 3
 }
 
-export const initialSegmentDisplaySettings =
+export const initialVertexDisplaySettings =
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	{
-		...defaultSegmentDisplaySettings,
+		...defaultVertexDisplaySettings,
 		...(JSON.parse(
-			window.localStorage.getItem('segmentDisplaySettings') ?? '{}'
-		) as SegmentsDisplaySettings)
+			window.localStorage.getItem('vertexDisplaySettings') ?? '{}'
+		) as VerticesDisplaySettings)
 	}
 
-function SegmentsPanel({
+function VerticesPanel({
 	settings,
 	setSettings,
-	segments,
+	vertices,
 	selected,
-	setSegmentData,
-	addNewSegment,
-	splitSegment
+	setVertexData,
+	addNewVertex,
+	splitVertex
 }: {
-	settings: SegmentsDisplaySettings
-	setSettings: (settings: SegmentsDisplaySettings) => void
-	segments: Segment[]
+	settings: VerticesDisplaySettings
+	setSettings: (settings: VerticesDisplaySettings) => void
+	vertices: Record<number, Vertex>
 	selected: number
-	setSegmentData: (index: number, data?: Partial<Segment>) => void
-	addNewSegment: () => void
-	splitSegment: (index: number) => void
+	setVertexData: (index: number, data?: Partial<Vertex>) => void
+	addNewVertex: () => void
+	splitVertex: (index: number) => void
 }): ReactElement {
-	const set = (s: SegmentsDisplaySettings): void => {
+	const set = (s: VerticesDisplaySettings): void => {
 		setSettings(s)
-		window.localStorage.setItem('segmentDisplaySettings', JSON.stringify(s))
+		window.localStorage.setItem('vertexDisplaySettings', JSON.stringify(s))
 	}
 
-	const selectedSegment: Segment | undefined = segments[selected]
+	const selectedVertex: Vertex | undefined = vertices[selected]
 
-	const selectedDisplay = selectedSegment ? (
+	const selectedDisplay = selectedVertex ? (
 		<EditableItem
-			title={selectedSegment.name}
-			item={selectedSegment}
-			ignoreFields={['lon1', 'lat1', 'lon2', 'lat2', 'start', 'end']}
-			deletable
-			setItem={(partial): void => setSegmentData(selected, partial)}
-			fieldDefinitions={{
-				name: {
-					order: 0,
-					name: 'Name',
-					description: 'The Block Name',
-					type: 'string'
-				}
-			}}
+			title='Selected Vertex'
+			item={selectedVertex}
+			ignoreFields={[]}
+			deletable={false}
+			setItem={(partial): void => setVertexData(selected, partial)}
+			fieldDefinitions={{}}
 			controls={
 				<button
 					type='button'
 					className='rounded bg-white hover:bg-gray-200 p-2'
-					onClick={(): void => splitSegment(selected)}
+					onClick={(): void => splitVertex(selected)}
 				>
-					Split Segment
+					Split Vertex
 				</button>
 			}
 		/>
@@ -104,7 +89,7 @@ function SegmentsPanel({
 			</div>
 
 			<div className='flex flex-row justify-between items-center'>
-				<span className='text-l font-bold'>Width</span>
+				<span className='text-l font-bold'>Radius</span>
 				<span className='w-2/5 flex-shrink-0'>
 					<input
 						className='rounded w-full'
@@ -112,11 +97,11 @@ function SegmentsPanel({
 						min='0.1'
 						max='2'
 						step='0.1'
-						value={settings.width}
+						value={settings.radius}
 						onChange={(event): void => {
 							set({
 								...settings,
-								width: Number.parseFloat(event.target.value)
+								radius: Number.parseFloat(event.target.value)
 							})
 						}}
 					/>
@@ -138,7 +123,7 @@ function SegmentsPanel({
 			</div>
 
 			<div className='flex flex-row justify-between items-center'>
-				<span className='text-l font-bold'>Active Width</span>
+				<span className='text-l font-bold'>Active Radius</span>
 				<span className='w-2/5 flex-shrink-0'>
 					<input
 						className='rounded w-full'
@@ -146,24 +131,24 @@ function SegmentsPanel({
 						min='0.1'
 						max='2'
 						step='0.1'
-						value={settings.activeWidth}
+						value={settings.activeRadius}
 						onChange={(event): void => {
 							set({
 								...settings,
-								activeWidth: Number.parseFloat(event.target.value)
+								activeRadius: Number.parseFloat(event.target.value)
 							})
 						}}
 					/>
 				</span>
 			</div>
 			<div className='flex flex-row justify-between items-center'>
-				<span className='text-l font-bold'>Add New Segment</span>
+				<span className='text-l font-bold'>Add New Vertex</span>
 				<button
 					type='button'
 					className='rounded bg-white hover:bg-gray-200 p-2'
-					onClick={addNewSegment}
+					onClick={addNewVertex}
 				>
-					New Segment
+					New Vertex
 				</button>
 			</div>
 			{selectedDisplay}
@@ -171,4 +156,4 @@ function SegmentsPanel({
 	)
 }
 
-export default SegmentsPanel
+export default VerticesPanel

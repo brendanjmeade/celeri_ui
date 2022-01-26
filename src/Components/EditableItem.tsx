@@ -60,7 +60,8 @@ function EditableItem<T extends object>({
 	setItem,
 	fieldDefinitions,
 	ignoreFields,
-	deletable
+	deletable,
+	controls
 }: {
 	title: string
 	item: T
@@ -68,6 +69,7 @@ function EditableItem<T extends object>({
 	ignoreFields?: string[]
 	setItem: (value?: Partial<T>) => void
 	fieldDefinitions: Record<string, FieldDefinition>
+	controls?: ReactElement
 }): ReactElement {
 	const fieldEditors = Object.keys(item)
 		.map((key, index): { element: ReactElement; order: number } => {
@@ -135,29 +137,36 @@ function EditableItem<T extends object>({
 	return (
 		<div className='flex flex-col gap-2 border-2 rounded p-2 max-h-96 overflow-y-auto'>
 			<div className='flex flex-row justify-between items-center'>
-				<span data-testid='editable-item-title' className='text-xl font-bold'>
+				<span
+					data-testid='editable-item-title'
+					className='text-xl font-bold grow-0'
+				>
 					{title}
 				</span>
-				{deletable ? (
-					<button
-						type='button'
-						className='rounded bg-white hover:bg-gray-200 p-2'
-						onClick={(): void => {
-							setItem()
-						}}
-					>
-						Delete
-					</button>
-				) : (
-					<></>
-				)}
+				<span className='flex flex-row justify-end gap-2 grow'>
+					{controls}
+					{deletable ? (
+						<button
+							type='button'
+							className='rounded bg-white hover:bg-gray-200 p-2'
+							onClick={(): void => {
+								setItem()
+							}}
+						>
+							Delete
+						</button>
+					) : (
+						<></>
+					)}
+				</span>
 			</div>
 			{fieldEditors}
 		</div>
 	)
 }
 EditableItem.defaultProps = {
-	ignoreFields: []
+	ignoreFields: [],
+	controls: <></>
 }
 
 export default EditableItem

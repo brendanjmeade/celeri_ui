@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import type MapboxDraw from '@mapbox/mapbox-gl-draw'
+import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
-import type { GeoJSONSource } from 'mapbox-gl'
+import type { GeoJSONSource, MapboxGeoJSONFeature } from 'mapbox-gl'
 import mapboxgl, { Map, NavigationControl, Popup } from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { ReactElement } from 'react'
 import { useEffect, useRef, useState } from 'react'
+import type { Vertex } from 'Utilities/SegmentFile'
+import { InverseTransformVertexCoordinates } from 'Utilities/SegmentFile'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string
 
@@ -21,7 +23,7 @@ export interface PointSource {
 		description: string
 		index: number
 	}[]
-	clickPoint?: (index: number, name: string) => void
+	click?: (index: number) => void
 }
 
 export interface ArrowSource {
@@ -38,7 +40,7 @@ export interface ArrowSource {
 		name: string
 		description: string
 	}[]
-	clickArrow?: (index: number, name: string) => void
+	click?: (index: number) => void
 }
 
 export interface LineSource {
@@ -56,21 +58,39 @@ export interface LineSource {
 		description: string
 		index: number
 	}[]
-	clickLine?: (index: number) => void
+	click?: (index: number) => void
+}
+export interface DrawnPointSource {
+	color: string
+	selectedColor: string
+	radius: number
+	selectedRadius: number
+	points: {
+		longitude: number
+		latitude: number
+		index: number
+	}[]
+	select?: (index: number) => void
+	update?: (index: number, coordinates: Vertex) => void
 }
 
 const ARROW_ANGLE_1 = Math.PI / 6
 const ARROW_ANGLE_2 = 2 * Math.PI - ARROW_ANGLE_1
 
+const sourceClickEvents: Record<string, ((index: number) => void) | undefined> =
+	{}
+
 function MapElement({
 	pointSources,
 	arrowSources,
 	lineSources,
-	selections
+	selections,
+	drawnPointSource
 }: {
 	pointSources: PointSource[]
 	arrowSources: ArrowSource[]
 	lineSources: LineSource[]
+	drawnPointSource: DrawnPointSource
 	selections: Record<string, number>
 }): ReactElement {
 	const mapReference = useRef<HTMLDivElement>(null)
@@ -88,6 +108,15 @@ function MapElement({
 	const [internalArrowSources, setInternalArrowSources] =
 		useState<ArrowSource[]>()
 	const [internalLineSources, setInternalLineSources] = useState<LineSource[]>()
+	const [internalDrawnPointSource, setInternalDrawnPointSource] = useState<{
+		source: DrawnPointSource | undefined
+	}>({ source: undefined })
+	const [drawnPointSettings, setDrawnPointSettings] = useState<{
+		selectedColor: string
+		selectedRadius: number
+		color: string
+		radius: number
+	}>({ selectedColor: '', selectedRadius: 0, color: '', radius: 0 })
 
 	const [internalSelections, setInternalSelections] = useState<
 		Record<string, number>
@@ -109,363 +138,151 @@ function MapElement({
 			innerMap.on('load', () => {
 				setMapLoaded(true)
 			})
-		}
-		console.log('Updating map...')
-	}, [draw, map])
-
-	// useEffect(() => {
-	// 	if (map && mapLoaded && internalDrawLineSource.source !== drawnLineSource) {
-	// 		console.log('Drawning lines')
-	// 		internalDrawLineSource.source = drawnLineSource
-	// 		setInternalDrawnLineSource(internalDrawLineSource)
-	// 		let localDraw = draw
-	// 		if (
-	// 			drawnLineSource.activeColor !== drawLineSettings.activeColor ||
-	// 			drawnLineSource.activeWidth !== drawLineSettings.activeWidth ||
-	// 			drawnLineSource.color !== drawLineSettings.color ||
-	// 			drawnLineSource.width !== drawLineSettings.width
-	// 		) {
-	// 			setDrawLineSettings({
-	// 				color: drawnLineSource.color,
-	// 				width: drawnLineSource.activeWidth,
-	// 				activeWidth: drawnLineSource.activeWidth,
-	// 				activeColor: drawnLineSource.activeColor,
-	// 				active: drawnLineSource.active
-	// 			})
-	// 			if (draw) {
-	// 				map.removeControl(draw)
-	// 			}
-	// 			if (drawnLineSource.active) {
-	// 				localDraw = new MapboxDraw({
-	// 					displayControlsDefault: false,
-	// 					controls: {
-	// 						line_string: true
-	// 					},
-	// 					defaultMode: 'simple_select',
-	// 					styles: [
-	// 						{
-	// 							id: 'gl-draw-polygon-midpoint',
-	// 							type: 'circle',
-	// 							filter: [
-	// 								'all',
-	// 								['==', '$type', 'Point'],
-	// 								['==', 'meta', 'midpoint']
-	// 							],
-	// 							paint: {
-	// 								'circle-radius': 2 * drawnLineSource.activeWidth,
-	// 								'circle-color': drawnLineSource.activeColor
-	// 							}
-	// 						},
-	// 						{
-	// 							id: 'gl-draw-polygon-and-line-vertex-stroke-inactive',
-	// 							type: 'circle',
-	// 							filter: [
-	// 								'all',
-	// 								['==', 'meta', 'vertex'],
-	// 								['==', '$type', 'Point'],
-	// 								['!=', 'mode', 'static']
-	// 							],
-	// 							paint: {
-	// 								'circle-radius': 3 * drawnLineSource.activeWidth + 2,
-	// 								'circle-color': '#fff'
-	// 							}
-	// 						},
-	// 						{
-	// 							id: 'gl-draw-polygon-and-line-vertex-inactive',
-	// 							type: 'circle',
-	// 							filter: [
-	// 								'all',
-	// 								['==', 'meta', 'vertex'],
-	// 								['==', '$type', 'Point'],
-	// 								['!=', 'mode', 'static']
-	// 							],
-	// 							paint: {
-	// 								'circle-radius': 3 * drawnLineSource.activeWidth,
-	// 								'circle-color': drawnLineSource.activeColor
-	// 							}
-	// 						},
-	// 						{
-	// 							id: 'gl-draw-line-active',
-	// 							type: 'line',
-	// 							filter: [
-	// 								'all',
-	// 								['==', '$type', 'LineString'],
-	// 								['==', 'active', 'true']
-	// 							],
-	// 							layout: {
-	// 								'line-cap': 'round',
-	// 								'line-join': 'round'
-	// 							},
-	// 							paint: {
-	// 								'line-color': drawnLineSource.activeColor,
-	// 								'line-dasharray': [0.2, 2],
-	// 								'line-width': drawnLineSource.activeWidth
-	// 							}
-	// 						},
-	// 						{
-	// 							id: 'gl-draw-line-inactive',
-	// 							type: 'line',
-	// 							filter: [
-	// 								'all',
-	// 								['==', 'active', 'false'],
-	// 								['==', '$type', 'LineString'],
-	// 								['!=', 'mode', 'static']
-	// 							],
-	// 							layout: {
-	// 								'line-cap': 'round',
-	// 								'line-join': 'round'
-	// 							},
-	// 							paint: {
-	// 								'line-color': [
-	// 									'case',
-	// 									['==', ['get', 'selected'], 1],
-	// 									drawnLineSource.activeColor,
-	// 									drawnLineSource.color
-	// 								],
-	// 								'line-width': drawnLineSource.width
-	// 							}
-	// 						},
-	// 						{
-	// 							id: 'gl-draw-line-static',
-	// 							type: 'line',
-	// 							filter: [
-	// 								'all',
-	// 								['==', 'mode', 'static'],
-	// 								['==', '$type', 'LineString']
-	// 							],
-	// 							layout: {
-	// 								'line-cap': 'round',
-	// 								'line-join': 'round'
-	// 							},
-	// 							paint: {
-	// 								'line-color': [
-	// 									'case',
-	// 									['==', ['get', 'selected'], 1],
-	// 									drawnLineSource.activeColor,
-	// 									drawnLineSource.color
-	// 								],
-	// 								'line-width': drawnLineSource.width
-	// 							}
-	// 						}
-	// 					]
-	// 				})
-	// 				map.addControl(localDraw)
-	// 				setDraw(localDraw)
-	// 			} else {
-	// 				localDraw = undefined
-	// 			}
-	// 		}
-	// 		if (localDraw) {
-	// 			localDraw.set({
-	// 				type: 'FeatureCollection',
-	// 				features: [
-	// 					{
-	// 						type: 'Feature',
-	// 						id: 0,
-	// 						properties: {},
-	// 						geometry: {
-	// 							type: 'MultiLineString',
-	// 							coordinates: drawnLineSource.lines.map(line => [
-	// 								[line.startLongitude, line.startLatitude],
-	// 								[line.endLongitude, line.endLatitude]
-	// 							])
-	// 						}
-	// 					}
-	// 				]
-	// 			})
-	// 			// localDraw.set({
-	// 			// 	type: 'FeatureCollection',
-	// 			// 	features: drawnLineSource.lines.flatMap(line => [
-	// 			// 		{
-	// 			// 			type: 'Feature',
-	// 			// 			properties: {
-	// 			// 				name: line.name,
-	// 			// 				index: line.index,
-	// 			// 				selected: selections.drawnLine === line.index
-	// 			// 			},
-	// 			// 			id: line.index,
-	// 			// 			geometry: {
-	// 			// 				type: 'LineString',
-	// 			// 				coordinates: [
-	// 			// 					[line.startLongitude, line.startLatitude],
-	// 			// 					[line.endLongitude, line.endLatitude]
-	// 			// 				]
-	// 			// 			}
-	// 			// 		}
-	// 			// 	])
-	// 			// })
-	// 		}
-	// 	}
-	// }, [
-	// 	map,
-	// 	mapLoaded,
-	// 	internalDrawLineSource,
-	// 	drawnLineSource,
-	// 	drawLineSettings,
-	// 	draw,
-	// 	selections.drawnLine
-	// ])
-
-	useEffect(() => {
-		if (!map || !mapLoaded) return
-		if (internalPointSources !== pointSources) {
-			console.log('Setting points in map!')
-			if (internalPointSources) {
-				for (const source of internalPointSources) {
-					const mapSource = map.getSource(`point:${source.name}`) as
-						| GeoJSONSource
-						| undefined
-					if (mapSource !== undefined) {
-						mapSource.setData({
-							type: 'FeatureCollection',
-							features: []
-						})
+			innerMap.on(
+				'draw.selectionchange',
+				({ features }: { features: MapboxGeoJSONFeature[] }) => {
+					if (!internalDrawnPointSource.source?.select) return
+					const feature = features[0]
+					if (
+						feature &&
+						feature.type === 'Feature' &&
+						feature.geometry.type === 'Point' &&
+						feature.properties &&
+						'index' in feature.properties &&
+						typeof feature.properties.index === 'number'
+					) {
+						internalDrawnPointSource.source.select(feature.properties.index)
 					}
-					map.removeLayer(`layer:point:${source.name}`)
 				}
-				// eslint-disable-next-line unicorn/no-useless-undefined
-				setInternalPointSources(undefined)
-			} else {
-				for (const source of pointSources) {
-					let mapSource = map.getSource(`point:${source.name}`) as
-						| GeoJSONSource
-						| undefined
-					const isNewLayer = mapSource === undefined
-					if (isNewLayer) {
-						map.addSource(`point:${source.name}`, {
-							type: 'geojson',
-							data: {
-								type: 'FeatureCollection',
-								features: []
-							}
-						})
-						mapSource = map.getSource(`point:${source.name}`) as GeoJSONSource
-					}
-					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-					if (mapSource !== undefined) {
-						mapSource.setData({
-							type: 'FeatureCollection',
-							features: source.points.map(point => ({
-								type: 'Feature',
-								properties: {
-									description: `<strong>${point.name}</strong><p>${point.description}</p>`,
-									index: point.index,
-									name: point.name,
-									selected: point.index !== selections[source.name]
-								},
-								geometry: {
-									type: 'Point',
-									coordinates: [point.longitude, point.latitude]
-								}
-							}))
-						})
-					}
-					map.addLayer({
-						id: `layer:point:${source.name}`,
-						type: 'circle',
-						source: `point:${source.name}`,
-						paint: {
-							'circle-color': [
-								'case',
-								['get', 'selected'],
-								source.selectedColor,
-								source.color
-							],
-							'circle-radius': source.radius,
-							'circle-stroke-width': 1,
-							'circle-stroke-color': '#ffffff'
-						}
-					})
-					if (isNewLayer) {
-						map.on('mouseenter', `layer:point:${source.name}`, event => {
-							if (!event.features) return
-							const feature = event.features[0]
+			)
+			innerMap.on(
+				'draw.update',
+				({
+					features,
+					action
+				}: {
+					features: MapboxGeoJSONFeature[]
+					action: 'change_coordinates' | 'move'
+				}) => {
+					if (!internalDrawnPointSource.source?.update) return
+					if (action === 'move' && features.length > 0) {
+						for (const feature of features) {
 							if (
+								feature.type === 'Feature' &&
 								feature.geometry.type === 'Point' &&
 								feature.properties &&
-								typeof feature.properties.description === 'string'
+								'index' in feature.properties &&
+								typeof feature.properties.index === 'number'
 							) {
-								const coordinates = [...feature.geometry.coordinates] as [
-									number,
-									number
-								]
-								const { description } = feature.properties
-
-								while (Math.abs(event.lngLat.lng - coordinates[0]) > 180) {
-									coordinates[0] +=
-										event.lngLat.lng > coordinates[0] ? 360 : -360
-								}
-
-								popup.setLngLat(coordinates).setHTML(description).addTo(map)
+								internalDrawnPointSource.source.update(
+									feature.properties.index,
+									InverseTransformVertexCoordinates(
+										feature.geometry.coordinates as [number, number]
+									)
+								)
 							}
-						})
-						map.on('mouseleave', `layer:point:${source.name}`, () => {
-							popup.remove()
-						})
-						map.on('click', `layer:point:${source.name}`, event => {
-							if (!event.features || !source.clickPoint) return
-							const feature = event.features[0]
-							if (
-								feature.properties &&
-								typeof feature.properties.index === 'number' &&
-								typeof feature.properties.name === 'string'
-							) {
-								const { index, name } = feature.properties
-								source.clickPoint(index, name)
-							}
-						})
-					}
-				}
-				setInternalPointSources(pointSources)
-			}
-		}
-		const updatedInternalSelections = { ...internalSelections }
-		let selectionChanged = false
-
-		for (const sourcename of Object.keys(selections)) {
-			if (selections[sourcename] !== internalSelections[sourcename]) {
-				for (const source of pointSources) {
-					if (source.name === sourcename) {
-						selectionChanged = true
-						updatedInternalSelections[sourcename] = selections[sourcename]
-						const mapSource = map.getSource(`point:${source.name}`) as
-							| GeoJSONSource
-							| undefined
-						if (mapSource) {
-							const index = selections[sourcename]
-							mapSource.setData({
-								type: 'FeatureCollection',
-								features: source.points.map(point => ({
-									type: 'Feature',
-									properties: {
-										description: `<strong>${point.name}</strong><p>${point.description}</p>`,
-										index: point.index,
-										name: point.name,
-										selected: point.index !== index
-									},
-									geometry: {
-										type: 'Point',
-										coordinates: [point.longitude, point.latitude]
-									}
-								}))
-							})
 						}
 					}
 				}
-			}
+			)
 		}
+		console.log('Updating map...')
+	}, [draw, internalDrawnPointSource.source, map])
 
-		if (selectionChanged) {
-			setInternalSelections(updatedInternalSelections)
+	useEffect(() => {
+		if (
+			map &&
+			mapLoaded &&
+			internalDrawnPointSource.source !== drawnPointSource
+		) {
+			console.log('Drawning Points')
+			internalDrawnPointSource.source = drawnPointSource
+			setInternalDrawnPointSource(internalDrawnPointSource)
+			let localDraw = draw
+			if (
+				drawnPointSource.selectedColor !== drawnPointSettings.selectedColor ||
+				drawnPointSource.selectedRadius !== drawnPointSettings.selectedRadius ||
+				drawnPointSource.color !== drawnPointSettings.color ||
+				drawnPointSource.radius !== drawnPointSettings.radius
+			) {
+				setDrawnPointSettings({
+					color: drawnPointSource.color,
+					radius: drawnPointSource.radius,
+					selectedRadius: drawnPointSource.selectedRadius,
+					selectedColor: drawnPointSource.selectedColor
+				})
+				if (draw) {
+					map.removeControl(draw)
+				}
+				if (drawnPointSource) {
+					localDraw = new MapboxDraw({
+						displayControlsDefault: false,
+						controls: {
+							point: true
+						},
+						defaultMode: 'simple_select'
+						// styles: [
+						// 	// {
+						// 	// 	id: 'highlight-active-points',
+						// 	// 	type: 'circle',
+						// 	// 	filter: [
+						// 	// 		'all',
+						// 	// 		['==', '$type', 'Point'],
+						// 	// 		['==', 'meta', 'feature'],
+						// 	// 		['==', 'active', 'true']
+						// 	// 	],
+						// 	// 	paint: {
+						// 	// 		'circle-radius': drawnPointSource.selectedRadius,
+						// 	// 		'circle-color': drawnPointSource.selectedColor
+						// 	// 	}
+						// 	// },
+						// 	// {
+						// 	// 	id: 'points-are-blue',
+						// 	// 	type: 'circle',
+						// 	// 	filter: [
+						// 	// 		'all',
+						// 	// 		['==', '$type', 'Point'],
+						// 	// 		['==', 'meta', 'feature'],
+						// 	// 		['==', 'active', 'false']
+						// 	// 	],
+						// 	// 	paint: {
+						// 	// 		'circle-radius': drawnPointSource.radius,
+						// 	// 		'circle-color': drawnPointSettings.color
+						// 	// 	}
+						// 	// }
+						// ]
+					})
+					map.addControl(localDraw)
+					setDraw(localDraw)
+				} else {
+					localDraw = undefined
+				}
+			}
+			if (localDraw) {
+				localDraw.set({
+					type: 'FeatureCollection',
+					features: drawnPointSource.points.map(point => ({
+						type: 'Feature',
+						properties: {
+							description: ``,
+							index: point.index,
+							name: ``
+						},
+						geometry: {
+							type: 'Point',
+							coordinates: [point.longitude, point.latitude]
+						}
+					}))
+				})
+			}
 		}
 	}, [
 		map,
-		internalPointSources,
-		pointSources,
 		mapLoaded,
-		popup,
-		selections,
-		internalSelections
+		internalDrawnPointSource,
+		drawnPointSource,
+		drawnPointSettings,
+		draw
 	])
 
 	useEffect(() => {
@@ -473,6 +290,7 @@ function MapElement({
 			console.log('Setting arrows in map!')
 			if (internalArrowSources) {
 				for (const source of internalArrowSources) {
+					sourceClickEvents[`arrow:${source.name}`] = source.click
 					const mapSource = map.getSource(`arrow:${source.name}`) as
 						| GeoJSONSource
 						| undefined
@@ -489,6 +307,7 @@ function MapElement({
 				setInternalArrowSources(undefined)
 			} else {
 				for (const source of arrowSources) {
+					sourceClickEvents[`arrow:${source.name}`] = source.click
 					let mapSource = map.getSource(`arrow:${source.name}`) as
 						| GeoJSONSource
 						| undefined
@@ -608,16 +427,16 @@ function MapElement({
 							popup.remove()
 						})
 						map.on('click', `layer:arrow:${source.name}:click`, event => {
-							console.log('CLICKED AN ARROW')
-							if (!event.features || !source.clickArrow) return
+							const click = sourceClickEvents[`arrow:${source.name}`]
+							if (!event.features || !click) return
 							const feature = event.features[0]
 							if (
 								feature.properties &&
 								typeof feature.properties.index === 'number' &&
 								typeof feature.properties.name === 'string'
 							) {
-								const { index, name } = feature.properties
-								source.clickArrow(index, name)
+								const { index } = feature.properties
+								click(index)
 							}
 						})
 					}
@@ -632,6 +451,7 @@ function MapElement({
 			console.log('Setting lines in map!')
 			if (internalLineSources) {
 				for (const source of internalLineSources) {
+					sourceClickEvents[`line:${source.name}`] = source.click
 					const mapSource = map.getSource(`line:${source.name}`) as
 						| GeoJSONSource
 						| undefined
@@ -648,6 +468,7 @@ function MapElement({
 				setInternalLineSources(undefined)
 			} else {
 				for (const source of lineSources) {
+					sourceClickEvents[`line:${source.name}`] = source.click
 					let mapSource = map.getSource(`line:${source.name}`) as
 						| GeoJSONSource
 						| undefined
@@ -751,7 +572,8 @@ function MapElement({
 							popup.remove()
 						})
 						map.on('click', `layer:line:${source.name}:click`, event => {
-							if (!event.features || !source.clickLine) return
+							const click = sourceClickEvents[`line:${source.name}`]
+							if (!event.features || !click) return
 							const feature = event.features[0]
 							if (
 								feature.properties &&
@@ -759,7 +581,7 @@ function MapElement({
 								typeof feature.properties.name === 'string'
 							) {
 								const { index } = feature.properties
-								source.clickLine(index)
+								click(index)
 							}
 						})
 					}
@@ -814,6 +636,171 @@ function MapElement({
 		map,
 		internalLineSources,
 		lineSources,
+		mapLoaded,
+		popup,
+		selections,
+		internalSelections
+	])
+
+	useEffect(() => {
+		if (!map || !mapLoaded) return
+		if (internalPointSources !== pointSources) {
+			console.log('Setting points in map!')
+			if (internalPointSources) {
+				for (const source of internalPointSources) {
+					sourceClickEvents[`point:${source.name}`] = source.click
+					const mapSource = map.getSource(`point:${source.name}`) as
+						| GeoJSONSource
+						| undefined
+					if (mapSource !== undefined) {
+						mapSource.setData({
+							type: 'FeatureCollection',
+							features: []
+						})
+					}
+					map.removeLayer(`layer:point:${source.name}`)
+				}
+				// eslint-disable-next-line unicorn/no-useless-undefined
+				setInternalPointSources(undefined)
+			} else {
+				for (const source of pointSources) {
+					sourceClickEvents[`point:${source.name}`] = source.click
+					let mapSource = map.getSource(`point:${source.name}`) as
+						| GeoJSONSource
+						| undefined
+					const isNewLayer = mapSource === undefined
+					if (isNewLayer) {
+						map.addSource(`point:${source.name}`, {
+							type: 'geojson',
+							data: {
+								type: 'FeatureCollection',
+								features: []
+							}
+						})
+						mapSource = map.getSource(`point:${source.name}`) as GeoJSONSource
+					}
+					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+					if (mapSource !== undefined) {
+						mapSource.setData({
+							type: 'FeatureCollection',
+							features: source.points.map(point => ({
+								type: 'Feature',
+								properties: {
+									description: `<strong>${point.name}</strong><p>${point.description}</p>`,
+									index: point.index,
+									name: point.name,
+									selected: point.index !== selections[source.name]
+								},
+								geometry: {
+									type: 'Point',
+									coordinates: [point.longitude, point.latitude]
+								}
+							}))
+						})
+					}
+					map.addLayer({
+						id: `layer:point:${source.name}`,
+						type: 'circle',
+						source: `point:${source.name}`,
+						paint: {
+							'circle-color': [
+								'case',
+								['get', 'selected'],
+								source.selectedColor,
+								source.color
+							],
+							'circle-radius': source.radius,
+							'circle-stroke-width': 1,
+							'circle-stroke-color': '#ffffff'
+						}
+					})
+					if (isNewLayer) {
+						map.on('mouseenter', `layer:point:${source.name}`, event => {
+							if (!event.features) return
+							const feature = event.features[0]
+							if (
+								feature.geometry.type === 'Point' &&
+								feature.properties &&
+								typeof feature.properties.description === 'string'
+							) {
+								const coordinates = [...feature.geometry.coordinates] as [
+									number,
+									number
+								]
+								const { description } = feature.properties
+
+								while (Math.abs(event.lngLat.lng - coordinates[0]) > 180) {
+									coordinates[0] +=
+										event.lngLat.lng > coordinates[0] ? 360 : -360
+								}
+
+								popup.setLngLat(coordinates).setHTML(description).addTo(map)
+							}
+						})
+						map.on('mouseleave', `layer:point:${source.name}`, () => {
+							popup.remove()
+						})
+						map.on('click', `layer:point:${source.name}`, event => {
+							const click = sourceClickEvents[`point:${source.name}`]
+							if (!event.features || !click) return
+							const feature = event.features[0]
+							if (
+								feature.properties &&
+								typeof feature.properties.index === 'number' &&
+								typeof feature.properties.name === 'string'
+							) {
+								const { index } = feature.properties
+								click(index)
+							}
+						})
+					}
+				}
+				setInternalPointSources(pointSources)
+			}
+		}
+		const updatedInternalSelections = { ...internalSelections }
+		let selectionChanged = false
+
+		for (const sourcename of Object.keys(selections)) {
+			if (selections[sourcename] !== internalSelections[sourcename]) {
+				for (const source of pointSources) {
+					if (source.name === sourcename) {
+						selectionChanged = true
+						updatedInternalSelections[sourcename] = selections[sourcename]
+						const mapSource = map.getSource(`point:${source.name}`) as
+							| GeoJSONSource
+							| undefined
+						if (mapSource) {
+							const index = selections[sourcename]
+							mapSource.setData({
+								type: 'FeatureCollection',
+								features: source.points.map(point => ({
+									type: 'Feature',
+									properties: {
+										description: `<strong>${point.name}</strong><p>${point.description}</p>`,
+										index: point.index,
+										name: point.name,
+										selected: point.index !== index
+									},
+									geometry: {
+										type: 'Point',
+										coordinates: [point.longitude, point.latitude]
+									}
+								}))
+							})
+						}
+					}
+				}
+			}
+		}
+
+		if (selectionChanged) {
+			setInternalSelections(updatedInternalSelections)
+		}
+	}, [
+		map,
+		internalPointSources,
+		pointSources,
 		mapLoaded,
 		popup,
 		selections,
