@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
+import type { SelectionMode } from 'App'
 import type { ReactElement } from 'react'
-import type { Segment } from 'Utilities/SegmentFile'
+import type { Segment, Vertex } from 'Utilities/SegmentFile'
 import EditableItem from './EditableItem'
 
 export interface SegmentsDisplaySettings {
@@ -41,14 +42,16 @@ function SegmentsPanel({
 	selected,
 	setSegmentData,
 	addNewSegment,
-	splitSegment
+	splitSegment,
+	setSelectionMode
 }: {
 	settings: SegmentsDisplaySettings
 	setSettings: (settings: SegmentsDisplaySettings) => void
 	segments: Segment[]
 	selected: number
 	setSegmentData: (index: number, data?: Partial<Segment>) => void
-	addNewSegment: () => void
+	setSelectionMode: (mode: SelectionMode) => void
+	addNewSegment: (a: Vertex, b: Vertex) => void
 	splitSegment: (index: number) => void
 }): ReactElement {
 	const set = (s: SegmentsDisplaySettings): void => {
@@ -161,7 +164,22 @@ function SegmentsPanel({
 				<button
 					type='button'
 					className='rounded bg-white hover:bg-gray-200 p-2'
-					onClick={addNewSegment}
+					onClick={(): void => {
+						setSelectionMode({
+							mode: 'mapClick',
+							label: 'Select Segment Starting Point',
+							callback: (a): void => {
+								setSelectionMode({
+									mode: 'mapClick',
+									label: 'Select Segment End point',
+									callback: (b): void => {
+										addNewSegment(a, b)
+										setSelectionMode('normal')
+									}
+								})
+							}
+						})
+					}}
 				>
 					New Segment
 				</button>

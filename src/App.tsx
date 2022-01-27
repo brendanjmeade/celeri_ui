@@ -53,6 +53,13 @@ if (!window.location.search.includes('fake-dir')) {
 	SetDirectoryHandle(FSOpenDirectory)
 }
 
+export type SelectionMode =
+	| 'normal'
+	| ({ label: string } & (
+			| { mode: 'mapClick'; callback: (point: Vertex) => void }
+			| { mode: 'override'; type: string; callback: (index: number) => void }
+	  ))
+
 const windows = {
 	files: 'Files',
 	segment: 'Segment',
@@ -109,18 +116,24 @@ export default function App(): ReactElement {
 		initialVertexDisplaySettings
 	)
 
+	const [selectionMode, setSelectionMode] = useState<SelectionMode>('normal')
+
 	const [selectedBlock, setSelectedBlock] = useState<number>(-1)
 	const [selectedSegment, setSelectedSegment] = useState<number>(-1)
 	const [selectedVelocity, setSelectedVelocity] = useState<number>(-1)
 	const [selectedVertex, setSelectedVertex] = useState<number>(-1)
 
-	const select = (type: string, index: number): void => {
-		setSelectedBlock(type === 'block' ? index : -1)
-		setSelectedSegment(type === 'segment' ? index : -1)
-		setSelectedVelocity(type === 'velocities' ? index : -1)
-		setSelectedVertex(type === 'vertex' ? index : -1)
-		setActiveTab(type)
-	}
+	const [select, setSelect] = useState<{
+		select: (type: string, index: number) => void
+	}>({
+		select: (type: string, index: number): void => {
+			setSelectedBlock(type === 'block' ? index : -1)
+			setSelectedSegment(type === 'segment' ? index : -1)
+			setSelectedVelocity(type === 'velocities' ? index : -1)
+			setSelectedVertex(type === 'vertex' ? index : -1)
+			setActiveTab(type)
+		}
+	})
 
 	const [pointSources, setPointSources] = useState<PointSource[]>([])
 	const [arrowSources, setArrowSources] = useState<ArrowSource[]>([])
@@ -132,6 +145,30 @@ export default function App(): ReactElement {
 		selectedRadius: 0,
 		points: []
 	})
+
+	useEffect(() => {
+		if (selectionMode === 'normal') {
+			setSelect({
+				select: (type: string, index: number): void => {
+					setSelectedBlock(type === 'block' ? index : -1)
+					setSelectedSegment(type === 'segment' ? index : -1)
+					setSelectedVelocity(type === 'velocities' ? index : -1)
+					setSelectedVertex(type === 'vertex' ? index : -1)
+					setActiveTab(type)
+				}
+			})
+		} else if (selectionMode.mode === 'override') {
+			setSelect({
+				select: (type: string, index: number): void => {
+					if (type === selectionMode.type) {
+						selectionMode.callback(index)
+					}
+				}
+			})
+		} else {
+			setSelect({ select: (): void => {} })
+		}
+	}, [selectionMode])
 
 	useEffect(() => {
 		setPointSources([
@@ -150,11 +187,11 @@ export default function App(): ReactElement {
 					  }))
 					: [],
 				click: (index): void => {
-					select('block', index)
+					select.select('block', index)
 				}
 			}
 		])
-	}, [blockSettings, blockFile, segmentSettings, segmentFile])
+	}, [blockSettings, blockFile, segmentSettings, segmentFile, select])
 
 	useEffect(() => {
 		setLineSources([
@@ -186,11 +223,11 @@ export default function App(): ReactElement {
 					  })
 					: [],
 				click: (index): void => {
-					select('segment', index)
+					select.select('segment', index)
 				}
 			}
 		])
-	}, [segmentFile, segmentSettings])
+	}, [segmentFile, segmentSettings, select])
 
 	useEffect(() => {
 		setDrawnPointSource({
@@ -225,10 +262,10 @@ export default function App(): ReactElement {
 				}
 			},
 			select: index => {
-				select('vertex', index)
+				select.select('vertex', index)
 			}
 		})
-	}, [vertexSettings, segmentFile])
+	}, [vertexSettings, segmentFile, select])
 
 	useEffect(() => {
 		setArrowSources([
@@ -258,11 +295,11 @@ export default function App(): ReactElement {
 					  })
 					: [],
 				click: (index): void => {
-					select('velocities', index)
+					select.select('velocities', index)
 				}
 			}
 		])
-	}, [velocitiesSettings, velocityFile])
+	}, [select, velocitiesSettings, velocityFile])
 
 	let view = <span />
 
@@ -405,15 +442,10 @@ export default function App(): ReactElement {
 					setSettings={setSegmentSettings}
 					segments={segmentFile?.data?.segments ?? []}
 					selected={selectedSegment}
-					addNewSegment={(): void => {
+					setSelectionMode={(mode): void => setSelectionMode(mode)}
+					addNewSegment={(a, b): void => {
 						if (segmentFile !== undefined) {
-							console.log('NOT IMPLEMENTED')
-							// const dataArray = segmentFile.data ? [...segmentFile.data.segments] : []
-							// const segment = createSegment({})
-							// dataArray.push(segment)
-							// const file = segmentFile.clone()
-							// file.data = dataArray
-							// setSegmentFile(file)
+							setSegmentFile(segmentFile.createSegment(a, b))
 						}
 					}}
 					setSegmentData={(index, data): void => {
@@ -438,11 +470,7 @@ export default function App(): ReactElement {
 									setSegmentFile(file)
 								}
 							} else {
-								// const dataArray = segmentFile.data ? [...segmentFile.data] : []
-								// dataArray.splice(index, 1)
-								// const file = segmentFile.clone()
-								// file.data = dataArray
-								// setSegmentFile(file)
+								setSegmentFile(segmentFile.deleteSegment(index))
 							}
 						}
 					}}
@@ -468,11 +496,21 @@ export default function App(): ReactElement {
 					): void {
 						throw new Error('Function not implemented.')
 					}}
-					addNewVertex={function (): void {
-						throw new Error('Function not implemented.')
+					setSelectionMode={(mode): void => setSelectionMode(mode)}
+					mergeVertices={(a, b): void => {
+						if (segmentFile) {
+							setSegmentFile(segmentFile.mergeVertices(a, b))
+						}
 					}}
-					splitVertex={function (index: number): void {
-						throw new Error('Function not implemented.')
+					bridgeVertices={(a, b): void => {
+						if (segmentFile) {
+							setSegmentFile(segmentFile.bridgeVertices(a, b))
+						}
+					}}
+					extrudeVertex={(start, end): void => {
+						if (segmentFile) {
+							setSegmentFile(segmentFile.extrudeSegment(start, end))
+						}
 					}}
 				/>
 			)
@@ -482,7 +520,16 @@ export default function App(): ReactElement {
 	}
 
 	return (
-		<div className='w-screen h-screen flex flex-col'>
+		// eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+		<div
+			role='document'
+			className='w-screen h-screen flex flex-col'
+			onKeyDown={(event): void => {
+				if (event.key === 'Escape') {
+					setSelectionMode('normal')
+				}
+			}}
+		>
 			<TopBar
 				filesOpen={(commandFile ?? segmentFile ?? blockFile) !== undefined}
 				saveFiles={async (): Promise<void> => {
@@ -497,6 +544,14 @@ export default function App(): ReactElement {
 					setActiveTab('files')
 				}}
 			/>
+			{selectionMode !== 'normal' ? (
+				<div className=''>
+					<span className=''>{selectionMode.label}</span>
+					<span className=''>Press Escape to cancel</span>
+				</div>
+			) : (
+				<></>
+			)}
 			<Map
 				pointSources={pointSources}
 				arrowSources={arrowSources}
@@ -506,6 +561,14 @@ export default function App(): ReactElement {
 					segments: selectedSegment,
 					blocks: selectedBlock,
 					velocities: selectedVelocity
+				}}
+				click={(point): void => {
+					if (
+						typeof selectionMode !== 'string' &&
+						selectionMode.mode === 'mapClick'
+					) {
+						selectionMode.callback(point)
+					}
 				}}
 			/>
 			<InspectorPanel

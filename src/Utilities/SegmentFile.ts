@@ -190,29 +190,6 @@ export function GetShortestLineCoordinates(
 	return [a, b]
 }
 
-export function createSegmentsFromCoordinates(
-	coordinates: { lat: number; lon: number }[],
-	old?: Segment
-): FileSegment[] {
-	const original = old ?? defaultSegment
-	let lastCoordinate = coordinates[0]
-	const segments: FileSegment[] = []
-	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-	for (let index = 1; index < coordinates.length; index += 1) {
-		const coordinate = coordinates[index]
-		const segment = {
-			...original,
-			lon1: lastCoordinate.lon,
-			lat1: lastCoordinate.lat,
-			lon2: coordinate.lon,
-			lat2: coordinate.lat
-		}
-		segments.push(segment)
-		lastCoordinate = coordinate
-	}
-	return segments
-}
-
 export function createSegment(partial: Partial<FileSegment>): FileSegment {
 	const segment = { ...defaultSegment, ...partial } as unknown as FileSegment
 	return segment
@@ -347,6 +324,33 @@ export class SegmentFile
 		return this
 	}
 
+	public mergeVertices(a: number, b: number): SegmentFile {
+		if (this.data) {
+			for (const segment of this.data.segments) {
+				if (segment.start === b) {
+					segment.start = a
+				}
+				if (segment.end === b) {
+					segment.end = a
+				}
+			}
+			const vertex = this.data.vertecies[b]
+			const key = `${Math.floor(
+				vertex.lon * VERTEX_PRECISION_MULTIPLIER
+			)},${Math.floor(vertex.lat * VERTEX_PRECISION_MULTIPLIER)}`
+			const vertecies = { ...this.data.vertecies }
+			// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+			delete vertecies[b]
+			const vertexDictionary = { ...this.data.vertexDictionary }
+			// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+			delete vertexDictionary[key]
+			const file = this.clone()
+			file.data = { ...this.data, vertecies, vertexDictionary }
+			return file
+		}
+		return this
+	}
+
 	public moveVertex(index: number, vertex: Vertex): SegmentFile {
 		if (this.data) {
 			const vertecies = { ...this.data.vertecies }
@@ -403,6 +407,62 @@ export class SegmentFile
 			segments.push(endSegment)
 			const file = this.clone()
 			file.data = { ...this.data, segments }
+			return file
+		}
+		return this
+	}
+
+	public bridgeVertices(a: number, b: number): SegmentFile {
+		if (this.data) {
+			const segment: InMemorySegment = { ...defaultSegment, start: a, end: b }
+			const segments = [...this.data.segments, segment]
+			const file = this.clone()
+			file.data = { ...this.data, segments }
+			return file
+		}
+		return this
+	}
+
+	public extrudeSegment(start: number, endVertex: Vertex): SegmentFile {
+		if (this.data) {
+			const verts = { ...this.data.vertecies }
+			const dictionary = { ...this.data.vertexDictionary }
+
+			const end = getVertexIdOrInsert(endVertex, dictionary, verts)
+			const segment: InMemorySegment = { ...defaultSegment, start, end }
+			const segments = [...this.data.segments, segment]
+
+			const file = this.clone()
+			file.data = { vertecies: verts, vertexDictionary: dictionary, segments }
+			return file
+		}
+		return this
+	}
+
+	public deleteSegment(index: number): SegmentFile {
+		if (this.data) {
+			const segments = [...this.data.segments]
+			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+			const segment = segments.splice(index, 1)[0]
+			const file = this.clone()
+			file.data = { ...this.data, segments }
+			return file.tryRemoveVertex(segment.start).tryRemoveVertex(segment.end)
+		}
+		return this
+	}
+
+	public createSegment(startVertex: Vertex, endVertex: Vertex): SegmentFile {
+		if (this.data) {
+			const verts = { ...this.data.vertecies }
+			const dictionary = { ...this.data.vertexDictionary }
+
+			const start = getVertexIdOrInsert(startVertex, dictionary, verts)
+			const end = getVertexIdOrInsert(endVertex, dictionary, verts)
+			const segment: InMemorySegment = { ...defaultSegment, start, end }
+			const segments = [...this.data.segments, segment]
+
+			const file = this.clone()
+			file.data = { vertecies: verts, vertexDictionary: dictionary, segments }
 			return file
 		}
 		return this

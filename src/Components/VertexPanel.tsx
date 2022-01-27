@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
+import type { SelectionMode } from 'App'
 import type { ReactElement } from 'react'
 import type { Vertex } from 'Utilities/SegmentFile'
 import EditableItem from './EditableItem'
@@ -32,16 +33,20 @@ function VerticesPanel({
 	vertices,
 	selected,
 	setVertexData,
-	addNewVertex,
-	splitVertex
+	setSelectionMode,
+	mergeVertices,
+	bridgeVertices,
+	extrudeVertex
 }: {
 	settings: VerticesDisplaySettings
 	setSettings: (settings: VerticesDisplaySettings) => void
 	vertices: Record<number, Vertex>
 	selected: number
 	setVertexData: (index: number, data?: Partial<Vertex>) => void
-	addNewVertex: () => void
-	splitVertex: (index: number) => void
+	setSelectionMode: (mode: SelectionMode) => void
+	mergeVertices: (a: number, b: number) => void
+	bridgeVertices: (a: number, b: number) => void
+	extrudeVertex: (start: number, end: Vertex) => void
 }): ReactElement {
 	const set = (s: VerticesDisplaySettings): void => {
 		setSettings(s)
@@ -59,13 +64,58 @@ function VerticesPanel({
 			setItem={(partial): void => setVertexData(selected, partial)}
 			fieldDefinitions={{}}
 			controls={
-				<button
-					type='button'
-					className='rounded bg-white hover:bg-gray-200 p-2'
-					onClick={(): void => splitVertex(selected)}
-				>
-					Split Vertex
-				</button>
+				<>
+					<button
+						type='button'
+						className='rounded bg-white hover:bg-gray-200 p-2'
+						onClick={(): void => {
+							setSelectionMode({
+								type: 'vertex',
+								mode: 'override',
+								label: 'Merge Vertex',
+								callback: index => {
+									mergeVertices(selected, index)
+									setSelectionMode('normal')
+								}
+							})
+						}}
+					>
+						Merge
+					</button>
+					<button
+						type='button'
+						className='rounded bg-white hover:bg-gray-200 p-2'
+						onClick={(): void => {
+							setSelectionMode({
+								type: 'vertex',
+								mode: 'override',
+								label: 'Bridge Vertices',
+								callback: index => {
+									bridgeVertices(selected, index)
+									setSelectionMode('normal')
+								}
+							})
+						}}
+					>
+						Bridge
+					</button>
+					<button
+						type='button'
+						className='rounded bg-white hover:bg-gray-200 p-2'
+						onClick={(): void => {
+							setSelectionMode({
+								mode: 'mapClick',
+								label: 'Extrude Segment From Vertex',
+								callback: (point): void => {
+									extrudeVertex(selected, point)
+									setSelectionMode('normal')
+								}
+							})
+						}}
+					>
+						Extrude
+					</button>
+				</>
 			}
 		/>
 	) : (
@@ -140,16 +190,6 @@ function VerticesPanel({
 						}}
 					/>
 				</span>
-			</div>
-			<div className='flex flex-row justify-between items-center'>
-				<span className='text-l font-bold'>Add New Vertex</span>
-				<button
-					type='button'
-					className='rounded bg-white hover:bg-gray-200 p-2'
-					onClick={addNewVertex}
-				>
-					New Vertex
-				</button>
 			</div>
 			{selectedDisplay}
 		</div>

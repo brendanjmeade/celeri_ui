@@ -85,13 +85,15 @@ function MapElement({
 	arrowSources,
 	lineSources,
 	selections,
-	drawnPointSource
+	drawnPointSource,
+	click
 }: {
 	pointSources: PointSource[]
 	arrowSources: ArrowSource[]
 	lineSources: LineSource[]
 	drawnPointSource: DrawnPointSource
 	selections: Record<string, number>
+	click: (coordinates: Vertex) => void
 }): ReactElement {
 	const mapReference = useRef<HTMLDivElement>(null)
 
@@ -121,6 +123,16 @@ function MapElement({
 	const [internalSelections, setInternalSelections] = useState<
 		Record<string, number>
 	>({})
+	const [internalClick, setInternalClick] = useState<{
+		click: (coordinates: Vertex) => void
+	}>({ click })
+
+	useEffect(() => {
+		if (internalClick.click !== click) {
+			internalClick.click = click
+			setInternalClick(internalClick)
+		}
+	}, [click, internalClick])
 
 	useEffect(() => {
 		if (!map && mapboxgl.accessToken && mapReference.current) {
@@ -137,6 +149,11 @@ function MapElement({
 			setMap(innerMap)
 			innerMap.on('load', () => {
 				setMapLoaded(true)
+			})
+			innerMap.on('click', ({ lngLat }) => {
+				internalClick.click(
+					InverseTransformVertexCoordinates([lngLat.lng, lngLat.lat])
+				)
 			})
 			innerMap.on(
 				'draw.selectionchange',
@@ -187,7 +204,7 @@ function MapElement({
 			)
 		}
 		console.log('Updating map...')
-	}, [draw, internalDrawnPointSource.source, map])
+	}, [draw, internalClick, internalDrawnPointSource.source, map])
 
 	useEffect(() => {
 		if (
@@ -427,8 +444,8 @@ function MapElement({
 							popup.remove()
 						})
 						map.on('click', `layer:arrow:${source.name}:click`, event => {
-							const click = sourceClickEvents[`arrow:${source.name}`]
-							if (!event.features || !click) return
+							const currentClick = sourceClickEvents[`arrow:${source.name}`]
+							if (!event.features || !currentClick) return
 							const feature = event.features[0]
 							if (
 								feature.properties &&
@@ -436,7 +453,7 @@ function MapElement({
 								typeof feature.properties.name === 'string'
 							) {
 								const { index } = feature.properties
-								click(index)
+								currentClick(index)
 							}
 						})
 					}
@@ -572,8 +589,8 @@ function MapElement({
 							popup.remove()
 						})
 						map.on('click', `layer:line:${source.name}:click`, event => {
-							const click = sourceClickEvents[`line:${source.name}`]
-							if (!event.features || !click) return
+							const currentClick = sourceClickEvents[`line:${source.name}`]
+							if (!event.features || !currentClick) return
 							const feature = event.features[0]
 							if (
 								feature.properties &&
@@ -581,7 +598,7 @@ function MapElement({
 								typeof feature.properties.name === 'string'
 							) {
 								const { index } = feature.properties
-								click(index)
+								currentClick(index)
 							}
 						})
 					}
@@ -741,8 +758,8 @@ function MapElement({
 							popup.remove()
 						})
 						map.on('click', `layer:point:${source.name}`, event => {
-							const click = sourceClickEvents[`point:${source.name}`]
-							if (!event.features || !click) return
+							const currentClick = sourceClickEvents[`point:${source.name}`]
+							if (!event.features || !currentClick) return
 							const feature = event.features[0]
 							if (
 								feature.properties &&
@@ -750,7 +767,7 @@ function MapElement({
 								typeof feature.properties.name === 'string'
 							) {
 								const { index } = feature.properties
-								click(index)
+								currentClick(index)
 							}
 						})
 					}
