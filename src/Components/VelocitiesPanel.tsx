@@ -8,13 +8,15 @@ export interface VelocitiesDisplaySettings {
 	scale: number
 	width: number
 	arrowHead: number
+	selectedColor: string
 }
 
 const defaultVelocityDisplaySettings: VelocitiesDisplaySettings = {
-	color: '#ffff00',
+	color: '#ffffff',
 	scale: 0.02,
 	width: 1,
-	arrowHead: 1
+	arrowHead: 1,
+	selectedColor: '#aaaaaa'
 }
 
 export const initialVelocityDisplaySettings =
@@ -76,6 +78,19 @@ function VelocitiesPanel({
 							value={settings.color}
 							onChange={(event): void => {
 								set({ ...settings, color: event.target.value })
+							}}
+						/>
+					</span>
+				</div>
+				<div className='flex flex-row justify-between items-center'>
+					<span className='text-l font-bold'>Selected Color</span>
+					<span className='w-2/5 flex-shrink-0'>
+						<input
+							className='rounded w-full'
+							type='color'
+							value={settings.selectedColor}
+							onChange={(event): void => {
+								set({ ...settings, selectedColor: event.target.value })
 							}}
 						/>
 					</span>

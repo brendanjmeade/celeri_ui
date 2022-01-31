@@ -29,6 +29,7 @@ export interface PointSource {
 export interface ArrowSource {
 	name: string
 	color: string
+	selectedColor: string
 	scale: number
 	width: number
 	arrowHeadScale: number
@@ -39,6 +40,7 @@ export interface ArrowSource {
 		direction: [number, number]
 		name: string
 		description: string
+		index: number
 	}[]
 	click?: (index: number) => void
 }
@@ -343,7 +345,7 @@ function MapElement({
 					if (mapSource !== undefined) {
 						mapSource.setData({
 							type: 'FeatureCollection',
-							features: source.arrows.map((arrow, index) => {
+							features: source.arrows.map(arrow => {
 								const scale = arrow.scale * source.scale
 								const arrowHeadScale = source.scale * source.arrowHeadScale
 								const targetPoint = [
@@ -374,8 +376,9 @@ function MapElement({
 									type: 'Feature',
 									properties: {
 										description: `<strong>${arrow.name}</strong><p>${arrow.description}</p>`,
-										index,
-										name: arrow.name
+										index: arrow.index,
+										name: arrow.name,
+										selected: arrow.index === selections[source.name]
 									},
 									geometry: {
 										type: 'LineString',
@@ -400,7 +403,12 @@ function MapElement({
 							'line-join': 'miter'
 						},
 						paint: {
-							'line-color': source.color,
+							'line-color': [
+								'case',
+								['get', 'selected'],
+								source.selectedColor,
+								source.color
+							],
 							'line-width': source.width
 						}
 					})
@@ -414,7 +422,7 @@ function MapElement({
 						},
 						paint: {
 							'line-color': 'rgba(0,0,0,0.01)',
-							'line-width': source.width * 10
+							'line-width': 10
 						}
 					})
 					if (isNewLayer) {
@@ -461,7 +469,89 @@ function MapElement({
 				setInternalArrowSources(arrowSources)
 			}
 		}
-	}, [map, internalArrowSources, arrowSources, mapLoaded, popup])
+
+		const updatedInternalSelections = { ...internalSelections }
+		let selectionChanged = false
+
+		for (const sourcename of Object.keys(selections)) {
+			if (selections[sourcename] !== internalSelections[sourcename]) {
+				for (const source of arrowSources) {
+					if (source.name === sourcename) {
+						selectionChanged = true
+						updatedInternalSelections[sourcename] = selections[sourcename]
+						const mapSource = map?.getSource(`arrow:${source.name}`) as
+							| GeoJSONSource
+							| undefined
+						if (mapSource) {
+							const index = selections[sourcename]
+							mapSource.setData({
+								type: 'FeatureCollection',
+								features: source.arrows.map(arrow => {
+									const scale = arrow.scale * source.scale
+									const arrowHeadScale = source.scale * source.arrowHeadScale
+									const targetPoint = [
+										arrow.longitude + arrow.direction[0] * scale,
+										arrow.latitude + arrow.direction[1] * scale
+									]
+									const arrowPoint1 = [
+										targetPoint[0] +
+											(Math.cos(ARROW_ANGLE_1) * -arrow.direction[0] -
+												Math.sin(ARROW_ANGLE_1) * -arrow.direction[1]) *
+												arrowHeadScale,
+										targetPoint[1] +
+											(Math.sin(ARROW_ANGLE_1) * -arrow.direction[0] +
+												Math.cos(ARROW_ANGLE_1) * -arrow.direction[1]) *
+												arrowHeadScale
+									]
+									const arrowPoint2 = [
+										targetPoint[0] +
+											(Math.cos(ARROW_ANGLE_2) * -arrow.direction[0] -
+												Math.sin(ARROW_ANGLE_2) * -arrow.direction[1]) *
+												arrowHeadScale,
+										targetPoint[1] +
+											(Math.sin(ARROW_ANGLE_2) * -arrow.direction[0] +
+												Math.cos(ARROW_ANGLE_2) * -arrow.direction[1]) *
+												arrowHeadScale
+									]
+									return {
+										type: 'Feature',
+										properties: {
+											description: `<strong>${arrow.name}</strong><p>${arrow.description}</p>`,
+											index: arrow.index,
+											name: arrow.name,
+											selected: arrow.index === index
+										},
+										geometry: {
+											type: 'LineString',
+											coordinates: [
+												[arrow.longitude, arrow.latitude],
+												targetPoint,
+												arrowPoint1,
+												targetPoint,
+												arrowPoint2
+											]
+										}
+									}
+								})
+							})
+						}
+					}
+				}
+			}
+		}
+
+		if (selectionChanged) {
+			setInternalSelections(updatedInternalSelections)
+		}
+	}, [
+		map,
+		internalArrowSources,
+		arrowSources,
+		mapLoaded,
+		popup,
+		selections,
+		internalSelections
+	])
 
 	useEffect(() => {
 		if (map && mapLoaded && internalLineSources !== lineSources) {

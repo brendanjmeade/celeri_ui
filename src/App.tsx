@@ -270,13 +270,14 @@ export default function App(): ReactElement {
 	useEffect(() => {
 		setArrowSources([
 			{
-				name: 'velocity',
+				name: 'velocities',
 				color: velocitiesSettings.color,
+				selectedColor: velocitiesSettings.selectedColor,
 				scale: velocitiesSettings.scale,
 				arrowHeadScale: velocitiesSettings.arrowHead,
 				width: velocitiesSettings.width,
 				arrows: velocityFile?.data
-					? velocityFile.data.map(velocity => {
+					? velocityFile.data.map((velocity, index) => {
 							const scale = Math.sqrt(
 								velocity.east_vel * velocity.east_vel +
 									velocity.north_vel * velocity.north_vel
@@ -290,7 +291,8 @@ export default function App(): ReactElement {
 								],
 								scale,
 								name: velocity.name,
-								description: `north: ${velocity.north_vel}, east: ${velocity.east_vel}`
+								description: `north: ${velocity.north_vel}, east: ${velocity.east_vel}`,
+								index
 							}
 					  })
 					: [],
@@ -381,14 +383,28 @@ export default function App(): ReactElement {
 						}
 					}}
 					addNewVelocity={(): void => {
-						if (velocityFile !== undefined) {
-							const dataArray = velocityFile.data ? [...velocityFile.data] : []
-							const velocity = createVelocity({})
-							dataArray.push(velocity)
-							const file = velocityFile.clone()
-							file.data = dataArray
-							setVelocityFile(file)
-						}
+						setSelectionMode({
+							label: 'Click to place velocity estimate',
+							mode: 'mapClick',
+							callback: point => {
+								setSelectionMode('normal')
+								if (velocityFile !== undefined) {
+									const dataArray = velocityFile.data
+										? [...velocityFile.data]
+										: []
+									const id = dataArray.length
+									const velocity = createVelocity({
+										lat: point.lat,
+										lon: point.lon
+									})
+									dataArray.push(velocity)
+									const file = velocityFile.clone()
+									file.data = dataArray
+									setVelocityFile(file)
+									select.select('velocity', id)
+								}
+							}
+						})
 					}}
 				/>
 			)
@@ -401,6 +417,7 @@ export default function App(): ReactElement {
 					selected={selectedBlock}
 					blocks={blockFile?.data ?? []}
 					addNewBlock={(): void => {
+						setSelectionMode('normal')
 						setSelectionMode({
 							label: 'Click to place new block',
 							mode: 'mapClick',
@@ -416,7 +433,6 @@ export default function App(): ReactElement {
 									const file = blockFile.clone()
 									file.data = dataArray
 									setBlockFile(file)
-									setSelectionMode('normal')
 									select.select('block', id)
 								}
 							}
@@ -457,7 +473,9 @@ export default function App(): ReactElement {
 					setSelectionMode={(mode): void => setSelectionMode(mode)}
 					addNewSegment={(a, b): void => {
 						if (segmentFile !== undefined) {
-							setSegmentFile(segmentFile.createSegment(a, b))
+							const file = segmentFile.createSegment(a, b)
+							setSegmentFile(file)
+							select.select('segment', (file.data?.segments.length ?? 0) - 1)
 						}
 					}}
 					setSegmentData={(index, data): void => {
