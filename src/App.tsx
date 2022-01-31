@@ -139,10 +139,10 @@ export default function App(): ReactElement {
 	const [arrowSources, setArrowSources] = useState<ArrowSource[]>([])
 	const [lineSources, setLineSources] = useState<LineSource[]>([])
 	const [drawnPointSource, setDrawnPointSource] = useState<DrawnPointSource>({
-		color: '',
-		selectedColor: '',
-		radius: 0,
-		selectedRadius: 0,
+		color: vertexSettings.color,
+		selectedColor: vertexSettings.activeColor,
+		radius: vertexSettings.radius,
+		selectedRadius: vertexSettings.activeRadius,
 		points: []
 	})
 

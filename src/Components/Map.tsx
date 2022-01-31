@@ -237,37 +237,37 @@ function MapElement({
 						controls: {
 							point: true
 						},
-						defaultMode: 'simple_select'
-						// styles: [
-						// 	// {
-						// 	// 	id: 'highlight-active-points',
-						// 	// 	type: 'circle',
-						// 	// 	filter: [
-						// 	// 		'all',
-						// 	// 		['==', '$type', 'Point'],
-						// 	// 		['==', 'meta', 'feature'],
-						// 	// 		['==', 'active', 'true']
-						// 	// 	],
-						// 	// 	paint: {
-						// 	// 		'circle-radius': drawnPointSource.selectedRadius,
-						// 	// 		'circle-color': drawnPointSource.selectedColor
-						// 	// 	}
-						// 	// },
-						// 	// {
-						// 	// 	id: 'points-are-blue',
-						// 	// 	type: 'circle',
-						// 	// 	filter: [
-						// 	// 		'all',
-						// 	// 		['==', '$type', 'Point'],
-						// 	// 		['==', 'meta', 'feature'],
-						// 	// 		['==', 'active', 'false']
-						// 	// 	],
-						// 	// 	paint: {
-						// 	// 		'circle-radius': drawnPointSource.radius,
-						// 	// 		'circle-color': drawnPointSettings.color
-						// 	// 	}
-						// 	// }
-						// ]
+						defaultMode: 'simple_select',
+						styles: [
+							{
+								id: 'highlight-active-points',
+								type: 'circle',
+								filter: [
+									'all',
+									['==', '$type', 'Point'],
+									['==', 'meta', 'feature'],
+									['==', 'active', 'true']
+								],
+								paint: {
+									'circle-radius': drawnPointSource.selectedRadius,
+									'circle-color': drawnPointSource.selectedColor
+								}
+							},
+							{
+								id: 'points',
+								type: 'circle',
+								filter: [
+									'all',
+									['==', '$type', 'Point'],
+									['==', 'meta', 'feature'],
+									['==', 'active', 'false']
+								],
+								paint: {
+									'circle-radius': drawnPointSource.radius,
+									'circle-color': drawnPointSource.color
+								}
+							}
+						]
 					})
 					map.addControl(localDraw)
 					setDraw(localDraw)

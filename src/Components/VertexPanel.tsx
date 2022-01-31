@@ -145,7 +145,7 @@ function VerticesPanel({
 						className='rounded w-full'
 						type='range'
 						min='0.1'
-						max='2'
+						max='5'
 						step='0.1'
 						value={settings.radius}
 						onChange={(event): void => {
@@ -179,7 +179,7 @@ function VerticesPanel({
 						className='rounded w-full'
 						type='range'
 						min='0.1'
-						max='2'
+						max='5'
 						step='0.1'
 						value={settings.activeRadius}
 						onChange={(event): void => {
