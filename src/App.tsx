@@ -401,14 +401,26 @@ export default function App(): ReactElement {
 					selected={selectedBlock}
 					blocks={blockFile?.data ?? []}
 					addNewBlock={(): void => {
-						if (blockFile !== undefined) {
-							const dataArray = blockFile.data ? [...blockFile.data] : []
-							const block = createBlock({})
-							dataArray.push(block)
-							const file = blockFile.clone()
-							file.data = dataArray
-							setBlockFile(file)
-						}
+						setSelectionMode({
+							label: 'Click to place new block',
+							mode: 'mapClick',
+							callback: point => {
+								if (blockFile !== undefined) {
+									const dataArray = blockFile.data ? [...blockFile.data] : []
+									const block = createBlock({
+										interior_lon: point.lon,
+										interior_lat: point.lat
+									})
+									const id = dataArray.length
+									dataArray.push(block)
+									const file = blockFile.clone()
+									file.data = dataArray
+									setBlockFile(file)
+									setSelectionMode('normal')
+									select.select('block', id)
+								}
+							}
+						})
 					}}
 					setBlockData={(index, data): void => {
 						if (blockFile !== undefined) {
