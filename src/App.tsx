@@ -557,9 +557,13 @@ export default function App(): ReactElement {
 				}}
 			/>
 			{selectionMode !== 'normal' ? (
-				<div className=''>
-					<span className=''>{selectionMode.label}</span>
-					<span className=''>Press Escape to cancel</span>
+				<div className='fixed top-12 z-10 left-10 right-10 flex flex-row justify-center'>
+					<div className='flex flex-col justify-center items-center bg-white p-3 gap-1 rounded'>
+						<span className='text-lg font-semibold'>{selectionMode.label}</span>
+						<span className='text-sm font-thin text-gray-500'>
+							Press Escape to cancel
+						</span>
+					</div>
 				</div>
 			) : (
 				<></>
