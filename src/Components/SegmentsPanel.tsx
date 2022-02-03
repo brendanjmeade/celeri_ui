@@ -72,7 +72,7 @@ function SegmentsPanel({
 				name: {
 					order: 0,
 					name: 'Name',
-					description: 'The Block Name',
+					description: 'The Segment Name',
 					type: 'string'
 				}
 			}}
