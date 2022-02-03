@@ -400,8 +400,16 @@ export class SegmentFile
 				this.data.vertexDictionary,
 				this.data.vertecies
 			)
-			const startSegment = { ...oldSegment, end: midpointId }
-			const endSegment = { ...oldSegment, start: midpointId }
+			const startSegment = {
+				...oldSegment,
+				end: midpointId,
+				name: `${oldSegment.name}_a`
+			}
+			const endSegment = {
+				...oldSegment,
+				start: midpointId,
+				name: `${oldSegment.name}_b`
+			}
 			const segments = [...this.data.segments]
 			segments[index] = startSegment
 			segments.push(endSegment)
