@@ -421,7 +421,6 @@ export default function App(): ReactElement {
 							label: 'Click to place new block',
 							mode: 'mapClick',
 							callback: point => {
-								setSelectionMode('normal')
 								if (blockFile !== undefined) {
 									const dataArray = blockFile.data ? [...blockFile.data] : []
 									const block = createBlock({
@@ -436,6 +435,7 @@ export default function App(): ReactElement {
 									setBlockFile(file)
 									select.select('block', id)
 								}
+								setSelectionMode('normal')
 							}
 						})
 					}}
