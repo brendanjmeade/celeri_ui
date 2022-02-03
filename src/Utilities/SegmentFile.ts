@@ -93,14 +93,15 @@ const fieldNames = [
 ]
 
 const defaultSegment: FileSegment = {
-	name: 'unnamed segment',
+	name: 'new_segment',
 	lon1: 0,
 	lat1: 0,
 	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
 	lon2: 10,
 	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
 	lat2: 10,
-	dip: 0,
+	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+	dip: 90,
 	res: 0,
 	other3: 0,
 	other6: 0,
@@ -110,7 +111,8 @@ const defaultSegment: FileSegment = {
 	other10: 0,
 	other11: 0,
 	other12: 0,
-	locking_depth: 0,
+	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+	locking_depth: 15,
 	locking_depth_sig: 0,
 	locking_depth_flag: 0,
 	dip_sig: 0,
