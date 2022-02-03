@@ -236,9 +236,6 @@ function MapElement({
 				if (drawnPointSource) {
 					localDraw = new MapboxDraw({
 						displayControlsDefault: false,
-						controls: {
-							point: true
-						},
 						defaultMode: 'simple_select',
 						styles: [
 							{
