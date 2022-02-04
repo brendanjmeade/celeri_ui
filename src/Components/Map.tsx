@@ -174,6 +174,13 @@ function MapElement({
 					}
 				}
 			)
+			innerMap.on('draw.modechange', ({ mode }: { mode: string }) => {
+				if (mode === 'simple_select' && selections.drawnPoint && draw) {
+					draw.changeMode('direct_select', {
+						featureId: `${selections.drawnPoint}`
+					})
+				}
+			})
 			innerMap.on(
 				'draw.update',
 				({
@@ -206,7 +213,7 @@ function MapElement({
 			)
 		}
 		console.log('Updating map...')
-	}, [draw, internalClick, internalDrawnPointSource.source, map])
+	}, [draw, internalClick, internalDrawnPointSource.source, map, selections])
 
 	useEffect(() => {
 		if (

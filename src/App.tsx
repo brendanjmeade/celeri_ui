@@ -595,7 +595,8 @@ export default function App(): ReactElement {
 				selections={{
 					segments: selectedSegment,
 					blocks: selectedBlock,
-					velocities: selectedVelocity
+					velocities: selectedVelocity,
+					drawnPoint: selectedVertex
 				}}
 				click={(point): void => {
 					if (

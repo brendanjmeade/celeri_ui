@@ -67,7 +67,7 @@ function VerticesPanel({
 				<>
 					<button
 						type='button'
-						className='rounded bg-white hover:bg-gray-200 p-2'
+						className='rounded bg-gray-700 text-white hover:bg-gray-800 p-2'
 						onClick={(): void => {
 							setSelectionMode({
 								type: 'vertex',
@@ -84,7 +84,7 @@ function VerticesPanel({
 					</button>
 					<button
 						type='button'
-						className='rounded bg-white hover:bg-gray-200 p-2'
+						className='rounded bg-gray-700 text-white hover:bg-gray-800 p-2'
 						onClick={(): void => {
 							setSelectionMode({
 								type: 'vertex',
@@ -101,7 +101,7 @@ function VerticesPanel({
 					</button>
 					<button
 						type='button'
-						className='rounded bg-white hover:bg-gray-200 p-2'
+						className='rounded bg-gray-700 text-white hover:bg-gray-800 p-2'
 						onClick={(): void => {
 							setSelectionMode({
 								mode: 'mapClick',

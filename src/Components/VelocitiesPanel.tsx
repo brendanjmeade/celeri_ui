@@ -160,7 +160,7 @@ function VelocitiesPanel({
 				<span className='text-l font-bold'>Add New Velocity</span>
 				<button
 					type='button'
-					className='rounded bg-white hover:bg-gray-200 p-2'
+					className='rounded bg-gray-700 text-white hover:bg-gray-800 p-2'
 					onClick={addNewVelocity}
 				>
 					New Velocity

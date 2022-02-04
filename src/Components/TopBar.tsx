@@ -18,7 +18,7 @@ function TopBar({
 	return (
 		<div
 			data-testid='topbar'
-			className='p-2 bg-gradient-to-r from-blue-700 to-green-700 text-white flex flex-row justify-between'
+			className='p-2 bg-gray-900 text-white flex flex-row justify-between'
 		>
 			<h3 className='text-lg font-bold'>Celeri UI</h3>
 			<span

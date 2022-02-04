@@ -22,8 +22,8 @@ function InspectorPanel({
 				data-testid={`tab-${tab}`}
 				key={tab}
 				className={`${
-					isActive ? 'bg-gray-100' : 'bg-gray-300'
-				} p-2 shadow-inner hover:bg-gray-200 rounded-t`}
+					isActive ? 'bg-white' : 'bg-gray-200'
+				} p-2 shadow-inner hover:bg-gray-100 rounded-t`}
 				// eslint-disable-next-line react/jsx-handler-names
 				onClick={(): void => setActive(isActive ? '' : tab)}
 			>
@@ -39,7 +39,7 @@ function InspectorPanel({
 			{active ? (
 				<div
 					data-testid='inspector-view'
-					className='flex flex-col bg-gray-100 flex-grow rounded-tr p-2'
+					className='flex flex-col bg-white flex-grow rounded-tr p-2 shadow-sm'
 				>
 					{view}
 				</div>
@@ -48,7 +48,7 @@ function InspectorPanel({
 			)}
 			<div
 				data-testid='inspector-tabs'
-				className='flex flex-row rounded-sm gap-0 divide-x divide-gray-200'
+				className='flex flex-row rounded-sm gap-0 divide-x divide-gray-300'
 			>
 				{tabs}
 			</div>

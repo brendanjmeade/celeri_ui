@@ -79,7 +79,7 @@ function SegmentsPanel({
 			controls={
 				<button
 					type='button'
-					className='rounded bg-white hover:bg-gray-200 p-2'
+					className='rounded bg-gray-700 text-white hover:bg-gray-800 p-2'
 					onClick={(): void => splitSegment(selected)}
 				>
 					Split Segment
@@ -163,7 +163,7 @@ function SegmentsPanel({
 				<span className='text-l font-bold'>Add New Segment</span>
 				<button
 					type='button'
-					className='rounded bg-white hover:bg-gray-200 p-2'
+					className='rounded bg-gray-700 text-white hover:bg-gray-800 p-2'
 					onClick={(): void => {
 						setSelectionMode({
 							mode: 'mapClick',
