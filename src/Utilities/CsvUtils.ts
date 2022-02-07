@@ -5,24 +5,26 @@ export function parse(contents: string): Record<string, number | string>[] {
 	const remaining = rows.slice(1)
 	const items: Record<string, number | string>[] = []
 	for (const row of remaining) {
-		const rowSplit = row.split(/\s*,\s*/)
-		const item: Record<string, number | string> = {}
-		// eslint-disable-next-line unicorn/no-for-loop
-		for (let index = 0; index < headers.length; index += 1) {
-			let value: number | string = rowSplit[index]
-			const header = headers[index]
-			const number = Number.parseFloat(value)
-			value = Number.isNaN(number) ? value : number
-			if (
-				typeof value === 'string' &&
-				value.startsWith(`"`) &&
-				value.endsWith(`"`)
-			) {
-				value = value.slice(1, -1)
+		if (row.trim() !== '') {
+			const rowSplit = row.split(/\s*,\s*/)
+			const item: Record<string, number | string> = {}
+			// eslint-disable-next-line unicorn/no-for-loop
+			for (let index = 0; index < headers.length; index += 1) {
+				let value: number | string = rowSplit[index]
+				const header = headers[index]
+				const number = Number.parseFloat(value)
+				value = Number.isNaN(number) ? value : number
+				if (
+					typeof value === 'string' &&
+					value.startsWith(`"`) &&
+					value.endsWith(`"`)
+				) {
+					value = value.slice(1, -1)
+				}
+				item[header] = value
 			}
-			item[header] = value
+			items.push(item)
 		}
-		items.push(item)
 	}
 	return items
 }
