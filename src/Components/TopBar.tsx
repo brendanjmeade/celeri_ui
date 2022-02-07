@@ -20,7 +20,7 @@ function TopBar({
 			data-testid='topbar'
 			className='p-2 bg-gray-900 text-white flex flex-row justify-between'
 		>
-			<h3 className='text-lg font-bold'>Celeri UI</h3>
+			<h3 className='text-lg font-bold'>celeri_ui</h3>
 			<span
 				data-testid='open-folder-topbar'
 				className='flex flex-row gap-2 items-center'
