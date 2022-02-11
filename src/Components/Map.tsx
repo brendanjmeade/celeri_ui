@@ -6,8 +6,8 @@ import mapboxgl, { Map, NavigationControl, Popup } from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { ReactElement } from 'react'
 import { useEffect, useRef, useState } from 'react'
-import type { Vertex } from 'Utilities/SegmentFile'
-import { InverseTransformVertexCoordinates } from 'Utilities/SegmentFile'
+import type { Vertex } from 'State/Segment/Vertex'
+import { InverseTransformVertexCoordinates } from 'State/Segment/Vertex'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string
 

@@ -27,6 +27,11 @@ import VerticesPanel, {
 } from 'Components/VertexPanel'
 import type { ReactElement } from 'react'
 import { useEffect, useState } from 'react'
+import type { Vertex } from 'State/Segment/Vertex'
+import {
+	DEFAULT_VERTEX,
+	GetShortestLineCoordinates
+} from 'State/Segment/Vertex'
 import type { BlockFile } from 'Utilities/BlockFile'
 import { createBlock } from 'Utilities/BlockFile'
 import type { CommandFile } from 'Utilities/CommandFile'
@@ -41,11 +46,7 @@ import type { Directory } from 'Utilities/FileSystemInterfaces'
 import OpenDirectory, {
 	SetDirectoryHandle
 } from 'Utilities/FileSystemInterfaces'
-import type { SegmentFile, Vertex } from 'Utilities/SegmentFile'
-import {
-	DEFAULT_VERTEX,
-	GetShortestLineCoordinates
-} from 'Utilities/SegmentFile'
+import type { SegmentFile } from 'Utilities/SegmentFile'
 import type { VelocityFile } from 'Utilities/VelocityFile'
 import { createVelocity } from 'Utilities/VelocityFile'
 

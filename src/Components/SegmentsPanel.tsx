@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { SelectionMode } from 'App'
 import type { ReactElement } from 'react'
-import type { Segment, Vertex } from 'Utilities/SegmentFile'
+import type { Segment } from 'State/Segment/Segment'
+import type { Vertex } from 'State/Segment/Vertex'
 import EditableItem from './EditableItem'
 
 export interface SegmentsDisplaySettings {
