@@ -5,16 +5,13 @@ import type { Vertex } from './Vertex'
 import { getVertexIdOrInsert } from './Vertex'
 
 export interface CreateSegmentAction {
-	type: 'createSegmet'
-	payload: {
-		start: Vertex
-		end: Vertex
-	}
+	start: Vertex
+	end: Vertex
 }
 
 export default function CreateSegment(
 	state: SegmentState,
-	{ payload }: CreateSegmentAction
+	payload: CreateSegmentAction
 ): SegmentState {
 	const verts = { ...state.vertecies }
 	const dictionary = { ...state.vertexDictionary }

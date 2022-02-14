@@ -1,3 +1,4 @@
+import { createAction, createReducer } from '@reduxjs/toolkit'
 import type { BridgeVerticesAction } from './BridgeVertices'
 import BridgeVertices from './BridgeVertices'
 import type { CreateSegmentAction } from './CreateSegment'
@@ -32,53 +33,40 @@ export const initialState: SegmentState = {
 	segments: [],
 	vertexDictionary: {}
 }
-export type SegmentAction =
-	| BridgeVerticesAction
-	| CreateSegmentAction
-	| DeleteSegmentAction
-	| EditSegmentDataAction
-	| ExtrudeSegmentAction
-	| LoadNewDataAction
-	| MergeVerticesAction
-	| MoveVertexAction
-	| SplitSegmentAction
 
-export function SegmentReducer(
-	// eslint-disable-next-line @typescript-eslint/default-param-last
-	state: SegmentState = initialState,
-	action: SegmentAction
-): SegmentState {
-	let updatedState = state
-	switch (action.type) {
-		case 'loadNewData':
-			updatedState = LoadNewData(state, action)
-			break
-		case 'bridgeVertices':
-			updatedState = BridgeVertices(state, action)
-			break
-		case 'createSegmet':
-			updatedState = CreateSegment(state, action)
-			break
-		case 'deleteSegment':
-			updatedState = DeleteSegment(state, action)
-			break
-		case 'editSegmentData':
-			updatedState = EditSegmentData(state, action)
-			break
-		case 'extrudeSegment':
-			updatedState = ExtrudeSegment(state, action)
-			break
-		case 'mergeVertices':
-			updatedState = MergeVertices(state, action)
-			break
-		case 'moveVertex':
-			updatedState = MoveVertex(state, action)
-			break
-		case 'splitSegment':
-			updatedState = SplitSegment(state, action)
-			break
-		default:
-			break
-	}
-	return updatedState
-}
+const bridgeVertices = createAction<BridgeVerticesAction>('bridgeVertices')
+const createSegment = createAction<CreateSegmentAction>('createSegmet')
+const deleteSegment = createAction<DeleteSegmentAction>('deleteSegment')
+const editSegmentData = createAction<EditSegmentDataAction>('editSegmentData')
+const extrudeSegment = createAction<ExtrudeSegmentAction>('extrudeSegment')
+const loadNewData = createAction<LoadNewDataAction>('loadNewData')
+const mergeVertices = createAction<MergeVerticesAction>('mergeVertices')
+const moveVertex = createAction<MoveVertexAction>('moveVertex')
+const splitSegment = createAction<SplitSegmentAction>('splitSegment')
+
+export const SegmentReducer = createReducer(initialState, builder => {
+	builder
+		.addCase(bridgeVertices, (state, action) =>
+			BridgeVertices(state, action.payload)
+		)
+		.addCase(createSegment, (state, action) =>
+			CreateSegment(state, action.payload)
+		)
+		.addCase(deleteSegment, (state, action) =>
+			DeleteSegment(state, action.payload)
+		)
+		.addCase(editSegmentData, (state, action) =>
+			EditSegmentData(state, action.payload)
+		)
+		.addCase(extrudeSegment, (state, action) =>
+			ExtrudeSegment(state, action.payload)
+		)
+		.addCase(loadNewData, (state, action) => LoadNewData(state, action.payload))
+		.addCase(mergeVertices, (state, action) =>
+			MergeVertices(state, action.payload)
+		)
+		.addCase(moveVertex, (state, action) => MoveVertex(state, action.payload))
+		.addCase(splitSegment, (state, action) =>
+			SplitSegment(state, action.payload)
+		)
+})

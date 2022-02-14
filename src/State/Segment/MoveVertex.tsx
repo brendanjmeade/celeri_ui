@@ -3,16 +3,13 @@ import type { Vertex } from './Vertex'
 import { VERTEX_PRECISION_MULTIPLIER } from './Vertex'
 
 export interface MoveVertexAction {
-	type: 'moveVertex'
-	payload: {
-		index: number
-		vertex: Vertex
-	}
+	index: number
+	vertex: Vertex
 }
 
 export default function MoveVertex(
 	state: SegmentState,
-	{ payload: { index, vertex } }: MoveVertexAction
+	{ index, vertex }: MoveVertexAction
 ): SegmentState {
 	const vertecies = { ...state.vertecies }
 	const vertexDictionary = { ...state.vertexDictionary }

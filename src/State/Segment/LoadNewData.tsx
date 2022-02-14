@@ -1,13 +1,10 @@
 import type { SegmentState } from './State'
 
-export interface LoadNewDataAction {
-	type: 'loadNewData'
-	payload: SegmentState
-}
+export type LoadNewDataAction = SegmentState
 
 export default function LoadNewData(
 	state: SegmentState,
 	action: LoadNewDataAction
 ): SegmentState {
-	return action.payload
+	return action
 }

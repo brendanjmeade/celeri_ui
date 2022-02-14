@@ -3,16 +3,13 @@ import { defaultSegment } from './Segment'
 import type { SegmentState } from './State'
 
 export interface BridgeVerticesAction {
-	type: 'bridgeVertices'
-	payload: {
-		a: number
-		b: number
-	}
+	a: number
+	b: number
 }
 
 export default function BridgeVertices(
 	state: SegmentState,
-	{ payload: { a, b } }: BridgeVerticesAction
+	{ a, b }: BridgeVerticesAction
 ): SegmentState {
 	const segment: InMemorySegment = {
 		...defaultSegment,

@@ -2,15 +2,12 @@ import type { SegmentState } from './State'
 import { tryRemoveVertex } from './Vertex'
 
 export interface DeleteSegmentAction {
-	type: 'deleteSegment'
-	payload: {
-		index: number
-	}
+	index: number
 }
 
 export default function DeleteSegment(
 	state: SegmentState,
-	{ payload }: DeleteSegmentAction
+	payload: DeleteSegmentAction
 ): SegmentState {
 	const segments = [...state.segments]
 	// eslint-disable-next-line @typescript-eslint/no-magic-numbers

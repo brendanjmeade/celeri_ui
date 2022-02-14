@@ -2,16 +2,13 @@ import type { Segment } from './Segment'
 import type { SegmentState } from './State'
 
 export interface EditSegmentDataAction {
-	type: 'editSegmentData'
-	payload: {
-		index: number
-		data: Partial<Segment>
-	}
+	index: number
+	data: Partial<Segment>
 }
 
 export default function EditSegmentData(
 	state: SegmentState,
-	{ payload }: EditSegmentDataAction
+	payload: EditSegmentDataAction
 ): SegmentState {
 	const segments = [...state.segments]
 	// eslint-disable-next-line @typescript-eslint/no-magic-numbers

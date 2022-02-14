@@ -2,16 +2,13 @@ import type { SegmentState } from './State'
 import { VERTEX_PRECISION_MULTIPLIER } from './Vertex'
 
 export interface MergeVerticesAction {
-	type: 'mergeVertices'
-	payload: {
-		a: number
-		b: number
-	}
+	a: number
+	b: number
 }
 
 export default function MergeVertices(
 	state: SegmentState,
-	{ payload: { a, b } }: MergeVerticesAction
+	{ a, b }: MergeVerticesAction
 ): SegmentState {
 	const segments = state.segments
 		.map(s => {

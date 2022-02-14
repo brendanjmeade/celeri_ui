@@ -5,16 +5,13 @@ import type { Vertex } from './Vertex'
 import { getVertexIdOrInsert } from './Vertex'
 
 export interface ExtrudeSegmentAction {
-	type: 'extrudeSegment'
-	payload: {
-		index: number
-		targetPoint: Vertex
-	}
+	index: number
+	targetPoint: Vertex
 }
 
 export default function ExtrudeSegment(
 	state: SegmentState,
-	{ payload }: ExtrudeSegmentAction
+	payload: ExtrudeSegmentAction
 ): SegmentState {
 	const verts = { ...state.vertecies }
 	const dictionary = { ...state.vertexDictionary }
