@@ -27,6 +27,18 @@ import VerticesPanel, {
 } from 'Components/VertexPanel'
 import type { ReactElement } from 'react'
 import { useEffect, useState } from 'react'
+import { useAppDispatch, useAppSelector } from 'State/Hooks'
+import {
+	bridgeVertices,
+	createSegment,
+	deleteSegment,
+	editSegmentData,
+	extrudeSegment,
+	loadNewData,
+	mergeVertices,
+	moveVertex,
+	splitSegment
+} from 'State/Segment/State'
 import type { Vertex } from 'State/Segment/Vertex'
 import {
 	DEFAULT_VERTEX,
@@ -71,6 +83,7 @@ const windows = {
 }
 
 export default function App(): ReactElement {
+	const dispatch = useAppDispatch()
 	const [folderHandle, setFolderHandle] = useState<Directory>()
 	const [activeTab, setActiveTab] = useState<string>('')
 	const [files, setFiles] = useState<Record<string, OpenableFile>>({
@@ -105,6 +118,8 @@ export default function App(): ReactElement {
 	const [segmentFile, setSegmentFile] = useState<SegmentFile>()
 	const [blockFile, setBlockFile] = useState<BlockFile>()
 	const [velocityFile, setVelocityFile] = useState<VelocityFile>()
+
+	const segments = useAppSelector(state => state.segments)
 
 	const [velocitiesSettings, setVelocitiesSettings] =
 		useState<VelocitiesDisplaySettings>(initialVelocityDisplaySettings)
@@ -192,7 +207,7 @@ export default function App(): ReactElement {
 				}
 			}
 		])
-	}, [blockSettings, blockFile, segmentSettings, segmentFile, select])
+	}, [blockSettings, blockFile, segmentSettings, select])
 
 	useEffect(() => {
 		setLineSources([
@@ -202,33 +217,27 @@ export default function App(): ReactElement {
 				selectedColor: segmentSettings.activeColor,
 				width: segmentSettings.width,
 				selectedWidth: segmentSettings.activeWidth,
-				lines: segmentFile?.data?.segments
-					? segmentFile.data.segments.map((segment, index) => {
-							const start =
-								segmentFile.data?.vertecies[segment.start] ?? DEFAULT_VERTEX
-							const end =
-								segmentFile.data?.vertecies[segment.end] ?? DEFAULT_VERTEX
-							const [
-								[startLongitude, startLatitude],
-								[endLongitude, endLatitude]
-							] = GetShortestLineCoordinates(start, end)
-							return {
-								startLongitude,
-								startLatitude,
-								endLongitude,
-								endLatitude,
-								name: segment.name,
-								description: `${start.lon},${start.lat} to ${end.lon},${end.lat}`,
-								index
-							}
-					  })
-					: [],
+				lines: segments.segments.map((segment, index) => {
+					const start = segments.vertecies[segment.start] ?? DEFAULT_VERTEX
+					const end = segments.vertecies[segment.end] ?? DEFAULT_VERTEX
+					const [[startLongitude, startLatitude], [endLongitude, endLatitude]] =
+						GetShortestLineCoordinates(start, end)
+					return {
+						startLongitude,
+						startLatitude,
+						endLongitude,
+						endLatitude,
+						name: segment.name,
+						description: `${start.lon},${start.lat} to ${end.lon},${end.lat}`,
+						index
+					}
+				}),
 				click: (index): void => {
 					select.select('segment', index)
 				}
 			}
 		])
-	}, [segmentFile, segmentSettings, select])
+	}, [segments, segmentSettings, select])
 
 	useEffect(() => {
 		setDrawnPointSource({
@@ -236,37 +245,32 @@ export default function App(): ReactElement {
 			radius: vertexSettings.radius,
 			selectedColor: vertexSettings.activeColor,
 			selectedRadius: vertexSettings.activeRadius,
-			points: segmentFile?.data?.vertecies
-				? (Object.keys(segmentFile.data.vertecies)
-						.map(v => {
-							const index = Number.parseInt(v, 10)
-							const vert = segmentFile.data?.vertecies[index]
-							if (vert) {
-								return {
-									longitude: vert.lon,
-									latitude: vert.lat,
-									index
-								}
-							}
-							return false
-						})
-						.filter(v => !!v) as unknown as {
-						longitude: number
-						latitude: number
-						index: number
-				  }[])
-				: [],
+			points: Object.keys(segments.vertecies)
+				.map(v => {
+					const index = Number.parseInt(v, 10)
+					const vert = segments.vertecies[index]
+					if (vert) {
+						return {
+							longitude: vert.lon,
+							latitude: vert.lat,
+							index
+						}
+					}
+					return false
+				})
+				.filter(v => !!v) as unknown as {
+				longitude: number
+				latitude: number
+				index: number
+			}[],
 			update: (index, vertex) => {
-				if (segmentFile) {
-					const file = segmentFile.moveVertex(index, vertex)
-					setSegmentFile(file)
-				}
+				dispatch(moveVertex({ index, vertex }))
 			},
 			select: index => {
 				select.select('vertex', index)
 			}
 		})
-	}, [vertexSettings, segmentFile, select])
+	}, [vertexSettings, select, segments.vertecies, dispatch])
 
 	useEffect(() => {
 		setArrowSources([
@@ -318,7 +322,12 @@ export default function App(): ReactElement {
 							updated[file] = { ...updated[file], currentFilePath: name }
 							switch (file) {
 								case 'segment':
-									setSegmentFile(await OpenSegmentFile(handle))
+									// eslint-disable-next-line no-case-declarations
+									const localSegmentFile = await OpenSegmentFile(handle)
+									setSegmentFile(localSegmentFile)
+									if (localSegmentFile.data) {
+										dispatch(loadNewData(localSegmentFile.data))
+									}
 									break
 								case 'block':
 									setBlockFile(await OpenBlockFile(handle))
@@ -335,6 +344,9 @@ export default function App(): ReactElement {
 									)
 									setCommandFile(commandResult.commands)
 									setSegmentFile(commandResult.segments)
+									if (commandResult.segments.data) {
+										dispatch(loadNewData(commandResult.segments.data))
+									}
 									setBlockFile(commandResult.blocks)
 									setVelocityFile(commandResult.velocities)
 									updated = commandResult.openableFiles
@@ -470,47 +482,23 @@ export default function App(): ReactElement {
 				<SegmentsPanel
 					settings={segmentSettings}
 					setSettings={setSegmentSettings}
-					segments={segmentFile?.data?.segments ?? []}
+					segments={segments.segments ?? []}
 					selected={selectedSegment}
 					setSelectionMode={(mode): void => setSelectionMode(mode)}
 					addNewSegment={(a, b): void => {
-						if (segmentFile !== undefined) {
-							const file = segmentFile.createSegment(a, b)
-							setSegmentFile(file)
-							select.select('segment', (file.data?.segments.length ?? 0) - 1)
-						}
+						const nextIndex = segments.segments.length
+						dispatch(createSegment({ start: a, end: b }))
+						select.select('segment', nextIndex)
 					}}
 					setSegmentData={(index, data): void => {
-						if (segmentFile !== undefined) {
-							if (data) {
-								const segment =
-									// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-									segmentFile.data && segmentFile.data.segments[index]
-										? { ...segmentFile.data.segments[index], ...data }
-										: undefined
-								const dataArray = segmentFile.data
-									? [...segmentFile.data.segments]
-									: []
-								if (segment) {
-									dataArray[index] = segment
-									const file = segmentFile.clone()
-									file.data = {
-										vertecies: file.data?.vertecies ?? [],
-										vertexDictionary: file.data?.vertexDictionary ?? {},
-										segments: dataArray
-									}
-									setSegmentFile(file)
-								}
-							} else {
-								setSegmentFile(segmentFile.deleteSegment(index))
-							}
+						if (data) {
+							dispatch(editSegmentData({ index, data }))
+						} else {
+							dispatch(deleteSegment({ index }))
 						}
 					}}
 					splitSegment={(index): void => {
-						if (segmentFile) {
-							const file = segmentFile.splitSegment(index)
-							setSegmentFile(file)
-						}
+						dispatch(splitSegment(index))
 					}}
 				/>
 			)
@@ -520,7 +508,7 @@ export default function App(): ReactElement {
 				<VerticesPanel
 					settings={vertexSettings}
 					setSettings={setVertexSettings}
-					vertices={segmentFile?.data?.vertecies ?? {}}
+					vertices={segments.vertecies ?? {}}
 					selected={selectedVertex}
 					setVertexData={function (
 						index: number,
@@ -530,19 +518,13 @@ export default function App(): ReactElement {
 					}}
 					setSelectionMode={(mode): void => setSelectionMode(mode)}
 					mergeVertices={(a, b): void => {
-						if (segmentFile) {
-							setSegmentFile(segmentFile.mergeVertices(a, b))
-						}
+						dispatch(mergeVertices({ a, b }))
 					}}
 					bridgeVertices={(a, b): void => {
-						if (segmentFile) {
-							setSegmentFile(segmentFile.bridgeVertices(a, b))
-						}
+						dispatch(bridgeVertices({ a, b }))
 					}}
 					extrudeVertex={(start, end): void => {
-						if (segmentFile) {
-							setSegmentFile(segmentFile.extrudeSegment(start, end))
-						}
+						dispatch(extrudeSegment({ index: start, targetPoint: end }))
 					}}
 				/>
 			)
@@ -566,7 +548,10 @@ export default function App(): ReactElement {
 				filesOpen={(commandFile ?? segmentFile ?? blockFile) !== undefined}
 				saveFiles={async (): Promise<void> => {
 					if (commandFile) await commandFile.save()
-					if (segmentFile) await segmentFile.save()
+					if (segmentFile) {
+						segmentFile.data = segments
+						await segmentFile.save()
+					}
 					if (blockFile) await blockFile.save()
 				}}
 				folder={folderHandle}

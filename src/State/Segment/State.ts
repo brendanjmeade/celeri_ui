@@ -34,15 +34,18 @@ export const initialState: SegmentState = {
 	vertexDictionary: {}
 }
 
-const bridgeVertices = createAction<BridgeVerticesAction>('bridgeVertices')
-const createSegment = createAction<CreateSegmentAction>('createSegmet')
-const deleteSegment = createAction<DeleteSegmentAction>('deleteSegment')
-const editSegmentData = createAction<EditSegmentDataAction>('editSegmentData')
-const extrudeSegment = createAction<ExtrudeSegmentAction>('extrudeSegment')
-const loadNewData = createAction<LoadNewDataAction>('loadNewData')
-const mergeVertices = createAction<MergeVerticesAction>('mergeVertices')
-const moveVertex = createAction<MoveVertexAction>('moveVertex')
-const splitSegment = createAction<SplitSegmentAction>('splitSegment')
+export const bridgeVertices =
+	createAction<BridgeVerticesAction>('bridgeVertices')
+export const createSegment = createAction<CreateSegmentAction>('createSegmet')
+export const deleteSegment = createAction<DeleteSegmentAction>('deleteSegment')
+export const editSegmentData =
+	createAction<EditSegmentDataAction>('editSegmentData')
+export const extrudeSegment =
+	createAction<ExtrudeSegmentAction>('extrudeSegment')
+export const loadNewData = createAction<LoadNewDataAction>('loadNewData')
+export const mergeVertices = createAction<MergeVerticesAction>('mergeVertices')
+export const moveVertex = createAction<MoveVertexAction>('moveVertex')
+export const splitSegment = createAction<SplitSegmentAction>('splitSegment')
 
 export const SegmentReducer = createReducer(initialState, builder => {
 	builder

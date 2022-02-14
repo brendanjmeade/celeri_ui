@@ -2,6 +2,8 @@ import App from 'App'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom'
 import { QueryClient, QueryClientProvider } from 'react-query'
+import { Provider } from 'react-redux'
+import { store } from 'State/State'
 import { registerSW } from 'virtual:pwa-register'
 import './index.css'
 
@@ -20,7 +22,9 @@ const queryClient = new QueryClient({
 ReactDOM.render(
 	<StrictMode>
 		<QueryClientProvider client={queryClient}>
-			<App />
+			<Provider store={store}>
+				<App />
+			</Provider>
 		</QueryClientProvider>
 	</StrictMode>,
 	document.querySelector('#root')
