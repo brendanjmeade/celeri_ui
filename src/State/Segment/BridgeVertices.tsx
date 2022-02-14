@@ -4,18 +4,20 @@ import type { SegmentState } from './State'
 
 export interface BridgeVerticesAction {
 	type: 'bridgeVertices'
-	a: number
-	b: number
+	payload: {
+		a: number
+		b: number
+	}
 }
 
 export default function BridgeVertices(
 	state: SegmentState,
-	action: BridgeVerticesAction
+	{ payload: { a, b } }: BridgeVerticesAction
 ): SegmentState {
 	const segment: InMemorySegment = {
 		...defaultSegment,
-		start: action.a,
-		end: action.b
+		start: a,
+		end: b
 	}
 	const segments = [...state.segments, segment]
 	return { ...state, segments }

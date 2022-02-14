@@ -4,13 +4,15 @@ import { VERTEX_PRECISION_MULTIPLIER } from './Vertex'
 
 export interface MoveVertexAction {
 	type: 'moveVertex'
-	index: number
-	vertex: Vertex
+	payload: {
+		index: number
+		vertex: Vertex
+	}
 }
 
 export default function MoveVertex(
 	state: SegmentState,
-	{ index, vertex }: MoveVertexAction
+	{ payload: { index, vertex } }: MoveVertexAction
 ): SegmentState {
 	const vertecies = { ...state.vertecies }
 	const vertexDictionary = { ...state.vertexDictionary }
@@ -36,5 +38,5 @@ export default function MoveVertex(
 		delete vertecies[oldIndex]
 	}
 	vertecies[index] = vertex
-	return { segments, vertecies, vertexDictionary }
+	return { ...state, segments, vertecies, vertexDictionary }
 }

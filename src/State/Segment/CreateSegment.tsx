@@ -6,21 +6,39 @@ import { getVertexIdOrInsert } from './Vertex'
 
 export interface CreateSegmentAction {
 	type: 'createSegmet'
-	start: Vertex
-	end: Vertex
+	payload: {
+		start: Vertex
+		end: Vertex
+	}
 }
 
 export default function CreateSegment(
 	state: SegmentState,
-	action: CreateSegmentAction
+	{ payload }: CreateSegmentAction
 ): SegmentState {
 	const verts = { ...state.vertecies }
 	const dictionary = { ...state.vertexDictionary }
+	const { lastIndex } = state
 
-	const start = getVertexIdOrInsert(action.start, dictionary, verts)
-	const end = getVertexIdOrInsert(action.end, dictionary, verts)
+	const [start, lastIndex1] = getVertexIdOrInsert(
+		payload.start,
+		dictionary,
+		verts,
+		lastIndex
+	)
+	const [end, lastIndex2] = getVertexIdOrInsert(
+		payload.end,
+		dictionary,
+		verts,
+		lastIndex1
+	)
 	const segment: InMemorySegment = { ...defaultSegment, start, end }
 	const segments = [...state.segments, segment]
 
-	return { vertecies: verts, vertexDictionary: dictionary, segments }
+	return {
+		vertecies: verts,
+		vertexDictionary: dictionary,
+		segments,
+		lastIndex: lastIndex2
+	}
 }

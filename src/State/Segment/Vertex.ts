@@ -56,27 +56,26 @@ export function GetShortestLineCoordinates(
 }
 
 export const VERTEX_PRECISION_MULTIPLIER = 1000
-let LAST_VERTEX_INDEX = 0
 
 export function getVertexIdOrInsert(
 	vertex: Vertex,
 	dictionary: Record<string, number>,
-	array: Record<number, Vertex>
-): number {
+	array: Record<number, Vertex>,
+	lastIndex: number
+): [number, number] {
 	const key = `${Math.floor(
 		vertex.lon * VERTEX_PRECISION_MULTIPLIER
 	)},${Math.floor(vertex.lat * VERTEX_PRECISION_MULTIPLIER)}`
 	if (key in dictionary) {
-		return dictionary[key]
+		return [dictionary[key], lastIndex]
 	}
-	const id = LAST_VERTEX_INDEX
-	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-	LAST_VERTEX_INDEX += 1
+	const id = lastIndex
 	// eslint-disable-next-line no-param-reassign
 	array[id] = vertex
 	// eslint-disable-next-line no-param-reassign
 	dictionary[key] = id
-	return id
+	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+	return [id, lastIndex + 1]
 }
 
 export function tryRemoveVertex(

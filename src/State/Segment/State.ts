@@ -1,4 +1,3 @@
-import { configureStore } from '@reduxjs/toolkit'
 import type { BridgeVerticesAction } from './BridgeVertices'
 import BridgeVertices from './BridgeVertices'
 import type { CreateSegmentAction } from './CreateSegment'
@@ -22,12 +21,14 @@ import type { Vertex } from './Vertex'
 
 export interface SegmentState {
 	vertecies: Record<number, Vertex>
+	lastIndex: number
 	segments: InMemorySegment[]
 	vertexDictionary: Record<string, number>
 }
 
 export const initialState: SegmentState = {
 	vertecies: {},
+	lastIndex: 0,
 	segments: [],
 	vertexDictionary: {}
 }
@@ -81,9 +82,3 @@ export function SegmentReducer(
 	}
 	return updatedState
 }
-
-export const store = configureStore({
-	reducer: SegmentReducer
-})
-
-export type SegmentDispatch = typeof store.dispatch

@@ -20,6 +20,7 @@ export class SegmentFile
 			vertecies: Record<number, Vertex>
 			segments: InMemorySegment[]
 			vertexDictionary: Record<string, number>
+			lastIndex: number
 		}>
 {
 	public handle: File
@@ -29,6 +30,7 @@ export class SegmentFile
 				vertecies: Record<number, Vertex>
 				segments: InMemorySegment[]
 				vertexDictionary: Record<string, number>
+				lastIndex: number
 		  }
 		| undefined
 
@@ -50,21 +52,25 @@ export class SegmentFile
 		const vertexDictionary: Record<string, number> = {}
 		const vertecies: Record<number, Vertex> = {}
 		const segments: InMemorySegment[] = []
+		let lastIndex = 0
 		for (const segment of rawData) {
-			const start = getVertexIdOrInsert(
+			const [start, nextIndex] = getVertexIdOrInsert(
 				{ lon: segment.lon1, lat: segment.lat1 },
 				vertexDictionary,
-				vertecies
+				vertecies,
+				lastIndex
 			)
-			const end = getVertexIdOrInsert(
+			const [end, nextIndex2] = getVertexIdOrInsert(
 				{ lon: segment.lon2, lat: segment.lat2 },
 				vertexDictionary,
-				vertecies
+				vertecies,
+				nextIndex
 			)
 			const inMemorySegment = { ...segment, start, end }
+			lastIndex = nextIndex2
 			segments.push(inMemorySegment)
 		}
-		this.data = { vertecies, segments, vertexDictionary }
+		this.data = { vertecies, segments, vertexDictionary, lastIndex }
 	}
 
 	public async save(): Promise<void> {
@@ -173,7 +179,7 @@ export class SegmentFile
 			}
 			vertecies[index] = vertex
 			const file = this.clone()
-			file.data = { segments, vertecies, vertexDictionary }
+			file.data = { ...this.data, segments, vertecies, vertexDictionary }
 			return file
 		}
 		return this
@@ -190,10 +196,11 @@ export class SegmentFile
 				// eslint-disable-next-line @typescript-eslint/no-magic-numbers
 				lat: (start.lat + end.lat) / 2
 			}
-			const midpointId = getVertexIdOrInsert(
+			const [midpointId, lastIndex] = getVertexIdOrInsert(
 				midpoint,
 				this.data.vertexDictionary,
-				this.data.vertecies
+				this.data.vertecies,
+				this.data.lastIndex
 			)
 			const startSegment = {
 				...oldSegment,
@@ -209,7 +216,7 @@ export class SegmentFile
 			segments[index] = startSegment
 			segments.push(endSegment)
 			const file = this.clone()
-			file.data = { ...this.data, segments }
+			file.data = { ...this.data, segments, lastIndex }
 			return file
 		}
 		return this
@@ -231,12 +238,22 @@ export class SegmentFile
 			const verts = { ...this.data.vertecies }
 			const dictionary = { ...this.data.vertexDictionary }
 
-			const end = getVertexIdOrInsert(endVertex, dictionary, verts)
+			const [end, lastIndex] = getVertexIdOrInsert(
+				endVertex,
+				dictionary,
+				verts,
+				this.data.lastIndex
+			)
 			const segment: InMemorySegment = { ...defaultSegment, start, end }
 			const segments = [...this.data.segments, segment]
 
 			const file = this.clone()
-			file.data = { vertecies: verts, vertexDictionary: dictionary, segments }
+			file.data = {
+				vertecies: verts,
+				vertexDictionary: dictionary,
+				segments,
+				lastIndex
+			}
 			return file
 		}
 		return this
@@ -259,13 +276,28 @@ export class SegmentFile
 			const verts = { ...this.data.vertecies }
 			const dictionary = { ...this.data.vertexDictionary }
 
-			const start = getVertexIdOrInsert(startVertex, dictionary, verts)
-			const end = getVertexIdOrInsert(endVertex, dictionary, verts)
+			const [start, lastIndex] = getVertexIdOrInsert(
+				startVertex,
+				dictionary,
+				verts,
+				this.data.lastIndex
+			)
+			const [end, lastIndex2] = getVertexIdOrInsert(
+				endVertex,
+				dictionary,
+				verts,
+				lastIndex
+			)
 			const segment: InMemorySegment = { ...defaultSegment, start, end }
 			const segments = [...this.data.segments, segment]
 
 			const file = this.clone()
-			file.data = { vertecies: verts, vertexDictionary: dictionary, segments }
+			file.data = {
+				vertecies: verts,
+				vertexDictionary: dictionary,
+				segments,
+				lastIndex: lastIndex2
+			}
 			return file
 		}
 		return this

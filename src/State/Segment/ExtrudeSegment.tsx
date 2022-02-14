@@ -6,24 +6,31 @@ import { getVertexIdOrInsert } from './Vertex'
 
 export interface ExtrudeSegmentAction {
 	type: 'extrudeSegment'
-	index: number
-	targetPoint: Vertex
+	payload: {
+		index: number
+		targetPoint: Vertex
+	}
 }
 
 export default function ExtrudeSegment(
 	state: SegmentState,
-	action: ExtrudeSegmentAction
+	{ payload }: ExtrudeSegmentAction
 ): SegmentState {
 	const verts = { ...state.vertecies }
 	const dictionary = { ...state.vertexDictionary }
 
-	const end = getVertexIdOrInsert(action.targetPoint, dictionary, verts)
+	const [end, lastIndex] = getVertexIdOrInsert(
+		payload.targetPoint,
+		dictionary,
+		verts,
+		state.lastIndex
+	)
 	const segment: InMemorySegment = {
 		...defaultSegment,
-		start: action.index,
+		start: payload.index,
 		end
 	}
 	const segments = [...state.segments, segment]
 
-	return { vertecies: verts, vertexDictionary: dictionary, segments }
+	return { vertecies: verts, vertexDictionary: dictionary, segments, lastIndex }
 }

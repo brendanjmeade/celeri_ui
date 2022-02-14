@@ -55,7 +55,9 @@ BRb                                                                ,245.927,44.7
 					{ lon: 100, lat: 100 }
 				],
 				segments: [test],
-				vertexDictionary: {}
+				vertexDictionary: {},
+				// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+				lastIndex: 1
 			}
 			await segment.save()
 			expect(directoryStructure.root['segment.csv']).to.contain('test,100')

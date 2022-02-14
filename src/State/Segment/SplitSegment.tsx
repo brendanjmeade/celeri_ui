@@ -3,14 +3,14 @@ import { getVertexIdOrInsert } from './Vertex'
 
 export interface SplitSegmentAction {
 	type: 'splitSegment'
-	index: number
+	payload: number
 }
 
 export default function SplitSegment(
 	state: SegmentState,
-	{ index }: SplitSegmentAction
+	{ payload }: SplitSegmentAction
 ): SegmentState {
-	const oldSegment = state.segments[index]
+	const oldSegment = state.segments[payload]
 	const start = state.vertecies[oldSegment.start]
 	const end = state.vertecies[oldSegment.end]
 	const midpoint = {
@@ -19,10 +19,11 @@ export default function SplitSegment(
 		// eslint-disable-next-line @typescript-eslint/no-magic-numbers
 		lat: (start.lat + end.lat) / 2
 	}
-	const midpointId = getVertexIdOrInsert(
+	const [midpointId, lastIndex] = getVertexIdOrInsert(
 		midpoint,
 		state.vertexDictionary,
-		state.vertecies
+		state.vertecies,
+		state.lastIndex
 	)
 	const startSegment = {
 		...oldSegment,
@@ -35,7 +36,7 @@ export default function SplitSegment(
 		name: `${oldSegment.name}_b`
 	}
 	const segments = [...state.segments]
-	segments[index] = startSegment
+	segments[payload] = startSegment
 	segments.push(endSegment)
-	return { ...state, segments }
+	return { ...state, segments, lastIndex }
 }

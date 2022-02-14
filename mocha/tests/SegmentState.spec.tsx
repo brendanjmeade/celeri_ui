@@ -6,10 +6,11 @@ describe('Segment Actions mutate state as expected', () => {
 	it('Can load new data into the segment state', () => {
 		const state = SegmentReducer(initialState, {
 			type: 'loadNewData',
-			data: {
+			payload: {
 				vertecies: { 0: { lon: 0, lat: 0 } },
 				segments: [],
-				vertexDictionary: {}
+				vertexDictionary: {},
+				lastIndex: 0
 			}
 		})
 		expect(state.segments).to.have.length(0)
@@ -25,8 +26,7 @@ describe('Segment Actions mutate state as expected', () => {
 			},
 			{
 				type: 'bridgeVertices',
-				a: 0,
-				b: 1
+				payload: { a: 0, b: 1 }
 			}
 		)
 		expect(state.segments).to.have.length(1)
@@ -36,8 +36,10 @@ describe('Segment Actions mutate state as expected', () => {
 	it('Can create segments', () => {
 		const state = SegmentReducer(initialState, {
 			type: 'createSegmet',
-			start: { lon: 0, lat: 0 },
-			end: { lon: 1, lat: 1 }
+			payload: {
+				start: { lon: 0, lat: 0 },
+				end: { lon: 1, lat: 1 }
+			}
 		})
 		expect(state.segments).to.have.length(1)
 		expect(state.segments[0].dip).to.equal(90)
@@ -48,13 +50,17 @@ describe('Segment Actions mutate state as expected', () => {
 	it('Can create 2 segments that share a vertex', () => {
 		const firstSegment = SegmentReducer(initialState, {
 			type: 'createSegmet',
-			start: { lon: 0, lat: 0 },
-			end: { lon: 1, lat: 1 }
+			payload: {
+				start: { lon: 0, lat: 0 },
+				end: { lon: 1, lat: 1 }
+			}
 		})
 		const state = SegmentReducer(firstSegment, {
 			type: 'createSegmet',
-			start: { lon: 1, lat: 1 },
-			end: { lon: 2, lat: 2 }
+			payload: {
+				start: { lon: 1, lat: 1 },
+				end: { lon: 2, lat: 2 }
+			}
 		})
 		expect(state.segments).to.have.length(2)
 		expect(state.vertecies[state.segments[1].start].lat).to.equal(1)
@@ -64,24 +70,28 @@ describe('Segment Actions mutate state as expected', () => {
 	it('Can delete a segment', () => {
 		const createSegment = SegmentReducer(initialState, {
 			type: 'createSegmet',
-			start: { lon: 0, lat: 0 },
-			end: { lon: 1, lat: 1 }
+			payload: {
+				start: { lon: 0, lat: 0 },
+				end: { lon: 1, lat: 1 }
+			}
 		})
 		const state = SegmentReducer(createSegment, {
 			type: 'deleteSegment',
-			index: 0
+			payload: { index: 0 }
 		})
 		expect(state.segments).to.have.length(0)
 	})
 	it('Can delete a segment', () => {
 		const createSegment = SegmentReducer(initialState, {
 			type: 'createSegmet',
-			start: { lon: 0, lat: 0 },
-			end: { lon: 1, lat: 1 }
+			payload: {
+				start: { lon: 0, lat: 0 },
+				end: { lon: 1, lat: 1 }
+			}
 		})
 		const state = SegmentReducer(createSegment, {
 			type: 'deleteSegment',
-			index: 0
+			payload: { index: 0 }
 		})
 		expect(state.segments).to.have.length(0)
 		expect(state.vertecies).to.be.empty
@@ -89,17 +99,21 @@ describe('Segment Actions mutate state as expected', () => {
 	it('Can delete a segment sharing a vertex with another segment', () => {
 		const firstSegment = SegmentReducer(initialState, {
 			type: 'createSegmet',
-			start: { lon: 0, lat: 0 },
-			end: { lon: 1, lat: 1 }
+			payload: {
+				start: { lon: 0, lat: 0 },
+				end: { lon: 1, lat: 1 }
+			}
 		})
 		const secondSegment = SegmentReducer(firstSegment, {
 			type: 'createSegmet',
-			start: { lon: 1, lat: 1 },
-			end: { lon: 2, lat: 2 }
+			payload: {
+				start: { lon: 1, lat: 1 },
+				end: { lon: 2, lat: 2 }
+			}
 		})
 		const state = SegmentReducer(secondSegment, {
 			type: 'deleteSegment',
-			index: 1
+			payload: { index: 1 }
 		})
 		expect(state.segments).to.have.length(1)
 		expect(Object.keys(state.vertecies)).to.have.length(2)
@@ -107,15 +121,111 @@ describe('Segment Actions mutate state as expected', () => {
 	it('Can edit a segments data', () => {
 		const createSegment = SegmentReducer(initialState, {
 			type: 'createSegmet',
-			start: { lon: 0, lat: 0 },
-			end: { lon: 1, lat: 1 }
+			payload: {
+				start: { lon: 0, lat: 0 },
+				end: { lon: 1, lat: 1 }
+			}
 		})
 		const state = SegmentReducer(createSegment, {
 			type: 'editSegmentData',
-			index: 0,
-			data: { dip: 80 }
+			payload: {
+				index: 0,
+				data: { dip: 80 }
+			}
 		})
 		expect(state.segments[0].dip).to.equal(80)
 		expect(state.segments[0].locking_depth).to.equal(15)
+	})
+	it('Can extrude a segments', () => {
+		const createSegment = SegmentReducer(initialState, {
+			type: 'createSegmet',
+			payload: {
+				start: { lon: 0, lat: 0 },
+				end: { lon: 1, lat: 1 }
+			}
+		})
+		const state = SegmentReducer(createSegment, {
+			type: 'extrudeSegment',
+			payload: {
+				index: 0,
+				targetPoint: { lon: 2, lat: 2 }
+			}
+		})
+		expect(state.segments[1].start).to.equal(0)
+		expect(state.segments[1].end).to.equal(2)
+		expect(state.vertecies[2].lon).to.equal(2)
+	})
+	it('can merge vertices', () => {
+		const createSegment = SegmentReducer(initialState, {
+			type: 'createSegmet',
+			payload: {
+				start: { lon: 0, lat: 0 },
+				end: { lon: 1, lat: 1 }
+			}
+		})
+		const createSegment2 = SegmentReducer(createSegment, {
+			type: 'createSegmet',
+			payload: {
+				start: { lon: 1, lat: 1 },
+				end: { lon: 2, lat: 2 }
+			}
+		})
+		const state = SegmentReducer(createSegment2, {
+			type: 'mergeVertices',
+			payload: {
+				a: 0,
+				b: 1
+			}
+		})
+		expect(state.vertecies[0]).to.exist
+		expect(state.vertecies[1]).to.not.exist
+		expect(state.segments).to.have.length(1)
+		expect(state.segments[0].start).to.equal(0)
+		expect(state.segments[0].end).to.equal(2)
+		expect(state.vertecies[0].lat).to.equal(0)
+	})
+	it('can move vertices', () => {
+		const createSegment = SegmentReducer(initialState, {
+			type: 'createSegmet',
+			payload: {
+				start: { lon: 0, lat: 0 },
+				end: { lon: 1, lat: 1 }
+			}
+		})
+		const state = SegmentReducer(createSegment, {
+			type: 'moveVertex',
+			payload: {
+				index: 0,
+				vertex: { lon: 2, lat: 2 }
+			}
+		})
+		expect(state.vertecies[0].lon).to.equal(2)
+	})
+	it('can split segments', () => {
+		const createSegment = SegmentReducer(initialState, {
+			type: 'createSegmet',
+			payload: {
+				start: { lon: 0, lat: 0 },
+				end: { lon: 1, lat: 1 }
+			}
+		})
+		const setData = SegmentReducer(createSegment, {
+			type: 'editSegmentData',
+			payload: {
+				index: 0,
+				data: { name: 'test_name' }
+			}
+		})
+		const state = SegmentReducer(setData, {
+			type: 'splitSegment',
+			payload: 0
+		})
+		expect(state.segments[0].start).to.equal(0)
+		expect(state.segments[0].end).to.equal(2)
+		expect(state.segments[0].name).to.equal('test_name_a')
+		expect(state.segments[1].start).to.equal(2)
+		expect(state.segments[1].end).to.equal(1)
+		expect(state.segments[1].name).to.equal('test_name_b')
+		expect(state.vertecies[2].lon).to.equal(0.5)
 	})
 })
