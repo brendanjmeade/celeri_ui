@@ -27,6 +27,13 @@ import VerticesPanel, {
 } from 'Components/VertexPanel'
 import type { ReactElement } from 'react'
 import { useEffect, useState } from 'react'
+import type { Block } from 'State/Block/Block'
+import {
+	createBlock,
+	deleteBlock,
+	editBlockData,
+	loadNewBlockData
+} from 'State/Block/State'
 import { useAppDispatch, useAppSelector } from 'State/Hooks'
 import {
 	bridgeVertices,
@@ -34,7 +41,7 @@ import {
 	deleteSegment,
 	editSegmentData,
 	extrudeSegment,
-	loadNewData,
+	loadNewSegmentData,
 	mergeVertices,
 	moveVertex,
 	splitSegment
@@ -45,7 +52,6 @@ import {
 	GetShortestLineCoordinates
 } from 'State/Segment/Vertex'
 import type { BlockFile } from 'Utilities/BlockFile'
-import { createBlock } from 'Utilities/BlockFile'
 import type { CommandFile } from 'Utilities/CommandFile'
 import {
 	OpenBlockFile,
@@ -120,6 +126,7 @@ export default function App(): ReactElement {
 	const [velocityFile, setVelocityFile] = useState<VelocityFile>()
 
 	const segments = useAppSelector(state => state.main.present.segment)
+	const blocks = useAppSelector(state => state.main.present.block)
 
 	const [velocitiesSettings, setVelocitiesSettings] =
 		useState<VelocitiesDisplaySettings>(initialVelocityDisplaySettings)
@@ -193,21 +200,19 @@ export default function App(): ReactElement {
 				color: blockSettings.color,
 				selectedColor: blockSettings.selectedColor,
 				radius: blockSettings.radius,
-				points: blockFile?.data
-					? blockFile.data.map((block, index) => ({
-							longitude: block.interior_lon,
-							latitude: block.interior_lat,
-							name: block.name,
-							description: ``,
-							index
-					  }))
-					: [],
+				points: blocks.map((block, index) => ({
+					longitude: block.interior_lon,
+					latitude: block.interior_lat,
+					name: block.name,
+					description: ``,
+					index
+				})),
 				click: (index): void => {
 					select.select('block', index)
 				}
 			}
 		])
-	}, [blockSettings, blockFile, segmentSettings, select])
+	}, [blockSettings, blocks, segmentSettings, select])
 
 	useEffect(() => {
 		setLineSources([
@@ -326,11 +331,16 @@ export default function App(): ReactElement {
 									const localSegmentFile = await OpenSegmentFile(handle)
 									setSegmentFile(localSegmentFile)
 									if (localSegmentFile.data) {
-										dispatch(loadNewData(localSegmentFile.data))
+										dispatch(loadNewSegmentData(localSegmentFile.data))
 									}
 									break
 								case 'block':
-									setBlockFile(await OpenBlockFile(handle))
+									// eslint-disable-next-line no-case-declarations
+									const localBlockFile = await OpenBlockFile(handle)
+									setBlockFile(localBlockFile)
+									if (localBlockFile.data) {
+										dispatch(loadNewBlockData(localBlockFile.data))
+									}
 									break
 								case 'velocity':
 									setVelocityFile(await OpenVelocityFile(handle))
@@ -345,9 +355,12 @@ export default function App(): ReactElement {
 									setCommandFile(commandResult.commands)
 									setSegmentFile(commandResult.segments)
 									if (commandResult.segments.data) {
-										dispatch(loadNewData(commandResult.segments.data))
+										dispatch(loadNewSegmentData(commandResult.segments.data))
 									}
 									setBlockFile(commandResult.blocks)
+									if (commandResult.blocks.data) {
+										dispatch(loadNewBlockData(commandResult.blocks.data))
+									}
 									setVelocityFile(commandResult.velocities)
 									updated = commandResult.openableFiles
 									break
@@ -428,50 +441,32 @@ export default function App(): ReactElement {
 					settings={blockSettings}
 					setSettings={setBlockSettings}
 					selected={selectedBlock}
-					blocks={blockFile?.data ?? []}
+					blocks={blocks}
 					addNewBlock={(): void => {
 						setSelectionMode({
 							label: 'Click to place new block',
 							mode: 'mapClick',
 							callback: point => {
-								if (blockFile !== undefined) {
-									const dataArray = blockFile.data ? [...blockFile.data] : []
-									const block = createBlock({
-										name: 'New Block',
-										interior_lon: point.lon,
-										interior_lat: point.lat
+								const id = blocks.length
+								dispatch(
+									createBlock({
+										data: {
+											name: 'New Block',
+											interior_lon: point.lon,
+											interior_lat: point.lat
+										}
 									})
-									const id = dataArray.length
-									dataArray.push(block)
-									const file = blockFile.clone()
-									file.data = dataArray
-									setBlockFile(file)
-									select.select('block', id)
-								}
+								)
+								select.select('block', id)
 								setSelectionMode('normal')
 							}
 						})
 					}}
 					setBlockData={(index, data): void => {
-						if (blockFile !== undefined) {
-							if (data) {
-								const block =
-									// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-									blockFile.data && blockFile.data[index]
-										? { ...blockFile.data[index], ...data }
-										: createBlock(data)
-								const dataArray = blockFile.data ? [...blockFile.data] : []
-								dataArray[index] = block
-								const file = blockFile.clone()
-								file.data = dataArray
-								setBlockFile(file)
-							} else {
-								const dataArray = blockFile.data ? [...blockFile.data] : []
-								dataArray.splice(index, 1)
-								const file = blockFile.clone()
-								file.data = dataArray
-								setBlockFile(file)
-							}
+						if (data) {
+							dispatch(editBlockData({ index, data: data as Partial<Block> }))
+						} else {
+							dispatch(deleteBlock(index))
 						}
 					}}
 				/>
@@ -552,7 +547,10 @@ export default function App(): ReactElement {
 						segmentFile.data = segments
 						await segmentFile.save()
 					}
-					if (blockFile) await blockFile.save()
+					if (blockFile) {
+						blockFile.data = blocks
+						await blockFile.save()
+					}
 				}}
 				folder={folderHandle}
 				openFolder={async (): Promise<void> => {

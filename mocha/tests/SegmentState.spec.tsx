@@ -5,7 +5,7 @@ import { initialState, SegmentReducer } from '../../src/State/Segment/State'
 describe('Segment Actions mutate state as expected', () => {
 	it('Can load new data into the segment state', () => {
 		const state = SegmentReducer(initialState, {
-			type: 'loadNewData',
+			type: 'loadNewSegmentData',
 			payload: {
 				vertecies: { 0: { lon: 0, lat: 0 } },
 				segments: [],

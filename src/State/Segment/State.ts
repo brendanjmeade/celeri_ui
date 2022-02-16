@@ -9,8 +9,8 @@ import type { EditSegmentDataAction } from './EditSegmentData'
 import EditSegmentData from './EditSegmentData'
 import type { ExtrudeSegmentAction } from './ExtrudeSegment'
 import ExtrudeSegment from './ExtrudeSegment'
-import type { LoadNewDataAction } from './LoadNewData'
-import LoadNewData from './LoadNewData'
+import type { LoadNewSegmentDataAction } from './LoadNewSegmentData'
+import LoadNewSegmentData from './LoadNewSegmentData'
 import type { MergeVerticesAction } from './MergeVertices'
 import MergeVertices from './MergeVertices'
 import type { MoveVertexAction } from './MoveVertex'
@@ -42,7 +42,8 @@ export const editSegmentData =
 	createAction<EditSegmentDataAction>('editSegmentData')
 export const extrudeSegment =
 	createAction<ExtrudeSegmentAction>('extrudeSegment')
-export const loadNewData = createAction<LoadNewDataAction>('loadNewData')
+export const loadNewSegmentData =
+	createAction<LoadNewSegmentDataAction>('loadNewSegmentData')
 export const mergeVertices = createAction<MergeVerticesAction>('mergeVertices')
 export const moveVertex = createAction<MoveVertexAction>('moveVertex')
 export const splitSegment = createAction<SplitSegmentAction>('splitSegment')
@@ -64,7 +65,9 @@ export const SegmentReducer = createReducer(initialState, builder => {
 		.addCase(extrudeSegment, (state, action) =>
 			ExtrudeSegment(state, action.payload)
 		)
-		.addCase(loadNewData, (state, action) => LoadNewData(state, action.payload))
+		.addCase(loadNewSegmentData, (state, action) =>
+			LoadNewSegmentData(state, action.payload)
+		)
 		.addCase(mergeVertices, (state, action) =>
 			MergeVertices(state, action.payload)
 		)

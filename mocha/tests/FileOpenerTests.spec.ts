@@ -1,6 +1,7 @@
 import { expect } from 'chai'
+import { createBlock } from '../../src/State/Block/Block'
 import type { InMemorySegment } from '../../src/State/Segment/Segment'
-import { BlockFile, createBlock } from '../../src/Utilities/BlockFile'
+import { BlockFile } from '../../src/Utilities/BlockFile'
 import { CommandFile, createCommand } from '../../src/Utilities/CommandFile'
 import type { FileName } from '../../src/Utilities/FileSystemInterfaces'
 import OpenDirectory from '../../src/Utilities/InMemoryFileSystem'
