@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { ReactElement } from 'react'
+import { useEffect, useState } from 'react'
 
 export type FieldDefinition = {
 	order: number
@@ -20,6 +22,12 @@ function FieldDefinitionEditor({
 	fieldDefinition: FieldDefinition
 	setField: (value: number | string) => void
 }): ReactElement {
+	const [timeout, setTimeoutId] = useState<number>(-1)
+	const [localValue, setLocalValue] = useState(value)
+
+	useEffect(() => {
+		setLocalValue(value)
+	}, [value])
 	return (
 		<div className='flex flex-row justify-between items-center'>
 			<div className='flex flex-col'>
@@ -40,12 +48,16 @@ function FieldDefinitionEditor({
 					data-testid={`input-editor-${fieldDefinition.name}`}
 					className='rounded w-full'
 					type={typeof value === 'number' ? 'number' : 'text'}
-					value={value}
+					value={localValue}
 					onChange={(event): void => {
-						setField(
+						const v =
 							typeof value === 'number'
 								? Number.parseFloat(event.target.value)
 								: event.target.value
+						setLocalValue(v)
+						if (timeout > -1) clearTimeout(timeout)
+						setTimeoutId(
+							setTimeout(() => setField(v), 1000) as unknown as number
 						)
 					}}
 				/>
