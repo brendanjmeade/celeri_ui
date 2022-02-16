@@ -32,25 +32,27 @@ function TopBar({
 				data-testid='open-folder-topbar'
 				className='flex flex-row gap-2 items-center'
 			>
-				{canUndo ? (
+				{folder ? (
 					<button
 						type='button'
 						onClick={(): void => {
 							dispatch(ActionCreators.undo())
 						}}
 						data-testid='undo-button'
+						disabled={!canUndo}
 					>
 						Undo
 					</button>
 				) : (
 					<></>
 				)}
-				{canRedo ? (
+				{folder ? (
 					<button
 						type='button'
 						onClick={(): void => {
 							dispatch(ActionCreators.redo())
 						}}
+						disabled={!canRedo}
 						data-testid='undo-button'
 					>
 						Redo
