@@ -67,7 +67,9 @@ export const defaultBlock: Block = {
 	strain_rate_flag: 0
 }
 
-export function createBlock(partial: Partial<Block>): Block {
-	const Block = { ...defaultBlock, ...partial } as unknown as Block
-	return Block
+export function createBlock(partial?: Partial<Block>): Block {
+	const block = partial
+		? ({ ...defaultBlock, ...partial } as unknown as Block)
+		: { ...defaultBlock }
+	return block
 }
