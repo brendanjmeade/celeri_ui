@@ -1,4 +1,6 @@
 import type { ReactElement } from 'react'
+import { ActionCreators } from 'redux-undo'
+import { useAppDispatch, useAppSelector } from 'State/Hooks'
 import type { Directory } from 'Utilities/FileSystemInterfaces'
 
 function TopBar({
@@ -15,6 +17,11 @@ function TopBar({
 	function onClick(): void {
 		openFolder()
 	}
+	const dispatch = useAppDispatch()
+	const [canUndo, canRedo] = useAppSelector(state => [
+		state.main.past.length > 0,
+		state.main.future.length > 0
+	])
 	return (
 		<div
 			data-testid='topbar'
@@ -25,6 +32,32 @@ function TopBar({
 				data-testid='open-folder-topbar'
 				className='flex flex-row gap-2 items-center'
 			>
+				{canUndo ? (
+					<button
+						type='button'
+						onClick={(): void => {
+							dispatch(ActionCreators.undo())
+						}}
+						data-testid='undo-button'
+					>
+						Undo
+					</button>
+				) : (
+					<></>
+				)}
+				{canRedo ? (
+					<button
+						type='button'
+						onClick={(): void => {
+							dispatch(ActionCreators.redo())
+						}}
+						data-testid='undo-button'
+					>
+						Redo
+					</button>
+				) : (
+					<></>
+				)}
 				{folder ? (
 					<span>Working in {folder.name}</span>
 				) : (

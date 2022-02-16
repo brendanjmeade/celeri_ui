@@ -1,9 +1,10 @@
-import { configureStore } from '@reduxjs/toolkit'
+import { combineReducers, configureStore } from '@reduxjs/toolkit'
+import undoable from 'redux-undo'
 import { SegmentReducer } from './Segment/State'
 
 export const store = configureStore({
 	reducer: {
-		segments: SegmentReducer
+		main: undoable(combineReducers({ segment: SegmentReducer }))
 	}
 })
 

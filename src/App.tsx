@@ -119,7 +119,7 @@ export default function App(): ReactElement {
 	const [blockFile, setBlockFile] = useState<BlockFile>()
 	const [velocityFile, setVelocityFile] = useState<VelocityFile>()
 
-	const segments = useAppSelector(state => state.segments)
+	const segments = useAppSelector(state => state.main.present.segment)
 
 	const [velocitiesSettings, setVelocitiesSettings] =
 		useState<VelocitiesDisplaySettings>(initialVelocityDisplaySettings)
