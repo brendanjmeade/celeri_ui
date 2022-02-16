@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { ReactElement } from 'react'
-import type { Block } from 'Utilities/BlockFile'
+import type { Block } from 'State/Block/Block'
 import EditableItem from './EditableItem'
 
 export interface BlockDisplaySettings {
