@@ -1,12 +1,13 @@
 import { expect } from 'chai'
 import { createBlock } from '../../src/State/Block/Block'
 import type { InMemorySegment } from '../../src/State/Segment/Segment'
+import { createVelocity } from '../../src/State/Velocity/Velocity'
 import { BlockFile } from '../../src/Utilities/BlockFile'
 import { CommandFile, createCommand } from '../../src/Utilities/CommandFile'
 import type { FileName } from '../../src/Utilities/FileSystemInterfaces'
 import OpenDirectory from '../../src/Utilities/InMemoryFileSystem'
 import { createSegment, SegmentFile } from '../../src/Utilities/SegmentFile'
-import { createVelocity, VelocityFile } from '../../src/Utilities/VelocityFile'
+import { VelocityFile } from '../../src/Utilities/VelocityFile'
 
 describe('File Openers Work as Expected', () => {
 	it('Can Open Segment Files Properly', async () => {

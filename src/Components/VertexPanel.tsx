@@ -42,7 +42,7 @@ function VerticesPanel({
 	setSettings: (settings: VerticesDisplaySettings) => void
 	vertices: Record<number, Vertex>
 	selected: number
-	setVertexData: (index: number, data?: Partial<Vertex>) => void
+	setVertexData: (index: number, data?: Vertex) => void
 	setSelectionMode: (mode: SelectionMode) => void
 	mergeVertices: (a: number, b: number) => void
 	bridgeVertices: (a: number, b: number) => void
@@ -61,7 +61,9 @@ function VerticesPanel({
 			item={selectedVertex}
 			ignoreFields={[]}
 			deletable={false}
-			setItem={(partial): void => setVertexData(selected, partial)}
+			setItem={(partial): void =>
+				setVertexData(selected, { ...selectedVertex, ...partial })
+			}
 			fieldDefinitions={{}}
 			controls={
 				<>

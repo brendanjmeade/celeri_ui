@@ -27,7 +27,6 @@ import VerticesPanel, {
 } from 'Components/VertexPanel'
 import type { ReactElement } from 'react'
 import { useEffect, useState } from 'react'
-import type { Block } from 'State/Block/Block'
 import {
 	createBlock,
 	deleteBlock,
@@ -51,6 +50,13 @@ import {
 	DEFAULT_VERTEX,
 	GetShortestLineCoordinates
 } from 'State/Segment/Vertex'
+import {
+	createVelocity,
+	deleteVelocity,
+	editVelocityData,
+	loadNewVelocityData
+} from 'State/Velocity/State'
+import type { Velocity } from 'State/Velocity/Velocity'
 import type { BlockFile } from 'Utilities/BlockFile'
 import type { CommandFile } from 'Utilities/CommandFile'
 import {
@@ -66,7 +72,6 @@ import OpenDirectory, {
 } from 'Utilities/FileSystemInterfaces'
 import type { SegmentFile } from 'Utilities/SegmentFile'
 import type { VelocityFile } from 'Utilities/VelocityFile'
-import { createVelocity } from 'Utilities/VelocityFile'
 
 if (!window.location.search.includes('fake-dir')) {
 	SetDirectoryHandle(FSOpenDirectory)
@@ -127,6 +132,7 @@ export default function App(): ReactElement {
 
 	const segments = useAppSelector(state => state.main.present.segment)
 	const blocks = useAppSelector(state => state.main.present.block)
+	const velocities = useAppSelector(state => state.main.present.velocity)
 
 	const [velocitiesSettings, setVelocitiesSettings] =
 		useState<VelocitiesDisplaySettings>(initialVelocityDisplaySettings)
@@ -286,32 +292,27 @@ export default function App(): ReactElement {
 				scale: velocitiesSettings.scale,
 				arrowHeadScale: velocitiesSettings.arrowHead,
 				width: velocitiesSettings.width,
-				arrows: velocityFile?.data
-					? velocityFile.data.map((velocity, index) => {
-							const scale = Math.sqrt(
-								velocity.east_vel * velocity.east_vel +
-									velocity.north_vel * velocity.north_vel
-							)
-							return {
-								longitude: velocity.lon,
-								latitude: velocity.lat,
-								direction: [
-									velocity.east_vel / scale,
-									velocity.north_vel / scale
-								],
-								scale,
-								name: velocity.name,
-								description: `north: ${velocity.north_vel}, east: ${velocity.east_vel}`,
-								index
-							}
-					  })
-					: [],
+				arrows: velocities.map((velocity, index) => {
+					const scale = Math.sqrt(
+						velocity.east_vel * velocity.east_vel +
+							velocity.north_vel * velocity.north_vel
+					)
+					return {
+						longitude: velocity.lon,
+						latitude: velocity.lat,
+						direction: [velocity.east_vel / scale, velocity.north_vel / scale],
+						scale,
+						name: velocity.name,
+						description: `north: ${velocity.north_vel}, east: ${velocity.east_vel}`,
+						index
+					}
+				}),
 				click: (index): void => {
 					select.select('velocities', index)
 				}
 			}
 		])
-	}, [select, velocitiesSettings, velocityFile])
+	}, [select, velocitiesSettings, velocities])
 
 	let view = <span />
 
@@ -343,7 +344,12 @@ export default function App(): ReactElement {
 									}
 									break
 								case 'velocity':
-									setVelocityFile(await OpenVelocityFile(handle))
+									// eslint-disable-next-line no-case-declarations
+									const localVelocityFile = await OpenVelocityFile(handle)
+									setVelocityFile(localVelocityFile)
+									if (localVelocityFile.data) {
+										dispatch(loadNewVelocityData(localVelocityFile.data))
+									}
 									break
 								case 'command':
 									// eslint-disable-next-line no-case-declarations
@@ -362,6 +368,9 @@ export default function App(): ReactElement {
 										dispatch(loadNewBlockData(commandResult.blocks.data))
 									}
 									setVelocityFile(commandResult.velocities)
+									if (commandResult.velocities.data) {
+										dispatch(loadNewVelocityData(commandResult.velocities.data))
+									}
 									updated = commandResult.openableFiles
 									break
 								default:
@@ -381,31 +390,12 @@ export default function App(): ReactElement {
 					settings={velocitiesSettings}
 					setSettings={setVelocitiesSettings}
 					selected={selectedVelocity}
-					velocitys={velocityFile?.data ?? []}
-					setVelocityData={(index, data): void => {
-						if (velocityFile !== undefined) {
-							if (data) {
-								const velocity =
-									// eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-									velocityFile.data && velocityFile.data[index]
-										? { ...velocityFile.data[index], ...data }
-										: createVelocity(data)
-								const dataArray = velocityFile.data
-									? [...velocityFile.data]
-									: []
-								dataArray[index] = velocity
-								const file = velocityFile.clone()
-								file.data = dataArray
-								setVelocityFile(file)
-							} else {
-								const dataArray = velocityFile.data
-									? [...velocityFile.data]
-									: []
-								dataArray.splice(index, 1)
-								const file = velocityFile.clone()
-								file.data = dataArray
-								setVelocityFile(file)
-							}
+					velocitys={velocities}
+					setVelocityData={(index, data: Partial<Velocity>): void => {
+						if (data) {
+							dispatch(editVelocityData({ index, data }))
+						} else {
+							dispatch(deleteVelocity(index))
 						}
 					}}
 					addNewVelocity={(): void => {
@@ -414,21 +404,11 @@ export default function App(): ReactElement {
 							mode: 'mapClick',
 							callback: point => {
 								setSelectionMode('normal')
-								if (velocityFile !== undefined) {
-									const dataArray = velocityFile.data
-										? [...velocityFile.data]
-										: []
-									const id = dataArray.length
-									const velocity = createVelocity({
-										lat: point.lat,
-										lon: point.lon
-									})
-									dataArray.push(velocity)
-									const file = velocityFile.clone()
-									file.data = dataArray
-									setVelocityFile(file)
-									select.select('velocity', id)
-								}
+								const id = velocities.length
+								dispatch(
+									createVelocity({ data: { lat: point.lat, lon: point.lon } })
+								)
+								select.select('velocity', id)
 							}
 						})
 					}}
@@ -464,7 +444,7 @@ export default function App(): ReactElement {
 					}}
 					setBlockData={(index, data): void => {
 						if (data) {
-							dispatch(editBlockData({ index, data: data as Partial<Block> }))
+							dispatch(editBlockData({ index, data }))
 						} else {
 							dispatch(deleteBlock(index))
 						}
@@ -505,11 +485,10 @@ export default function App(): ReactElement {
 					setSettings={setVertexSettings}
 					vertices={segments.vertecies ?? {}}
 					selected={selectedVertex}
-					setVertexData={function (
-						index: number,
-						data?: Partial<Vertex>
-					): void {
-						throw new Error('Function not implemented.')
+					setVertexData={(index, data?: Vertex): void => {
+						if (data) {
+							dispatch(moveVertex({ index, vertex: data }))
+						}
 					}}
 					setSelectionMode={(mode): void => setSelectionMode(mode)}
 					mergeVertices={(a, b): void => {
@@ -550,6 +529,10 @@ export default function App(): ReactElement {
 					if (blockFile) {
 						blockFile.data = blocks
 						await blockFile.save()
+					}
+					if (velocityFile) {
+						velocityFile.data = velocities
+						await velocityFile.save()
 					}
 				}}
 				folder={folderHandle}
