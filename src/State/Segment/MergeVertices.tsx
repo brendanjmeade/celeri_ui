@@ -10,6 +10,7 @@ export default function MergeVertices(
 	state: SegmentState,
 	{ a, b }: MergeVerticesAction
 ): SegmentState {
+	if (a === b) return state
 	const segments = state.segments
 		.map(s => {
 			let segment = s

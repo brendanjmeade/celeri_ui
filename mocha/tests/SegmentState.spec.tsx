@@ -184,6 +184,28 @@ describe('Segment Actions mutate state as expected', () => {
 		expect(state.segments[0].end).to.equal(2)
 		expect(state.vertecies[0].lat).to.equal(0)
 	})
+	it('merging a vertex with itself doesnt change the state', () => {
+		const createSegment = SegmentReducer(initialState, {
+			type: 'createSegmet',
+			payload: {
+				start: { lon: 0, lat: 0 },
+				end: { lon: 1, lat: 1 }
+			}
+		})
+		const state = SegmentReducer(createSegment, {
+			type: 'mergeVertices',
+			payload: {
+				a: 0,
+				b: 0
+			}
+		})
+		expect(state.vertecies[0]).to.exist
+		expect(state.vertecies[1]).to.exist
+		expect(state.segments).to.have.length(1)
+		expect(state.segments[0].start).to.equal(0)
+		expect(state.segments[0].end).to.equal(1)
+		expect(state.vertecies[0].lat).to.equal(0)
+	})
 	it('can move vertices', () => {
 		const createSegment = SegmentReducer(initialState, {
 			type: 'createSegmet',
