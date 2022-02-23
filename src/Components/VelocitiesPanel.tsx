@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { ReactElement } from 'react'
-import type { Velocity } from 'Utilities/VelocityFile'
+import type { Velocity } from '../State/Velocity/Velocity'
 import EditableItem from './EditableItem'
 
 export interface VelocitiesDisplaySettings {

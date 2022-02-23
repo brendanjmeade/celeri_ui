@@ -391,7 +391,7 @@ export default function App(): ReactElement {
 					setSettings={setVelocitiesSettings}
 					selected={selectedVelocity}
 					velocitys={velocities}
-					setVelocityData={(index, data: Partial<Velocity>): void => {
+					setVelocityData={(index, data?: Partial<Velocity>): void => {
 						if (data) {
 							dispatch(editVelocityData({ index, data }))
 						} else {
