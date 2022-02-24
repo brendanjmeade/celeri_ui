@@ -5,13 +5,13 @@ import BlockPanel, { initialBlockDisplaySettings } from 'Components/BlockPanel'
 import type { OpenableFile } from 'Components/Files'
 import Files from 'Components/Files'
 import InspectorPanel from 'Components/InspectorPanel'
+import CeleriMap from 'Components/Map/CeleriMap'
 import type {
 	ArrowSource,
 	DrawnPointSource,
 	LineSource,
 	PointSource
-} from 'Components/Map'
-import CeleriMap from 'Components/Map/CeleriMap'
+} from 'Components/Map/Sources'
 import type { SegmentsDisplaySettings } from 'Components/SegmentsPanel'
 import SegmentsPanel, {
 	initialSegmentDisplaySettings
