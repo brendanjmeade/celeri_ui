@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable react-prefer-function-component/react-prefer-function-component */
 import type MapboxDraw from '@mapbox/mapbox-gl-draw'
-import type { MapboxGeoJSONFeature, Popup } from 'mapbox-gl'
-import mapboxgl, { Map, NavigationControl } from 'mapbox-gl'
+import type { MapboxGeoJSONFeature } from 'mapbox-gl'
+import mapboxgl, { Map, NavigationControl, Popup } from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import React, { createRef } from 'react'
 import type { Vertex } from 'State/Segment/Vertex'
 import { InverseTransformVertexCoordinates } from 'State/Segment/Vertex'
+import MapArrows from './MapArrows'
 import MapDrawnPoints from './MapDrawnPoints'
+import MapLineSegments from './MapLineSegments'
+import MapPoints from './MapPoints'
 import type {
 	ArrowSource,
 	DrawnPointSource,
@@ -16,14 +19,12 @@ import type {
 } from './Sources'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string
-// const ARROW_ANGLE_1 = Math.PI / 6
-// const ARROW_ANGLE_2 = 2 * Math.PI - ARROW_ANGLE_1
 
 export interface MapState {
 	map?: Map
 	mapLoaded?: boolean
 	draw?: MapboxDraw
-	popup?: Popup
+	popup: Popup
 	internalPointSources?: PointSource[]
 	internalArrowSources?: ArrowSource[]
 	internalLineSources?: LineSource[]
@@ -34,7 +35,7 @@ export interface MapState {
 		color: string
 		radius: number
 	}
-	internalSelections?: Record<string, number>
+	internalSelections: Record<string, number>
 	mapReference: React.Ref<HTMLDivElement>
 }
 
@@ -57,7 +58,9 @@ export class CeleriMap extends React.Component<MapProperties, MapState> {
 				color: '',
 				radius: 0
 			},
-			mapReference: createRef()
+			internalSelections: {},
+			mapReference: createRef(),
+			popup: new Popup({ closeButton: false, closeOnClick: false })
 		}
 	}
 
@@ -146,14 +149,29 @@ export class CeleriMap extends React.Component<MapProperties, MapState> {
 		}
 	}
 
-	public shouldComponentUpdate(
-		nextProperties: MapProperties,
-		nextState: MapState
-	): boolean {
+	public componentDidUpdate(): boolean {
+		MapLineSegments(
+			this,
+			state => this.setState(state as unknown as MapState),
+			this.state,
+			this.props
+		)
+		MapArrows(
+			this,
+			state => this.setState(state as unknown as MapState),
+			this.state,
+			this.props
+		)
+		MapPoints(
+			this,
+			state => this.setState(state as unknown as MapState),
+			this.state,
+			this.props
+		)
 		MapDrawnPoints(
 			state => this.setState(state as unknown as MapState),
-			nextState,
-			nextProperties
+			this.state,
+			this.props
 		)
 		return false
 	}

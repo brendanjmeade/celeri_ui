@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import type { MapProperties, MapState } from './CeleriMap'
 
@@ -14,9 +15,8 @@ export default function MapDrawnPoints(
 ): void {
 	if (map && mapLoaded && internalDrawnPointSource !== drawnPointSource) {
 		console.log('Drawning Points')
-		const updatedDrawnPointSource = drawnPointSource
-		setState({ internalDrawnPointSource: updatedDrawnPointSource })
-		let localDraw = draw
+		setState({ internalDrawnPointSource: drawnPointSource })
+		let localDraw: MapboxDraw | undefined = draw
 		if (
 			drawnPointSource.selectedColor !== drawnPointSettings.selectedColor ||
 			drawnPointSource.selectedRadius !== drawnPointSettings.selectedRadius ||
@@ -33,6 +33,7 @@ export default function MapDrawnPoints(
 			})
 			if (draw) {
 				map.removeControl(draw)
+				localDraw = undefined
 			}
 			if (drawnPointSource) {
 				localDraw = new MapboxDraw({
@@ -76,10 +77,16 @@ export default function MapDrawnPoints(
 			}
 		}
 		if (localDraw) {
-			localDraw.set({
+			const data = localDraw.getAll()
+			const selection =
+				drawnPointSource.points.length !== data.features.length
+					? undefined
+					: localDraw.getSelected()
+			const updatedFeatures: GeoJSON.FeatureCollection<GeoJSON.Geometry> = {
 				type: 'FeatureCollection',
 				features: drawnPointSource.points.map(point => ({
 					type: 'Feature',
+					id: point.index.toString(),
 					properties: {
 						description: ``,
 						index: point.index,
@@ -90,7 +97,21 @@ export default function MapDrawnPoints(
 						coordinates: [point.longitude, point.latitude]
 					}
 				}))
-			})
+			}
+			localDraw.set(updatedFeatures)
+			if (
+				selection &&
+				selection.features.length > 0 &&
+				selection.features[0].properties &&
+				typeof selection.features[0].properties.index === 'number'
+			) {
+				const featureId = selection.features[0].id as string
+				if (featureId) {
+					localDraw.changeMode('simple_select', {
+						featureIds: [featureId]
+					})
+				}
+			}
 		}
 	}
 }

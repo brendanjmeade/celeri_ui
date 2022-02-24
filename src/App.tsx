@@ -11,7 +11,7 @@ import type {
 	LineSource,
 	PointSource
 } from 'Components/Map'
-import Map from 'Components/Map'
+import CeleriMap from 'Components/Map/CeleriMap'
 import type { SegmentsDisplaySettings } from 'Components/SegmentsPanel'
 import SegmentsPanel, {
 	initialSegmentDisplaySettings
@@ -177,27 +177,23 @@ export default function App(): ReactElement {
 
 	useEffect(() => {
 		if (selectionMode === 'normal') {
-			setSelect({
-				select: (type: string, index: number): void => {
-					setSelectedBlock(type === 'block' ? index : -1)
-					setSelectedSegment(type === 'segment' ? index : -1)
-					setSelectedVelocity(type === 'velocities' ? index : -1)
-					setSelectedVertex(type === 'vertex' ? index : -1)
-					setActiveTab(type)
-				}
-			})
+			select.select = (type: string, index: number): void => {
+				setSelectedBlock(type === 'block' ? index : -1)
+				setSelectedSegment(type === 'segment' ? index : -1)
+				setSelectedVelocity(type === 'velocities' ? index : -1)
+				setSelectedVertex(type === 'vertex' ? index : -1)
+				setActiveTab(type)
+			}
 		} else if (selectionMode.mode === 'override') {
-			setSelect({
-				select: (type: string, index: number): void => {
-					if (type === selectionMode.type) {
-						selectionMode.callback(index)
-					}
+			select.select = (type: string, index: number): void => {
+				if (type === selectionMode.type) {
+					selectionMode.callback(index)
 				}
-			})
+			}
 		} else {
-			setSelect({ select: (): void => {} })
+			select.select = (): void => {}
 		}
-	}, [selectionMode])
+	}, [selectionMode, select])
 
 	useEffect(() => {
 		setPointSources([
@@ -554,7 +550,7 @@ export default function App(): ReactElement {
 			) : (
 				<></>
 			)}
-			<Map
+			<CeleriMap
 				pointSources={pointSources}
 				arrowSources={arrowSources}
 				lineSources={lineSources}
