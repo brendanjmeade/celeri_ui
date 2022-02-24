@@ -79,7 +79,7 @@ if (!window.location.search.includes('fake-dir')) {
 
 export type SelectionMode =
 	| 'normal'
-	| ({ label: string } & (
+	| ({ label: string; subtitle?: string } & (
 			| { mode: 'mapClick'; callback: (point: Vertex) => void }
 			| { mode: 'override'; type: string; callback: (index: number) => void }
 	  ))
@@ -542,6 +542,13 @@ export default function App(): ReactElement {
 				<div className='fixed top-12 z-10 left-10 right-10 flex flex-row justify-center'>
 					<div className='flex flex-col justify-center items-center bg-white p-3 gap-1 rounded'>
 						<span className='text-lg font-semibold'>{selectionMode.label}</span>
+						{selectionMode.subtitle ? (
+							<span className='text-md font-thin text-gray-500'>
+								{selectionMode.subtitle}
+							</span>
+						) : (
+							<></>
+						)}
 						<span className='text-sm font-thin text-gray-500'>
 							Press Escape to cancel
 						</span>

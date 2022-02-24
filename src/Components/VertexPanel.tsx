@@ -74,7 +74,8 @@ function VerticesPanel({
 							setSelectionMode({
 								type: 'vertex',
 								mode: 'override',
-								label: 'Merge Vertex',
+								label: 'Merge Vertices',
+								subtitle: 'Click the vertex you want to merge with',
 								callback: index => {
 									mergeVertices(selected, index)
 									setSelectionMode('normal')
@@ -92,6 +93,7 @@ function VerticesPanel({
 								type: 'vertex',
 								mode: 'override',
 								label: 'Bridge Vertices',
+								subtitle: 'Click the vertex you want to bridge to',
 								callback: index => {
 									bridgeVertices(selected, index)
 									setSelectionMode('normal')
@@ -108,6 +110,7 @@ function VerticesPanel({
 							setSelectionMode({
 								mode: 'mapClick',
 								label: 'Extrude Segment From Vertex',
+								subtitle: 'Click the point you want to extrude to',
 								callback: (point): void => {
 									extrudeVertex(selected, point)
 									setSelectionMode('normal')
