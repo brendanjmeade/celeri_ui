@@ -69,12 +69,10 @@ export default function MapPoints(
 						'circle-color': [
 							'case',
 							['get', 'selected'],
-							source.selectedColor,
-							source.color
+							source.color,
+							source.selectedColor
 						],
-						'circle-radius': source.radius,
-						'circle-stroke-width': 1,
-						'circle-stroke-color': '#ffffff'
+						'circle-radius': source.radius
 					}
 				})
 				if (isNewLayer) {

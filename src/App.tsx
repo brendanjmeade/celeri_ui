@@ -31,7 +31,8 @@ import {
 	createBlock,
 	deleteBlock,
 	editBlockData,
-	loadNewBlockData
+	loadNewBlockData,
+	moveBlock
 } from 'State/Block/State'
 import { useAppDispatch, useAppSelector } from 'State/Hooks'
 import {
@@ -83,6 +84,16 @@ export type SelectionMode =
 			| { mode: 'mapClick'; callback: (point: Vertex) => void }
 			| { mode: 'override'; type: string; callback: (index: number) => void }
 	  ))
+
+enum EditMode {
+	Vertex,
+	Block
+}
+
+const editModes: Record<string, EditMode> = {
+	Block: EditMode.Block,
+	Vertex: EditMode.Vertex
+}
 
 const windows = {
 	files: 'Files',
@@ -146,6 +157,7 @@ export default function App(): ReactElement {
 	)
 
 	const [selectionMode, setSelectionMode] = useState<SelectionMode>('normal')
+	const [editMode, setEditMode] = useState<EditMode>(EditMode.Vertex)
 
 	const [selectedBlock, setSelectedBlock] = useState<number>(-1)
 	const [selectedSegment, setSelectedSegment] = useState<number>(-1)
@@ -196,29 +208,71 @@ export default function App(): ReactElement {
 	}, [selectionMode, select])
 
 	useEffect(() => {
-		if (blockSettings.hide) {
-			setPointSources([])
-		} else {
-			setPointSources([
-				{
-					name: 'blocks',
-					color: blockSettings.color,
-					selectedColor: blockSettings.selectedColor,
-					radius: blockSettings.radius,
-					points: blocks.map((block, index) => ({
-						longitude: block.interior_lon,
-						latitude: block.interior_lat,
-						name: block.name,
-						description: ``,
-						index
-					})),
-					click: (index): void => {
-						select.select('block', index)
-					}
+		const sources: PointSource[] = []
+		if (editMode !== EditMode.Block && !blockSettings.hide) {
+			sources.push({
+				name: 'blocks',
+				color: blockSettings.color,
+				selectedColor: blockSettings.selectedColor,
+				radius: blockSettings.radius,
+				points: blocks.map((block, index) => ({
+					longitude: block.interior_lon,
+					latitude: block.interior_lat,
+					name: block.name,
+					description: ``,
+					index
+				})),
+				click: (index): void => {
+					select.select('block', index)
 				}
-			])
+			})
 		}
-	}, [blockSettings, blocks, segmentSettings, select])
+		if (editMode !== EditMode.Vertex && !vertexSettings.hide) {
+			sources.push({
+				name: 'vertices',
+				color: vertexSettings.color,
+				selectedColor: vertexSettings.activeColor,
+				radius: vertexSettings.radius,
+				click: (index): void => {
+					select.select('vertex', index)
+				},
+				points: Object.keys(segments.vertecies)
+					.map(v => {
+						const index = Number.parseInt(v, 10)
+						const vert = segments.vertecies[index]
+						if (vert) {
+							return {
+								longitude: vert.lon,
+								latitude: vert.lat,
+								index,
+								name: '',
+								description: ''
+							}
+						}
+						return false
+					})
+					.filter(v => !!v) as unknown as {
+					longitude: number
+					latitude: number
+					index: number
+					name: ''
+					description: ''
+				}[]
+			})
+		}
+		setPointSources(sources)
+	}, [
+		blockSettings,
+		blocks,
+		segmentSettings,
+		select,
+		editMode,
+		vertexSettings.hide,
+		vertexSettings.color,
+		vertexSettings.activeColor,
+		vertexSettings.radius,
+		segments.vertecies
+	])
 
 	useEffect(() => {
 		if (segmentSettings.hide) {
@@ -257,39 +311,74 @@ export default function App(): ReactElement {
 	}, [segments, segmentSettings, select])
 
 	useEffect(() => {
-		setDrawnPointSource({
-			color: vertexSettings.color,
-			radius: vertexSettings.radius,
-			selectedColor: vertexSettings.activeColor,
-			selectedRadius: vertexSettings.activeRadius,
-			points: vertexSettings.hide
-				? []
-				: (Object.keys(segments.vertecies)
-						.map(v => {
-							const index = Number.parseInt(v, 10)
-							const vert = segments.vertecies[index]
-							if (vert) {
-								return {
-									longitude: vert.lon,
-									latitude: vert.lat,
-									index
+		if (editMode === EditMode.Vertex) {
+			setDrawnPointSource({
+				color: vertexSettings.color,
+				radius: vertexSettings.radius,
+				selectedColor: vertexSettings.activeColor,
+				selectedRadius: vertexSettings.activeRadius,
+				points: vertexSettings.hide
+					? []
+					: (Object.keys(segments.vertecies)
+							.map(v => {
+								const index = Number.parseInt(v, 10)
+								const vert = segments.vertecies[index]
+								if (vert) {
+									return {
+										longitude: vert.lon,
+										latitude: vert.lat,
+										index
+									}
 								}
-							}
-							return false
-						})
-						.filter(v => !!v) as unknown as {
-						longitude: number
-						latitude: number
-						index: number
-				  }[]),
-			update: (index, vertex) => {
-				dispatch(moveVertex({ index, vertex }))
-			},
-			select: index => {
-				select.select('vertex', index)
-			}
-		})
-	}, [vertexSettings, select, segments.vertecies, dispatch])
+								return false
+							})
+							.filter(v => !!v) as unknown as {
+							longitude: number
+							latitude: number
+							index: number
+					  }[]),
+				update: (index, vertex) => {
+					dispatch(moveVertex({ index, vertex }))
+				},
+				select: index => {
+					select.select('vertex', index)
+				}
+			})
+		} else if (editMode === EditMode.Block) {
+			setDrawnPointSource({
+				color: blockSettings.color,
+				radius: blockSettings.radius,
+				selectedColor: blockSettings.selectedColor,
+				selectedRadius: blockSettings.radius,
+				points: blockSettings.hide
+					? []
+					: blocks.map((block, index) => ({
+							longitude: block.interior_lon,
+							latitude: block.interior_lat,
+							name: block.name,
+							description: ``,
+							index
+					  })),
+				update: (index, vertex) => {
+					dispatch(moveBlock({ index, position: vertex }))
+				},
+				select: index => {
+					select.select('block', index)
+				}
+			})
+		}
+	}, [
+		vertexSettings,
+		select,
+		segments.vertecies,
+		dispatch,
+		editMode,
+		blockSettings.color,
+		blockSettings.radius,
+		blockSettings.selectedColor,
+		blockSettings.hide,
+		blocks
+	])
 
 	useEffect(() => {
 		if (velocitiesSettings.hide) {
@@ -576,6 +665,28 @@ export default function App(): ReactElement {
 			) : (
 				<></>
 			)}
+			<div className='absolute bottom-0 left-2 flex flex-row items-center justify-center bg-white rounded-t p-2 gap-5 shadow-sm z-50'>
+				<span className='p-1 text-sm font-bold text-center'>
+					Currently Editing:{' '}
+				</span>
+				{Object.keys(editModes).map(label => {
+					const mode = editModes[label]
+					return (
+						<button
+							key={label}
+							type='button'
+							className={`${
+								editMode === mode ? 'bg-gray-200' : 'bg-white'
+							} p-2 shaddow-inner hover:bg-gray-100 rounded`}
+							onClick={(): void => {
+								setEditMode(mode)
+							}}
+						>
+							{label}
+						</button>
+					)
+				})}
+			</div>
 			<CeleriMap
 				pointSources={pointSources}
 				arrowSources={arrowSources}

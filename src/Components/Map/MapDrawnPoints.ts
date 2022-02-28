@@ -51,7 +51,9 @@ export default function MapDrawnPoints(
 							],
 							paint: {
 								'circle-radius': drawnPointSource.selectedRadius,
-								'circle-color': drawnPointSource.selectedColor
+								'circle-color': drawnPointSource.selectedColor,
+								'circle-stroke-width': 2,
+								'circle-stroke-color': '#ffffff'
 							}
 						},
 						{
@@ -65,7 +67,9 @@ export default function MapDrawnPoints(
 							],
 							paint: {
 								'circle-radius': drawnPointSource.radius,
-								'circle-color': drawnPointSource.color
+								'circle-color': drawnPointSource.color,
+								'circle-stroke-width': 1,
+								'circle-stroke-color': '#ffffff'
 							}
 						}
 					]
