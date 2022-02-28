@@ -55,7 +55,8 @@ import {
 	createVelocity,
 	deleteVelocity,
 	editVelocityData,
-	loadNewVelocityData
+	loadNewVelocityData,
+	moveVelocity
 } from 'State/Velocity/State'
 import type { Velocity } from 'State/Velocity/Velocity'
 import type { BlockFile } from 'Utilities/BlockFile'
@@ -87,12 +88,14 @@ export type SelectionMode =
 
 enum EditMode {
 	Vertex,
-	Block
+	Block,
+	Velocity
 }
 
 const editModes: Record<string, EditMode> = {
 	Block: EditMode.Block,
-	Vertex: EditMode.Vertex
+	Vertex: EditMode.Vertex,
+	Velocity: EditMode.Velocity
 }
 
 const windows = {
@@ -311,61 +314,95 @@ export default function App(): ReactElement {
 	}, [segments, segmentSettings, select])
 
 	useEffect(() => {
-		if (editMode === EditMode.Vertex) {
-			setDrawnPointSource({
-				color: vertexSettings.color,
-				radius: vertexSettings.radius,
-				selectedColor: vertexSettings.activeColor,
-				selectedRadius: vertexSettings.activeRadius,
-				points: vertexSettings.hide
-					? []
-					: (Object.keys(segments.vertecies)
-							.map(v => {
-								const index = Number.parseInt(v, 10)
-								const vert = segments.vertecies[index]
-								if (vert) {
-									return {
-										longitude: vert.lon,
-										latitude: vert.lat,
-										index
+		switch (editMode) {
+			case EditMode.Vertex: {
+				setDrawnPointSource({
+					color: vertexSettings.color,
+					radius: vertexSettings.radius,
+					selectedColor: vertexSettings.activeColor,
+					selectedRadius: vertexSettings.activeRadius,
+					points: vertexSettings.hide
+						? []
+						: (Object.keys(segments.vertecies)
+								.map(v => {
+									const index = Number.parseInt(v, 10)
+									const vert = segments.vertecies[index]
+									if (vert) {
+										return {
+											longitude: vert.lon,
+											latitude: vert.lat,
+											index
+										}
 									}
-								}
-								return false
-							})
-							.filter(v => !!v) as unknown as {
-							longitude: number
-							latitude: number
-							index: number
-					  }[]),
-				update: (index, vertex) => {
-					dispatch(moveVertex({ index, vertex }))
-				},
-				select: index => {
-					select.select('vertex', index)
-				}
-			})
-		} else if (editMode === EditMode.Block) {
-			setDrawnPointSource({
-				color: blockSettings.color,
-				radius: blockSettings.radius,
-				selectedColor: blockSettings.selectedColor,
-				selectedRadius: blockSettings.radius,
-				points: blockSettings.hide
-					? []
-					: blocks.map((block, index) => ({
-							longitude: block.interior_lon,
-							latitude: block.interior_lat,
-							name: block.name,
-							description: ``,
-							index
-					  })),
-				update: (index, vertex) => {
-					dispatch(moveBlock({ index, position: vertex }))
-				},
-				select: index => {
-					select.select('block', index)
-				}
-			})
+									return false
+								})
+								.filter(v => !!v) as unknown as {
+								longitude: number
+								latitude: number
+								index: number
+						  }[]),
+					update: (index, vertex) => {
+						dispatch(moveVertex({ index, vertex }))
+					},
+					select: index => {
+						select.select('vertex', index)
+					}
+				})
+
+				break
+			}
+			case EditMode.Block: {
+				setDrawnPointSource({
+					color: blockSettings.color,
+					radius: blockSettings.radius,
+					selectedColor: blockSettings.selectedColor,
+					selectedRadius: blockSettings.radius,
+					points: blockSettings.hide
+						? []
+						: blocks.map((block, index) => ({
+								longitude: block.interior_lon,
+								latitude: block.interior_lat,
+								name: block.name,
+								description: ``,
+								index
+						  })),
+					update: (index, vertex) => {
+						dispatch(moveBlock({ index, position: vertex }))
+					},
+					select: index => {
+						select.select('block', index)
+					}
+				})
+
+				break
+			}
+			case EditMode.Velocity: {
+				setDrawnPointSource({
+					color: velocitiesSettings.color,
+					radius: velocitiesSettings.width,
+					selectedColor: velocitiesSettings.selectedColor,
+					selectedRadius: velocitiesSettings.width,
+					points: velocitiesSettings.hide
+						? []
+						: velocities.map((velocity, index) => ({
+								longitude: velocity.lon,
+								latitude: velocity.lat,
+								name: velocity.name,
+								description: ``,
+								index
+						  })),
+					update: (index, vertex) => {
+						dispatch(moveVelocity({ index, position: vertex }))
+					},
+					select: index => {
+						select.select('velocities', index)
+					}
+				})
+
+				break
+			}
+			default:
+				break
 		}
 	}, [
 		vertexSettings,
@@ -377,7 +414,12 @@ export default function App(): ReactElement {
 		blockSettings.radius,
 		blockSettings.selectedColor,
 		blockSettings.hide,
-		blocks
+		blocks,
+		velocitiesSettings.color,
+		velocitiesSettings.width,
+		velocitiesSettings.selectedColor,
+		velocitiesSettings.hide,
+		velocities
 	])
 
 	useEffect(() => {

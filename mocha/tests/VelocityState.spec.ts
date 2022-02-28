@@ -43,4 +43,17 @@ describe('Velocity actions mutate state as expected', () => {
 		})
 		expect(state.length).to.equal(0)
 	})
+	it('Can move a velocity', () => {
+		const state1 = VelocityReducer([], {
+			type: 'createVelocity',
+			payload: { data: { name: 'test' } }
+		})
+		const state = VelocityReducer(state1, {
+			type: 'moveVelocity',
+			payload: { index: 0, position: { lat: 1, lon: 1 } }
+		})
+		expect(state.length).to.equal(1)
+		expect(state[0].lat).to.equal(1)
+		expect(state[0].lon).to.equal(1)
+	})
 })
