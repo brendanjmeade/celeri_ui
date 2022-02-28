@@ -196,54 +196,64 @@ export default function App(): ReactElement {
 	}, [selectionMode, select])
 
 	useEffect(() => {
-		setPointSources([
-			{
-				name: 'blocks',
-				color: blockSettings.color,
-				selectedColor: blockSettings.selectedColor,
-				radius: blockSettings.radius,
-				points: blocks.map((block, index) => ({
-					longitude: block.interior_lon,
-					latitude: block.interior_lat,
-					name: block.name,
-					description: ``,
-					index
-				})),
-				click: (index): void => {
-					select.select('block', index)
+		if (blockSettings.hide) {
+			setPointSources([])
+		} else {
+			setPointSources([
+				{
+					name: 'blocks',
+					color: blockSettings.color,
+					selectedColor: blockSettings.selectedColor,
+					radius: blockSettings.radius,
+					points: blocks.map((block, index) => ({
+						longitude: block.interior_lon,
+						latitude: block.interior_lat,
+						name: block.name,
+						description: ``,
+						index
+					})),
+					click: (index): void => {
+						select.select('block', index)
+					}
 				}
-			}
-		])
+			])
+		}
 	}, [blockSettings, blocks, segmentSettings, select])
 
 	useEffect(() => {
-		setLineSources([
-			{
-				name: 'segments',
-				color: segmentSettings.color,
-				selectedColor: segmentSettings.activeColor,
-				width: segmentSettings.width,
-				selectedWidth: segmentSettings.activeWidth,
-				lines: segments.segments.map((segment, index) => {
-					const start = segments.vertecies[segment.start] ?? DEFAULT_VERTEX
-					const end = segments.vertecies[segment.end] ?? DEFAULT_VERTEX
-					const [[startLongitude, startLatitude], [endLongitude, endLatitude]] =
-						GetShortestLineCoordinates(start, end)
-					return {
-						startLongitude,
-						startLatitude,
-						endLongitude,
-						endLatitude,
-						name: segment.name,
-						description: `${start.lon},${start.lat} to ${end.lon},${end.lat}`,
-						index
+		if (segmentSettings.hide) {
+			setLineSources([])
+		} else {
+			setLineSources([
+				{
+					name: 'segments',
+					color: segmentSettings.color,
+					selectedColor: segmentSettings.activeColor,
+					width: segmentSettings.width,
+					selectedWidth: segmentSettings.activeWidth,
+					lines: segments.segments.map((segment, index) => {
+						const start = segments.vertecies[segment.start] ?? DEFAULT_VERTEX
+						const end = segments.vertecies[segment.end] ?? DEFAULT_VERTEX
+						const [
+							[startLongitude, startLatitude],
+							[endLongitude, endLatitude]
+						] = GetShortestLineCoordinates(start, end)
+						return {
+							startLongitude,
+							startLatitude,
+							endLongitude,
+							endLatitude,
+							name: segment.name,
+							description: `${start.lon},${start.lat} to ${end.lon},${end.lat}`,
+							index
+						}
+					}),
+					click: (index): void => {
+						select.select('segment', index)
 					}
-				}),
-				click: (index): void => {
-					select.select('segment', index)
 				}
-			}
-		])
+			])
+		}
 	}, [segments, segmentSettings, select])
 
 	useEffect(() => {
@@ -252,24 +262,26 @@ export default function App(): ReactElement {
 			radius: vertexSettings.radius,
 			selectedColor: vertexSettings.activeColor,
 			selectedRadius: vertexSettings.activeRadius,
-			points: Object.keys(segments.vertecies)
-				.map(v => {
-					const index = Number.parseInt(v, 10)
-					const vert = segments.vertecies[index]
-					if (vert) {
-						return {
-							longitude: vert.lon,
-							latitude: vert.lat,
-							index
-						}
-					}
-					return false
-				})
-				.filter(v => !!v) as unknown as {
-				longitude: number
-				latitude: number
-				index: number
-			}[],
+			points: vertexSettings.hide
+				? []
+				: (Object.keys(segments.vertecies)
+						.map(v => {
+							const index = Number.parseInt(v, 10)
+							const vert = segments.vertecies[index]
+							if (vert) {
+								return {
+									longitude: vert.lon,
+									latitude: vert.lat,
+									index
+								}
+							}
+							return false
+						})
+						.filter(v => !!v) as unknown as {
+						longitude: number
+						latitude: number
+						index: number
+				  }[]),
 			update: (index, vertex) => {
 				dispatch(moveVertex({ index, vertex }))
 			},
@@ -280,34 +292,41 @@ export default function App(): ReactElement {
 	}, [vertexSettings, select, segments.vertecies, dispatch])
 
 	useEffect(() => {
-		setArrowSources([
-			{
-				name: 'velocities',
-				color: velocitiesSettings.color,
-				selectedColor: velocitiesSettings.selectedColor,
-				scale: velocitiesSettings.scale,
-				arrowHeadScale: velocitiesSettings.arrowHead,
-				width: velocitiesSettings.width,
-				arrows: velocities.map((velocity, index) => {
-					const scale = Math.sqrt(
-						velocity.east_vel * velocity.east_vel +
-							velocity.north_vel * velocity.north_vel
-					)
-					return {
-						longitude: velocity.lon,
-						latitude: velocity.lat,
-						direction: [velocity.east_vel / scale, velocity.north_vel / scale],
-						scale,
-						name: velocity.name,
-						description: `north: ${velocity.north_vel}, east: ${velocity.east_vel}`,
-						index
+		if (velocitiesSettings.hide) {
+			setArrowSources([])
+		} else {
+			setArrowSources([
+				{
+					name: 'velocities',
+					color: velocitiesSettings.color,
+					selectedColor: velocitiesSettings.selectedColor,
+					scale: velocitiesSettings.scale,
+					arrowHeadScale: velocitiesSettings.arrowHead,
+					width: velocitiesSettings.width,
+					arrows: velocities.map((velocity, index) => {
+						const scale = Math.sqrt(
+							velocity.east_vel * velocity.east_vel +
+								velocity.north_vel * velocity.north_vel
+						)
+						return {
+							longitude: velocity.lon,
+							latitude: velocity.lat,
+							direction: [
+								velocity.east_vel / scale,
+								velocity.north_vel / scale
+							],
+							scale,
+							name: velocity.name,
+							description: `north: ${velocity.north_vel}, east: ${velocity.east_vel}`,
+							index
+						}
+					}),
+					click: (index): void => {
+						select.select('velocities', index)
 					}
-				}),
-				click: (index): void => {
-					select.select('velocities', index)
 				}
-			}
-		])
+			])
+		}
 	}, [select, velocitiesSettings, velocities])
 
 	let view = <span />

@@ -14,6 +14,7 @@ export interface SegmentsDisplaySettings {
 	activeVertexColor: string
 	vertexRadius: number
 	activeVertexRadius: number
+	hide: boolean
 }
 
 const defaultSegmentDisplaySettings: SegmentsDisplaySettings = {
@@ -24,7 +25,8 @@ const defaultSegmentDisplaySettings: SegmentsDisplaySettings = {
 	vertexColor: '#ffff00',
 	activeVertexColor: '#00ffff',
 	vertexRadius: 3,
-	activeVertexRadius: 3
+	activeVertexRadius: 3,
+	hide: false
 }
 
 export const initialSegmentDisplaySettings =
@@ -93,6 +95,20 @@ function SegmentsPanel({
 
 	return (
 		<div className='flex flex-col gap-2'>
+			<div className='flex flex-row justify-between items-center'>
+				<span className='text-l font-bold'>Display</span>
+				<span className='w-2/5 flex-shrink-0'>
+					<input
+						className='form-check-input appearance-none w-9 -ml-10 rounded-full float-left h-5 align-top bg-white bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer shadow-sm'
+						type='checkbox'
+						role='switch'
+						checked={!settings.hide}
+						onChange={(): void => {
+							set({ ...settings, hide: !settings.hide })
+						}}
+					/>
+				</span>
+			</div>
 			<div className='flex flex-row justify-between items-center'>
 				<span className='text-l font-bold'>Color</span>
 				<span className='w-2/5 flex-shrink-0'>

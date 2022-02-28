@@ -7,12 +7,14 @@ export interface BlockDisplaySettings {
 	color: string
 	selectedColor: string
 	radius: number
+	hide: boolean
 }
 
 const defaultBlockDisplaySettings: BlockDisplaySettings = {
 	color: '#0000ff',
 	selectedColor: '#ff0000',
-	radius: 6
+	radius: 6,
+	hide: false
 }
 
 export const initialBlockDisplaySettings =
@@ -65,6 +67,20 @@ function BlockPanel({
 	return (
 		<>
 			<div className='flex flex-col gap-2'>
+				<div className='flex flex-row justify-between items-center'>
+					<span className='text-l font-bold'>Display</span>
+					<span className='w-2/5 flex-shrink-0'>
+						<input
+							className='form-check-input appearance-none w-9 -ml-10 rounded-full float-left h-5 align-top bg-white bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer shadow-sm'
+							type='checkbox'
+							role='switch'
+							checked={!settings.hide}
+							onChange={(): void => {
+								set({ ...settings, hide: !settings.hide })
+							}}
+						/>
+					</span>
+				</div>
 				<div className='flex flex-row justify-between items-center'>
 					<span className='text-l font-bold'>Color</span>
 					<span className='w-2/5 flex-shrink-0'>
