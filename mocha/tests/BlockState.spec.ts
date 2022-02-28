@@ -43,4 +43,17 @@ describe('Block actions mutate state as expected', () => {
 		})
 		expect(state.length).to.equal(0)
 	})
+	it('Can move a block', () => {
+		const state1 = BlockReducer([], {
+			type: 'createBlock',
+			payload: { data: { name: 'test' } }
+		})
+		const state = BlockReducer(state1, {
+			type: 'moveBlock',
+			payload: { index: 0, position: { lat: 1, lon: 1 } }
+		})
+		expect(state.length).to.equal(1)
+		expect(state[0].interior_lat).to.equal(1)
+		expect(state[0].interior_lon).to.equal(1)
+	})
 })

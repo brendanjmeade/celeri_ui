@@ -8,6 +8,8 @@ import type { EditBlockDataAction } from './EditBlockData'
 import EditBlockData from './EditBlockData'
 import type { LoadNewBlockDataAction } from './LoadNewBlockData'
 import { LoadNewBlockData } from './LoadNewBlockData'
+import type { MoveBlockAction } from './MoveBlock'
+import MoveBlock from './MoveBlock'
 
 export type BlockState = Block[]
 
@@ -18,6 +20,7 @@ export const editBlockData = createAction<EditBlockDataAction>('editBlock')
 export const deleteBlock = createAction<DeleteBlockAction>('deleteBlock')
 export const loadNewBlockData =
 	createAction<LoadNewBlockDataAction>('loadNewBlockData')
+export const moveBlock = createAction<MoveBlockAction>('moveBlock')
 
 export const BlockReducer = createReducer(initialState, builder => {
 	builder
@@ -29,4 +32,5 @@ export const BlockReducer = createReducer(initialState, builder => {
 		.addCase(loadNewBlockData, (state, action) =>
 			LoadNewBlockData(state, action.payload)
 		)
+		.addCase(moveBlock, (state, action) => MoveBlock(state, action.payload))
 })
