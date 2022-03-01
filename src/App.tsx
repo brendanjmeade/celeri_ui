@@ -190,6 +190,8 @@ export default function App(): ReactElement {
 		points: []
 	})
 
+	const [hoverPoint, setHoverPoint] = useState<Vertex>({ lon: 0, lat: 0 })
+
 	useEffect(() => {
 		if (selectionMode === 'normal') {
 			select.select = (type: string, index: number): void => {
@@ -739,6 +741,15 @@ export default function App(): ReactElement {
 			)}
 			<div className='absolute bottom-0 left-2 flex flex-col bg-white rounded-t p-2 gap-5 shadow-sm z-50'>
 				<div className='flex flex-row items-center justify-start gap-5'>
+					<span className='p-1 text-sm font-bold text-center'>
+						Coordinates:{' '}
+					</span>
+					<span>
+						{Math.floor(hoverPoint.lon * 1000) / 1000},{' '}
+						{Math.floor(hoverPoint.lon * 1000) / 1000}
+					</span>
+				</div>
+				<div className='flex flex-row items-center justify-start gap-5'>
 					<span className='p-1 text-sm font-bold text-center'>Editing: </span>
 					{Object.keys(editModes).map(label => {
 						const mode = editModes[label]
@@ -800,6 +811,9 @@ export default function App(): ReactElement {
 					) {
 						selectionMode.callback(point)
 					}
+				}}
+				mouseMove={(point): void => {
+					setHoverPoint(point)
 				}}
 			/>
 			<InspectorPanel

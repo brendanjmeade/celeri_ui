@@ -46,6 +46,7 @@ export interface MapProperties {
 	drawnPointSource: DrawnPointSource
 	selections: Record<string, number>
 	click: (coordinates: Vertex) => void
+	mouseMove?: (coordinates: Vertex) => void
 }
 
 export class CeleriMap extends React.Component<MapProperties, MapState> {
@@ -86,6 +87,12 @@ export class CeleriMap extends React.Component<MapProperties, MapState> {
 			innerMap.on('click', ({ lngLat }) => {
 				const { click } = this.props
 				click(InverseTransformVertexCoordinates([lngLat.lng, lngLat.lat]))
+			})
+			innerMap.on('mousemove', ({ lngLat }): void => {
+				const { mouseMove } = this.props
+				if (mouseMove) {
+					mouseMove(InverseTransformVertexCoordinates([lngLat.lng, lngLat.lat]))
+				}
 			})
 			innerMap.on(
 				'draw.selectionchange',
