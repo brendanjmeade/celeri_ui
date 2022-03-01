@@ -653,6 +653,36 @@ export default function App(): ReactElement {
 			break
 	}
 
+	const hiddenState: Record<string, { state: boolean; change: () => void }> = {
+		Block: {
+			state: blockSettings.hide,
+			change: () => {
+				setBlockSettings({ ...blockSettings, hide: !blockSettings.hide })
+			}
+		},
+		Vertex: {
+			state: vertexSettings.hide,
+			change: () => {
+				setVertexSettings({ ...vertexSettings, hide: !vertexSettings.hide })
+			}
+		},
+		Velocity: {
+			state: velocitiesSettings.hide,
+			change: () => {
+				setVelocitiesSettings({
+					...velocitiesSettings,
+					hide: !velocitiesSettings.hide
+				})
+			}
+		},
+		Sement: {
+			state: segmentSettings.hide,
+			change: () => {
+				setSegmentSettings({ ...segmentSettings, hide: !segmentSettings.hide })
+			}
+		}
+	}
+
 	return (
 		// eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
 		<div
@@ -707,27 +737,52 @@ export default function App(): ReactElement {
 			) : (
 				<></>
 			)}
-			<div className='absolute bottom-0 left-2 flex flex-row items-center justify-center bg-white rounded-t p-2 gap-5 shadow-sm z-50'>
-				<span className='p-1 text-sm font-bold text-center'>
-					Currently Editing:{' '}
-				</span>
-				{Object.keys(editModes).map(label => {
-					const mode = editModes[label]
-					return (
-						<button
-							key={label}
-							type='button'
-							className={`${
-								editMode === mode ? 'bg-gray-200' : 'bg-white'
-							} p-2 shaddow-inner hover:bg-gray-100 rounded`}
-							onClick={(): void => {
-								setEditMode(mode)
-							}}
-						>
-							{label}
-						</button>
-					)
-				})}
+			<div className='absolute bottom-0 left-2 flex flex-col bg-white rounded-t p-2 gap-5 shadow-sm z-50'>
+				<div className='flex flex-row items-center justify-center gap-5'>
+					<span className='p-1 text-sm font-bold text-center'>
+						Currently Editing:{' '}
+					</span>
+					{Object.keys(editModes).map(label => {
+						const mode = editModes[label]
+						return (
+							<button
+								key={label}
+								type='button'
+								className={`${
+									editMode === mode ? 'bg-gray-200' : 'bg-white'
+								} p-2 shaddow-inner hover:bg-gray-100 rounded`}
+								onClick={(): void => {
+									setEditMode(mode)
+								}}
+							>
+								{label}
+							</button>
+						)
+					})}
+				</div>
+				<div className='flex flex-row items-center justify-center gap-5'>
+					<span className='p-1 text-sm font-bold text-center'>
+						Displaying:{' '}
+					</span>
+
+					{Object.keys(hiddenState).map(label => {
+						const state = hiddenState[label]
+						return (
+							<button
+								key={label}
+								type='button'
+								className={`${
+									!state.state ? 'bg-gray-200' : 'bg-white'
+								} p-2 shaddow-inner hover:bg-gray-100 rounded`}
+								onClick={(): void => {
+									state.change()
+								}}
+							>
+								{label}
+							</button>
+						)
+					})}
+				</div>
 			</div>
 			<CeleriMap
 				pointSources={pointSources}
