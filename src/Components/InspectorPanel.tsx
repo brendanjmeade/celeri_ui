@@ -39,7 +39,7 @@ function InspectorPanel({
 			{active ? (
 				<div
 					data-testid='inspector-view'
-					className='flex flex-col bg-white flex-grow rounded-tr p-2 shadow-sm'
+					className='flex flex-col bg-white flex-grow rounded-tr p-2 shadow-sm overflow-y-auto'
 				>
 					{view}
 				</div>

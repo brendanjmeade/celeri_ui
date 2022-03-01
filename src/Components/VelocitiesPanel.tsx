@@ -37,7 +37,7 @@ function VelocitiesPanel({
 }: {
 	settings: VelocitiesDisplaySettings
 	setSettings: (settings: VelocitiesDisplaySettings) => void
-	selected: number
+	selected: number[]
 	velocitys: Velocity[]
 	setVelocityData: (index: number, data?: Partial<Velocity>) => void
 	addNewVelocity: () => void
@@ -47,25 +47,32 @@ function VelocitiesPanel({
 		window.localStorage.setItem('velocityDisplaySettings', JSON.stringify(s))
 	}
 
-	const selectedVelocity: Velocity | undefined = velocitys[selected]
+	const selectedVelocities: { selectedVelocity: Velocity; index: number }[] =
+		selected
+			.map((v, index): { selectedVelocity: Velocity; index: number } => ({
+				selectedVelocity: velocitys[v],
+				index
+			}))
+			.filter(v => v.selectedVelocity)
 
-	const selectedDisplay = selectedVelocity ? (
-		<EditableItem
-			title={selectedVelocity.name}
-			item={selectedVelocity}
-			deletable
-			setItem={(partial): void => setVelocityData(selected, partial)}
-			fieldDefinitions={{
-				name: {
-					order: 0,
-					name: 'Name',
-					description: 'The Velocity Name',
-					type: 'string'
-				}
-			}}
-		/>
-	) : (
-		<></>
+	const selectedDisplay = selectedVelocities.map(
+		({ selectedVelocity, index }) => (
+			<EditableItem
+				key={index}
+				title={selectedVelocity.name}
+				item={selectedVelocity}
+				deletable
+				setItem={(partial): void => setVelocityData(index, partial)}
+				fieldDefinitions={{
+					name: {
+						order: 0,
+						name: 'Name',
+						description: 'The Velocity Name',
+						type: 'string'
+					}
+				}}
+			/>
+		)
 	)
 
 	return (

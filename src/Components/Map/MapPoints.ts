@@ -55,7 +55,7 @@ export default function MapPoints(
 										: '',
 								index: point.index,
 								name: point.name,
-								selected: point.index !== selections[source.name]
+								selected: !selections[source.name]?.includes(point.index)
 							},
 							geometry: {
 								type: 'Point',
@@ -140,7 +140,7 @@ export default function MapPoints(
 						| GeoJSONSource
 						| undefined
 					if (mapSource) {
-						const index = selections[sourcename]
+						const indices = selections[sourcename]
 						mapSource.setData({
 							type: 'FeatureCollection',
 							features: source.points.map(point => ({
@@ -149,7 +149,7 @@ export default function MapPoints(
 									description: `<strong>${point.name}</strong><p>${point.description}</p>`,
 									index: point.index,
 									name: point.name,
-									selected: point.index !== index
+									selected: !indices?.includes(point.index)
 								},
 								geometry: {
 									type: 'Point',

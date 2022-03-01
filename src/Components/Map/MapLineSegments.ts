@@ -54,7 +54,7 @@ export default function MapLineSegments(
 										: '',
 								index: line.index,
 								name: line.name,
-								selected: line.index === selections[source.name]
+								selected: selections[source.name]?.includes(line.index)
 							},
 							geometry: {
 								type: 'LineString',
@@ -169,7 +169,7 @@ export default function MapLineSegments(
 						| GeoJSONSource
 						| undefined
 					if (mapSource) {
-						const index = selections[sourcename]
+						const indices = selections[sourcename]
 						mapSource.setData({
 							type: 'FeatureCollection',
 							features: source.lines.map(line => ({
@@ -178,7 +178,7 @@ export default function MapLineSegments(
 									description: `<strong>${line.name}</strong><p>${line.description}</p>`,
 									index: line.index,
 									name: line.name,
-									selected: line.index === index
+									selected: indices?.includes(line.index)
 								},
 								geometry: {
 									type: 'LineString',

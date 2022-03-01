@@ -51,7 +51,7 @@ function SegmentsPanel({
 	settings: SegmentsDisplaySettings
 	setSettings: (settings: SegmentsDisplaySettings) => void
 	segments: Segment[]
-	selected: number
+	selected: number[]
 	setSegmentData: (index: number, data?: Partial<Segment>) => void
 	setSelectionMode: (mode: SelectionMode) => void
 	addNewSegment: (a: Vertex, b: Vertex) => void
@@ -62,15 +62,22 @@ function SegmentsPanel({
 		window.localStorage.setItem('segmentDisplaySettings', JSON.stringify(s))
 	}
 
-	const selectedSegment: Segment | undefined = segments[selected]
+	const selectedSegments: { selectedSegment: Segment; index: number }[] =
+		selected
+			.map((s, index): { selectedSegment: Segment; index: number } => ({
+				selectedSegment: segments[s],
+				index
+			}))
+			.filter(s => s.selectedSegment)
 
-	const selectedDisplay = selectedSegment ? (
+	const selectedDisplay = selectedSegments.map(({ selectedSegment, index }) => (
 		<EditableItem
+			key={index}
 			title={selectedSegment.name}
 			item={selectedSegment}
 			ignoreFields={['lon1', 'lat1', 'lon2', 'lat2', 'start', 'end']}
 			deletable
-			setItem={(partial): void => setSegmentData(selected, partial)}
+			setItem={(partial): void => setSegmentData(index, partial)}
 			fieldDefinitions={{
 				name: {
 					order: 0,
@@ -83,15 +90,13 @@ function SegmentsPanel({
 				<button
 					type='button'
 					className='rounded bg-gray-700 text-white hover:bg-gray-800 p-2'
-					onClick={(): void => splitSegment(selected)}
+					onClick={(): void => splitSegment(index)}
 				>
 					Split Segment
 				</button>
 			}
 		/>
-	) : (
-		<></>
-	)
+	))
 
 	return (
 		<div className='flex flex-col gap-2'>

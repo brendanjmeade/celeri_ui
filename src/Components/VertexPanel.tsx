@@ -43,7 +43,7 @@ function VerticesPanel({
 	settings: VerticesDisplaySettings
 	setSettings: (settings: VerticesDisplaySettings) => void
 	vertices: Record<number, Vertex>
-	selected: number
+	selected: number[]
 	setVertexData: (index: number, data?: Vertex) => void
 	setSelectionMode: (mode: SelectionMode) => void
 	mergeVertices: (a: number, b: number) => void
@@ -55,16 +55,22 @@ function VerticesPanel({
 		window.localStorage.setItem('vertexDisplaySettings', JSON.stringify(s))
 	}
 
-	const selectedVertex: Vertex | undefined = vertices[selected]
+	const selectedVertices: { selectedVertex: Vertex; index: number }[] = selected
+		.map((v, index): { selectedVertex: Vertex; index: number } => ({
+			selectedVertex: vertices[v],
+			index
+		}))
+		.filter(v => v.selectedVertex)
 
-	const selectedDisplay = selectedVertex ? (
+	const selectedDisplay = selectedVertices.map(({ selectedVertex, index }) => (
 		<EditableItem
+			key={index}
 			title='Selected Vertex'
 			item={selectedVertex}
 			ignoreFields={[]}
 			deletable={false}
 			setItem={(partial): void =>
-				setVertexData(selected, { ...selectedVertex, ...partial })
+				setVertexData(index, { ...selectedVertex, ...partial })
 			}
 			fieldDefinitions={{}}
 			controls={
@@ -78,8 +84,8 @@ function VerticesPanel({
 								mode: 'override',
 								label: 'Merge Vertices',
 								subtitle: 'Click the vertex you want to merge with',
-								callback: index => {
-									mergeVertices(selected, index)
+								callback: callIndex => {
+									mergeVertices(index, callIndex[0])
 									setSelectionMode('normal')
 								}
 							})
@@ -96,8 +102,8 @@ function VerticesPanel({
 								mode: 'override',
 								label: 'Bridge Vertices',
 								subtitle: 'Click the vertex you want to bridge to',
-								callback: index => {
-									bridgeVertices(selected, index)
+								callback: callIndex => {
+									bridgeVertices(index, callIndex[0])
 									setSelectionMode('normal')
 								}
 							})
@@ -114,7 +120,7 @@ function VerticesPanel({
 								label: 'Extrude Segment From Vertex',
 								subtitle: 'Click the point you want to extrude to',
 								callback: (point): void => {
-									extrudeVertex(selected, point)
+									extrudeVertex(index, point)
 									setSelectionMode('normal')
 								}
 							})
@@ -125,9 +131,7 @@ function VerticesPanel({
 				</>
 			}
 		/>
-	) : (
-		<></>
-	)
+	))
 
 	return (
 		<div className='flex flex-col gap-2'>

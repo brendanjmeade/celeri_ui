@@ -36,7 +36,7 @@ export interface MapState {
 		color: string
 		radius: number
 	}
-	internalSelections: Record<string, number>
+	internalSelections: Record<string, number[]>
 	mapReference: React.Ref<HTMLDivElement>
 	internalGridDisplay?: number
 }
@@ -46,7 +46,7 @@ export interface MapProperties {
 	arrowSources: ArrowSource[]
 	lineSources: LineSource[]
 	drawnPointSource: DrawnPointSource
-	selections: Record<string, number>
+	selections: Record<string, number[]>
 	click: (coordinates: Vertex) => void
 	mouseMove?: (coordinates: Vertex) => void
 	displayGrid?: number
@@ -103,28 +103,21 @@ export class CeleriMap extends React.Component<MapProperties, MapState> {
 					const { internalDrawnPointSource } = this.state
 					if (!internalDrawnPointSource || !internalDrawnPointSource?.select)
 						return
-					const feature = features[0]
-					if (
-						feature &&
-						feature.type === 'Feature' &&
-						feature.geometry.type === 'Point' &&
-						feature.properties &&
-						'index' in feature.properties &&
-						typeof feature.properties.index === 'number'
-					) {
-						internalDrawnPointSource.select(feature.properties.index)
-					}
+					const indices = features
+						.map(feature =>
+							feature &&
+							feature.type === 'Feature' &&
+							feature.geometry.type === 'Point' &&
+							feature.properties &&
+							'index' in feature.properties &&
+							typeof feature.properties.index === 'number'
+								? feature.properties.index
+								: -1
+						)
+						.filter(v => v > -1)
+					internalDrawnPointSource.select(indices)
 				}
 			)
-			innerMap.on('draw.modechange', ({ mode }: { mode: string }) => {
-				const { selections } = this.props
-				const { draw } = this.state
-				if (mode === 'simple_select' && selections.drawnPoint && draw) {
-					draw.changeMode('direct_select', {
-						featureId: `${selections.drawnPoint}`
-					})
-				}
-			})
 			innerMap.on(
 				'draw.update',
 				({

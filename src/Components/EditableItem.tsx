@@ -147,7 +147,7 @@ function EditableItem<T extends object>({
 		.sort((a, b): number => a.order - b.order)
 		.map(value => value.element)
 	return (
-		<div className='flex flex-col gap-2 border-2 rounded p-2 max-h-96 overflow-y-auto'>
+		<div className='flex flex-col gap-2 border-2 rounded p-2'>
 			<div className='flex flex-row justify-between items-center'>
 				<span
 					data-testid='editable-item-title'

@@ -31,7 +31,7 @@ function BlockPanel({
 	setBlockData,
 	addNewBlock
 }: {
-	selected: number
+	selected: number[]
 	blocks: Block[]
 	setBlockData: (index: number, data?: Partial<Block>) => void
 	addNewBlock: () => void
@@ -43,14 +43,20 @@ function BlockPanel({
 		window.localStorage.setItem('blockDisplaySettings', JSON.stringify(s))
 	}
 
-	const selectedBlock: Block | undefined = blocks[selected]
+	const selectedBlocks: { selectedBlock: Block; index: number }[] = selected
+		.map((v, index): { selectedBlock: Block; index: number } => ({
+			selectedBlock: blocks[v],
+			index
+		}))
+		.filter(v => v.selectedBlock)
 
-	const selectedDisplay = selectedBlock ? (
+	const selectedDisplay = selectedBlocks.map(({ selectedBlock, index }) => (
 		<EditableItem
+			key={index}
 			title={selectedBlock.name}
 			item={selectedBlock}
 			deletable
-			setItem={(partial): void => setBlockData(selected, partial)}
+			setItem={(partial): void => setBlockData(index, partial)}
 			fieldDefinitions={{
 				name: {
 					order: 0,
@@ -60,9 +66,7 @@ function BlockPanel({
 				}
 			}}
 		/>
-	) : (
-		<></>
-	)
+	))
 
 	return (
 		<>

@@ -82,14 +82,18 @@ if (!window.location.search.includes('fake-dir')) {
 export type SelectionMode =
 	| 'normal'
 	| ({ label: string; subtitle?: string } & (
+			| {
+					mode: 'override'
+					type: string
+					callback: (indices: number[]) => void
+			  }
 			| { mode: 'mapClick'; callback: (point: Vertex) => void }
-			| { mode: 'override'; type: string; callback: (index: number) => void }
 	  ))
 
 enum EditMode {
-	Vertex,
-	Block,
-	Velocity
+	Vertex = 'Vertices',
+	Block = 'Blocks',
+	Velocity = 'Velocities'
 }
 
 const editModes: Record<string, EditMode> = {
@@ -162,19 +166,19 @@ export default function App(): ReactElement {
 	const [selectionMode, setSelectionMode] = useState<SelectionMode>('normal')
 	const [editMode, setEditMode] = useState<EditMode>(EditMode.Vertex)
 
-	const [selectedBlock, setSelectedBlock] = useState<number>(-1)
-	const [selectedSegment, setSelectedSegment] = useState<number>(-1)
-	const [selectedVelocity, setSelectedVelocity] = useState<number>(-1)
-	const [selectedVertex, setSelectedVertex] = useState<number>(-1)
+	const [selectedBlock, setSelectedBlock] = useState<number[]>([])
+	const [selectedSegment, setSelectedSegment] = useState<number[]>([])
+	const [selectedVelocity, setSelectedVelocity] = useState<number[]>([])
+	const [selectedVertex, setSelectedVertex] = useState<number[]>([])
 
 	const [select, setSelect] = useState<{
-		select: (type: string, index: number) => void
+		select: (type: string, indices: number[]) => void
 	}>({
-		select: (type: string, index: number): void => {
-			setSelectedBlock(type === 'block' ? index : -1)
-			setSelectedSegment(type === 'segment' ? index : -1)
-			setSelectedVelocity(type === 'velocities' ? index : -1)
-			setSelectedVertex(type === 'vertex' ? index : -1)
+		select: (type: string, indices: number[]): void => {
+			setSelectedBlock(type === 'block' ? indices : [])
+			setSelectedSegment(type === 'segment' ? indices : [])
+			setSelectedVelocity(type === 'velocities' ? indices : [])
+			setSelectedVertex(type === 'vertex' ? indices : [])
 			setActiveTab(type)
 		}
 	})
@@ -195,17 +199,17 @@ export default function App(): ReactElement {
 
 	useEffect(() => {
 		if (selectionMode === 'normal') {
-			select.select = (type: string, index: number): void => {
-				setSelectedBlock(type === 'block' ? index : -1)
-				setSelectedSegment(type === 'segment' ? index : -1)
-				setSelectedVelocity(type === 'velocities' ? index : -1)
-				setSelectedVertex(type === 'vertex' ? index : -1)
+			select.select = (type: string, indices: number[]): void => {
+				setSelectedBlock(type === 'block' ? indices : [])
+				setSelectedSegment(type === 'segment' ? indices : [])
+				setSelectedVelocity(type === 'velocities' ? indices : [])
+				setSelectedVertex(type === 'vertex' ? indices : [])
 				setActiveTab(type)
 			}
 		} else if (selectionMode.mode === 'override') {
-			select.select = (type: string, index: number): void => {
+			select.select = (type: string, indices: number[]): void => {
 				if (type === selectionMode.type) {
-					selectionMode.callback(index)
+					selectionMode.callback(indices)
 				}
 			}
 		} else {
@@ -229,7 +233,7 @@ export default function App(): ReactElement {
 					index
 				})),
 				click: (index): void => {
-					select.select('block', index)
+					select.select('block', [index])
 				}
 			})
 		}
@@ -240,7 +244,7 @@ export default function App(): ReactElement {
 				selectedColor: vertexSettings.activeColor,
 				radius: vertexSettings.radius,
 				click: (index): void => {
-					select.select('vertex', index)
+					select.select('vertex', [index])
 				},
 				points: Object.keys(segments.vertecies)
 					.map(v => {
@@ -309,7 +313,7 @@ export default function App(): ReactElement {
 						}
 					}),
 					click: (index): void => {
-						select.select('segment', index)
+						select.select('segment', [index])
 					}
 				}
 			])
@@ -456,7 +460,7 @@ export default function App(): ReactElement {
 						}
 					}),
 					click: (index): void => {
-						select.select('velocities', index)
+						select.select('velocities', [index])
 					}
 				}
 			])
@@ -557,7 +561,7 @@ export default function App(): ReactElement {
 								dispatch(
 									createVelocity({ data: { lat: point.lat, lon: point.lon } })
 								)
-								select.select('velocity', id)
+								select.select('velocity', [id])
 							}
 						})
 					}}
@@ -586,7 +590,7 @@ export default function App(): ReactElement {
 										}
 									})
 								)
-								select.select('block', id)
+								select.select('block', [id])
 								setSelectionMode('normal')
 							}
 						})
@@ -612,7 +616,7 @@ export default function App(): ReactElement {
 					addNewSegment={(a, b): void => {
 						const nextIndex = segments.segments.length
 						dispatch(createSegment({ start: a, end: b }))
-						select.select('segment', nextIndex)
+						select.select('segment', [nextIndex])
 					}}
 					setSegmentData={(index, data): void => {
 						if (data) {
@@ -748,6 +752,12 @@ export default function App(): ReactElement {
 			)}
 			<div className='absolute bottom-0 left-2 flex flex-col bg-white rounded-t p-2 gap-5 shadow-sm z-50'>
 				<div className='flex flex-row items-center justify-start gap-5'>
+					<span className='p-1 text-sm text-center'>
+						Hold <span className='font-bold'>Shift</span> to box select{' '}
+						<span className='font-bold'>{editMode}</span>
+					</span>
+				</div>
+				<div className='flex flex-row items-center justify-start gap-5'>
 					<span className='p-1 text-sm font-bold text-center'>
 						Coordinates:{' '}
 					</span>
@@ -809,7 +819,7 @@ export default function App(): ReactElement {
 					segments: selectedSegment,
 					blocks: selectedBlock,
 					velocities: selectedVelocity,
-					drawnPoint: selectedVertex
+					vertices: selectedVertex
 				}}
 				displayGrid={displayGrid ? 10 : -1}
 				click={(point): void => {

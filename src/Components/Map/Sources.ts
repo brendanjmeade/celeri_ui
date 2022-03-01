@@ -61,6 +61,6 @@ export interface DrawnPointSource {
 		latitude: number
 		index: number
 	}[]
-	select?: (index: number) => void
+	select?: (index: number[]) => void
 	update?: (index: number, coordinates: Vertex) => void
 }

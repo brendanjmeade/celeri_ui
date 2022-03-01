@@ -85,7 +85,7 @@ export default function MapArrows(
 											: '',
 									index: arrow.index,
 									name: arrow.name,
-									selected: arrow.index === selections[source.name]
+									selected: selections[source.name]?.includes(arrow.index)
 								},
 								geometry: {
 									type: 'LineString',
@@ -195,7 +195,7 @@ export default function MapArrows(
 						| GeoJSONSource
 						| undefined
 					if (mapSource) {
-						const index = selections[sourcename]
+						const indices = selections[sourcename]
 						mapSource.setData({
 							type: 'FeatureCollection',
 							features: source.arrows.map(arrow => {
@@ -231,7 +231,7 @@ export default function MapArrows(
 										description: `<strong>${arrow.name}</strong><p>${arrow.description}</p>`,
 										index: arrow.index,
 										name: arrow.name,
-										selected: arrow.index === index
+										selected: indices?.includes(arrow.index)
 									},
 									geometry: {
 										type: 'LineString',
