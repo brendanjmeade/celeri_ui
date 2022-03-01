@@ -9,6 +9,7 @@ import type { Vertex } from 'State/Segment/Vertex'
 import { InverseTransformVertexCoordinates } from 'State/Segment/Vertex'
 import MapArrows from './MapArrows'
 import MapDrawnPoints from './MapDrawnPoints'
+import MapGrid from './MapGrid'
 import MapLineSegments from './MapLineSegments'
 import MapPoints from './MapPoints'
 import type {
@@ -37,6 +38,7 @@ export interface MapState {
 	}
 	internalSelections: Record<string, number>
 	mapReference: React.Ref<HTMLDivElement>
+	internalGridDisplay?: number
 }
 
 export interface MapProperties {
@@ -47,6 +49,7 @@ export interface MapProperties {
 	selections: Record<string, number>
 	click: (coordinates: Vertex) => void
 	mouseMove?: (coordinates: Vertex) => void
+	displayGrid?: number
 }
 
 export class CeleriMap extends React.Component<MapProperties, MapState> {
@@ -157,6 +160,12 @@ export class CeleriMap extends React.Component<MapProperties, MapState> {
 	}
 
 	public componentDidUpdate(): boolean {
+		MapGrid(
+			this,
+			state => this.setState(state as unknown as MapState),
+			this.state,
+			this.props
+		)
 		MapLineSegments(
 			this,
 			state => this.setState(state as unknown as MapState),

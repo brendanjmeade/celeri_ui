@@ -191,6 +191,7 @@ export default function App(): ReactElement {
 	})
 
 	const [hoverPoint, setHoverPoint] = useState<Vertex>({ lon: 0, lat: 0 })
+	const [displayGrid, setDisplayGrid] = useState(false)
 
 	useEffect(() => {
 		if (selectionMode === 'normal') {
@@ -682,6 +683,12 @@ export default function App(): ReactElement {
 			change: () => {
 				setSegmentSettings({ ...segmentSettings, hide: !segmentSettings.hide })
 			}
+		},
+		Grid: {
+			state: !displayGrid,
+			change: () => {
+				setDisplayGrid(!displayGrid)
+			}
 		}
 	}
 
@@ -804,6 +811,7 @@ export default function App(): ReactElement {
 					velocities: selectedVelocity,
 					drawnPoint: selectedVertex
 				}}
+				displayGrid={displayGrid ? 10 : -1}
 				click={(point): void => {
 					if (
 						typeof selectionMode !== 'string' &&
