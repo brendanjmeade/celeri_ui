@@ -79,7 +79,10 @@ export default function MapArrows(
 							return {
 								type: 'Feature',
 								properties: {
-									description: `<strong>${arrow.name}</strong><p>${arrow.description}</p>`,
+									description:
+										arrow.name || arrow.description
+											? `<strong>${arrow.name}</strong><p>${arrow.description}</p>`
+											: '',
 									index: arrow.index,
 									name: arrow.name,
 									selected: arrow.index === selections[source.name]
@@ -136,7 +139,8 @@ export default function MapArrows(
 						if (
 							feature.geometry.type === 'Point' &&
 							feature.properties &&
-							typeof feature.properties.description === 'string'
+							typeof feature.properties.description === 'string' &&
+							feature.properties.description
 						) {
 							const coordinates = [...feature.geometry.coordinates] as [
 								number,

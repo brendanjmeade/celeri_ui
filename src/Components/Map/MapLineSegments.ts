@@ -48,7 +48,10 @@ export default function MapLineSegments(
 						features: source.lines.map(line => ({
 							type: 'Feature',
 							properties: {
-								description: `<strong>${line.name}</strong><p>${line.description}</p>`,
+								description:
+									line.name || line.description
+										? `<strong>${line.name}</strong><p>${line.description}</p>`
+										: '',
 								index: line.index,
 								name: line.name,
 								selected: line.index === selections[source.name]
@@ -106,7 +109,8 @@ export default function MapLineSegments(
 						if (
 							feature.geometry.type === 'LineString' &&
 							feature.properties &&
-							typeof feature.properties.description === 'string'
+							typeof feature.properties.description === 'string' &&
+							feature.properties.description
 						) {
 							const coordinates = [
 								(feature.geometry.coordinates[0][0] +

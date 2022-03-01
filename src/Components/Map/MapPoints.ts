@@ -49,7 +49,10 @@ export default function MapPoints(
 						features: source.points.map(point => ({
 							type: 'Feature',
 							properties: {
-								description: `<strong>${point.name}</strong><p>${point.description}</p>`,
+								description:
+									point.name || point.description
+										? `<strong>${point.name}</strong><p>${point.description}</p>`
+										: '',
 								index: point.index,
 								name: point.name,
 								selected: point.index !== selections[source.name]
@@ -82,7 +85,8 @@ export default function MapPoints(
 						if (
 							feature.geometry.type === 'Point' &&
 							feature.properties &&
-							typeof feature.properties.description === 'string'
+							typeof feature.properties.description === 'string' &&
+							feature.properties.description
 						) {
 							const coordinates = [...feature.geometry.coordinates] as [
 								number,

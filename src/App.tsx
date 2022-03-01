@@ -738,10 +738,8 @@ export default function App(): ReactElement {
 				<></>
 			)}
 			<div className='absolute bottom-0 left-2 flex flex-col bg-white rounded-t p-2 gap-5 shadow-sm z-50'>
-				<div className='flex flex-row items-center justify-center gap-5'>
-					<span className='p-1 text-sm font-bold text-center'>
-						Currently Editing:{' '}
-					</span>
+				<div className='flex flex-row items-center justify-start gap-5'>
+					<span className='p-1 text-sm font-bold text-center'>Editing: </span>
 					{Object.keys(editModes).map(label => {
 						const mode = editModes[label]
 						return (
@@ -760,7 +758,7 @@ export default function App(): ReactElement {
 						)
 					})}
 				</div>
-				<div className='flex flex-row items-center justify-center gap-5'>
+				<div className='flex flex-row items-center justify-start gap-5'>
 					<span className='p-1 text-sm font-bold text-center'>
 						Displaying:{' '}
 					</span>
