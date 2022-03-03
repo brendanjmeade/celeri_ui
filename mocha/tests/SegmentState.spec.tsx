@@ -77,7 +77,7 @@ describe('Segment Actions mutate state as expected', () => {
 		})
 		const state = SegmentReducer(createSegment, {
 			type: 'deleteSegment',
-			payload: { index: 0 }
+			payload: { index: [0] }
 		})
 		expect(state.segments).to.have.length(0)
 	})
@@ -91,7 +91,7 @@ describe('Segment Actions mutate state as expected', () => {
 		})
 		const state = SegmentReducer(createSegment, {
 			type: 'deleteSegment',
-			payload: { index: 0 }
+			payload: { index: [0] }
 		})
 		expect(state.segments).to.have.length(0)
 		expect(state.vertecies).to.be.empty
@@ -113,7 +113,7 @@ describe('Segment Actions mutate state as expected', () => {
 		})
 		const state = SegmentReducer(secondSegment, {
 			type: 'deleteSegment',
-			payload: { index: 1 }
+			payload: { index: [1] }
 		})
 		expect(state.segments).to.have.length(1)
 		expect(Object.keys(state.vertecies)).to.have.length(2)
@@ -126,15 +126,24 @@ describe('Segment Actions mutate state as expected', () => {
 				end: { lon: 1, lat: 1 }
 			}
 		})
-		const state = SegmentReducer(createSegment, {
+		const createSegment2 = SegmentReducer(createSegment, {
+			type: 'createSegmet',
+			payload: {
+				start: { lon: 0, lat: 0 },
+				end: { lon: 1, lat: 1 }
+			}
+		})
+		const state = SegmentReducer(createSegment2, {
 			type: 'editSegmentData',
 			payload: {
-				index: 0,
+				indices: [0, 1],
 				data: { dip: 80 }
 			}
 		})
 		expect(state.segments[0].dip).to.equal(80)
 		expect(state.segments[0].locking_depth).to.equal(15)
+		expect(state.segments[1].dip).to.equal(80)
+		expect(state.segments[1].locking_depth).to.equal(15)
 	})
 	it('Can extrude a segments', () => {
 		const createSegment = SegmentReducer(initialState, {
@@ -234,13 +243,13 @@ describe('Segment Actions mutate state as expected', () => {
 		const setData = SegmentReducer(createSegment, {
 			type: 'editSegmentData',
 			payload: {
-				index: 0,
+				indices: [0],
 				data: { name: 'test_name' }
 			}
 		})
 		const state = SegmentReducer(setData, {
 			type: 'splitSegment',
-			payload: 0
+			payload: [0]
 		})
 		expect(state.segments[0].start).to.equal(0)
 		expect(state.segments[0].end).to.equal(2)

@@ -25,12 +25,17 @@ describe('Block actions mutate state as expected', () => {
 			type: 'createBlock',
 			payload: { data: { name: 'test' } }
 		})
-		const state = BlockReducer(state1, {
-			type: 'editBlock',
-			payload: { index: 0, data: { name: 'test2' } }
+		const state2 = BlockReducer(state1, {
+			type: 'createBlock',
+			payload: { data: { name: 'test' } }
 		})
-		expect(state.length).to.equal(1)
+		const state = BlockReducer(state2, {
+			type: 'editBlock',
+			payload: { indices: [0, 1], data: { name: 'test2' } }
+		})
+		expect(state.length).to.equal(2)
 		expect(state[0].name).to.equal('test2')
+		expect(state[1].name).to.equal('test2')
 	})
 	it('Can delete a block', () => {
 		const state1 = BlockReducer([], {
@@ -39,7 +44,7 @@ describe('Block actions mutate state as expected', () => {
 		})
 		const state = BlockReducer(state1, {
 			type: 'deleteBlock',
-			payload: 0
+			payload: [0]
 		})
 		expect(state.length).to.equal(0)
 	})

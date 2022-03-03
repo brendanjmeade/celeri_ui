@@ -33,7 +33,7 @@ function BlockPanel({
 }: {
 	selected: number[]
 	blocks: Block[]
-	setBlockData: (index: number, data?: Partial<Block>) => void
+	setBlockData: (index: number[], data?: Partial<Block>) => void
 	addNewBlock: () => void
 	settings: BlockDisplaySettings
 	setSettings: (settings: BlockDisplaySettings) => void
@@ -43,30 +43,33 @@ function BlockPanel({
 		window.localStorage.setItem('blockDisplaySettings', JSON.stringify(s))
 	}
 
-	const selectedBlocks: { selectedBlock: Block; index: number }[] = selected
-		.map((v, index): { selectedBlock: Block; index: number } => ({
-			selectedBlock: blocks[v],
-			index
-		}))
-		.filter(v => v.selectedBlock)
+	const selectedBlocks: Block[] = selected
+		.map((v): Block => blocks[v])
+		.filter(v => v)
 
-	const selectedDisplay = selectedBlocks.map(({ selectedBlock, index }) => (
-		<EditableItem
-			key={index}
-			title={selectedBlock.name}
-			item={selectedBlock}
-			deletable
-			setItem={(partial): void => setBlockData(index, partial)}
-			fieldDefinitions={{
-				name: {
-					order: 0,
-					name: 'Name',
-					description: 'The Block Name',
-					type: 'string'
+	const selectedDisplay =
+		selectedBlocks.length > 0 ? (
+			<EditableItem
+				title={
+					selectedBlocks.length === 1
+						? selectedBlocks[0].name
+						: 'Edit Selected Blocks'
 				}
-			}}
-		/>
-	))
+				items={selectedBlocks}
+				deletable
+				setItems={(partial): void => setBlockData(selected, partial)}
+				fieldDefinitions={{
+					name: {
+						order: 0,
+						name: 'Name',
+						description: 'The Block Name',
+						type: 'string'
+					}
+				}}
+			/>
+		) : (
+			<></>
+		)
 
 	return (
 		<>

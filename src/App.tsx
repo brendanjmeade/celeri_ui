@@ -544,11 +544,12 @@ export default function App(): ReactElement {
 					setSettings={setVelocitiesSettings}
 					selected={selectedVelocity}
 					velocitys={velocities}
-					setVelocityData={(index, data?: Partial<Velocity>): void => {
+					setVelocityData={(indices, data?: Partial<Velocity>): void => {
 						if (data) {
-							dispatch(editVelocityData({ index, data }))
+							dispatch(editVelocityData({ indices, data }))
 						} else {
-							dispatch(deleteVelocity(index))
+							dispatch(deleteVelocity(indices))
+							select.select('velocity', [])
 						}
 					}}
 					addNewVelocity={(): void => {
@@ -597,9 +598,10 @@ export default function App(): ReactElement {
 					}}
 					setBlockData={(index, data): void => {
 						if (data) {
-							dispatch(editBlockData({ index, data }))
+							dispatch(editBlockData({ indices: selectedBlock, data }))
 						} else {
 							dispatch(deleteBlock(index))
+							select.select('block', [])
 						}
 					}}
 				/>
@@ -620,13 +622,14 @@ export default function App(): ReactElement {
 					}}
 					setSegmentData={(index, data): void => {
 						if (data) {
-							dispatch(editSegmentData({ index, data }))
+							dispatch(editSegmentData({ indices: index, data }))
 						} else {
 							dispatch(deleteSegment({ index }))
 						}
 					}}
 					splitSegment={(index): void => {
 						dispatch(splitSegment(index))
+						select.select('segment', [])
 					}}
 				/>
 			)
@@ -682,7 +685,7 @@ export default function App(): ReactElement {
 				})
 			}
 		},
-		Sement: {
+		Segment: {
 			state: segmentSettings.hide,
 			change: () => {
 				setSegmentSettings({ ...segmentSettings, hide: !segmentSettings.hide })

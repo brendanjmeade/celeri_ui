@@ -68,21 +68,22 @@ function FieldDefinitionEditor({
 
 function EditableItem<T extends object>({
 	title,
-	item,
-	setItem,
+	items,
+	setItems: setItem,
 	fieldDefinitions,
 	ignoreFields,
 	deletable,
 	controls
 }: {
 	title: string
-	item: T
+	items: T[]
 	deletable: boolean
 	ignoreFields?: string[]
-	setItem: (value?: Partial<T>) => void
+	setItems: (value?: Partial<T>) => void
 	fieldDefinitions: Record<string, FieldDefinition>
 	controls?: ReactElement
 }): ReactElement {
+	const item = items[0]
 	const fieldEditors = Object.keys(item)
 		.map((key, index): { element: ReactElement; order: number } => {
 			if (ignoreFields?.includes(key)) {
@@ -92,7 +93,16 @@ function EditableItem<T extends object>({
 					order: index + 10_000
 				}
 			}
-			const value = (item as unknown as Record<string, number | string>)[key]
+			let value = (item as unknown as Record<string, number | string>)[key]
+			for (const current of items) {
+				const temporary = (
+					current as unknown as Record<string, number | string>
+				)[key]
+				if (temporary !== value) {
+					value = '-'
+					break
+				}
+			}
 			const fieldDefinition = key in fieldDefinitions && fieldDefinitions[key]
 			return fieldDefinition
 				? {

@@ -52,51 +52,53 @@ function SegmentsPanel({
 	setSettings: (settings: SegmentsDisplaySettings) => void
 	segments: Segment[]
 	selected: number[]
-	setSegmentData: (index: number, data?: Partial<Segment>) => void
+	setSegmentData: (index: number[], data?: Partial<Segment>) => void
 	setSelectionMode: (mode: SelectionMode) => void
 	addNewSegment: (a: Vertex, b: Vertex) => void
-	splitSegment: (index: number) => void
+	splitSegment: (index: number[]) => void
 }): ReactElement {
 	const set = (s: SegmentsDisplaySettings): void => {
 		setSettings(s)
 		window.localStorage.setItem('segmentDisplaySettings', JSON.stringify(s))
 	}
 
-	const selectedSegments: { selectedSegment: Segment; index: number }[] =
-		selected
-			.map((s, index): { selectedSegment: Segment; index: number } => ({
-				selectedSegment: segments[s],
-				index
-			}))
-			.filter(s => s.selectedSegment)
+	const selectedSegments: Segment[] = selected
+		.map((s): Segment => segments[s])
+		.filter(s => s)
 
-	const selectedDisplay = selectedSegments.map(({ selectedSegment, index }) => (
-		<EditableItem
-			key={index}
-			title={selectedSegment.name}
-			item={selectedSegment}
-			ignoreFields={['lon1', 'lat1', 'lon2', 'lat2', 'start', 'end']}
-			deletable
-			setItem={(partial): void => setSegmentData(index, partial)}
-			fieldDefinitions={{
-				name: {
-					order: 0,
-					name: 'Name',
-					description: 'The Segment Name',
-					type: 'string'
+	const selectedDisplay =
+		selectedSegments.length > 0 ? (
+			<EditableItem
+				title={
+					selectedSegments.length === 1
+						? selectedSegments[0].name
+						: 'Edit Selected Segments'
 				}
-			}}
-			controls={
-				<button
-					type='button'
-					className='rounded bg-gray-700 text-white hover:bg-gray-800 p-2'
-					onClick={(): void => splitSegment(index)}
-				>
-					Split Segment
-				</button>
-			}
-		/>
-	))
+				items={selectedSegments}
+				ignoreFields={['lon1', 'lat1', 'lon2', 'lat2', 'start', 'end']}
+				deletable
+				setItems={(partial): void => setSegmentData(selected, partial)}
+				fieldDefinitions={{
+					name: {
+						order: 0,
+						name: 'Name',
+						description: 'The Segment Name',
+						type: 'string'
+					}
+				}}
+				controls={
+					<button
+						type='button'
+						className='rounded bg-gray-700 text-white hover:bg-gray-800 p-2'
+						onClick={(): void => splitSegment(selected)}
+					>
+						Split Segment
+					</button>
+				}
+			/>
+		) : (
+			<></>
+		)
 
 	return (
 		<div className='flex flex-col gap-2'>

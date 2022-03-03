@@ -66,10 +66,10 @@ function VerticesPanel({
 		<EditableItem
 			key={index}
 			title='Selected Vertex'
-			item={selectedVertex}
+			items={[selectedVertex]}
 			ignoreFields={[]}
 			deletable={false}
-			setItem={(partial): void =>
+			setItems={(partial): void =>
 				setVertexData(index, { ...selectedVertex, ...partial })
 			}
 			fieldDefinitions={{}}

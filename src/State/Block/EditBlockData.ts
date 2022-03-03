@@ -2,7 +2,7 @@ import type { Block } from './Block'
 import type { BlockState } from './State'
 
 export interface EditBlockDataAction {
-	index: number
+	indices: number[]
 	data: Partial<Block>
 }
 
@@ -12,7 +12,9 @@ export default function EditBlockData(
 ): BlockState {
 	const blocks = [...state]
 	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-	const block = { ...blocks[payload.index], ...payload.data }
-	blocks[payload.index] = block
+	for (const index of payload.indices) {
+		const block = { ...blocks[index], ...payload.data }
+		blocks[index] = block
+	}
 	return blocks
 }

@@ -12,8 +12,11 @@ describe('The editable item displays & edits correctly', () => {
 		render(
 			<EditableItem
 				title='Editable Item'
-				item={{ string: 'hey', number: 1 }}
-				setItem={(): void => {}}
+				items={[
+					{ string: 'hey', number: 1, multi: 'test' },
+					{ string: 'hey', number: 1, multi: 'not' }
+				]}
+				setItems={(): void => {}}
 				fieldDefinitions={{}}
 				deletable={false}
 			/>
@@ -33,5 +36,11 @@ describe('The editable item displays & edits correctly', () => {
 		expect(
 			(screen.getByTestId('input-editor-number') as HTMLInputElement).type
 		).to.equal('number')
+		expect(
+			(screen.getByTestId('input-editor-multi') as HTMLInputElement).value
+		).to.equal('-')
+		expect(
+			(screen.getByTestId('input-editor-multi') as HTMLInputElement).type
+		).to.equal('text')
 	})
 })
