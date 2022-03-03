@@ -766,7 +766,7 @@ export default function App(): ReactElement {
 					</span>
 					<span>
 						{Math.floor(hoverPoint.lon * 1000) / 1000},{' '}
-						{Math.floor(hoverPoint.lon * 1000) / 1000}
+						{Math.floor(hoverPoint.lat * 1000) / 1000}
 					</span>
 				</div>
 				<div className='flex flex-row items-center justify-start gap-5'>
