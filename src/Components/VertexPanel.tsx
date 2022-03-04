@@ -56,9 +56,9 @@ function VerticesPanel({
 	}
 
 	const selectedVertices: { selectedVertex: Vertex; index: number }[] = selected
-		.map((v, index): { selectedVertex: Vertex; index: number } => ({
+		.map((v): { selectedVertex: Vertex; index: number } => ({
 			selectedVertex: vertices[v],
-			index
+			index: v
 		}))
 		.filter(v => v.selectedVertex)
 
