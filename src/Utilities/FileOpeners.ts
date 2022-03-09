@@ -3,7 +3,7 @@ import type { OpenableFile } from 'Components/Files'
 import { BlockFile } from './BlockFile'
 import { CommandFile } from './CommandFile'
 import type { Directory, File, FileName } from './FileSystemInterfaces'
-import MeshFile from './MeshFile'
+import { MeshFile } from './MeshFile'
 import { SegmentFile } from './SegmentFile'
 import { VelocityFile } from './VelocityFile'
 
