@@ -3,6 +3,7 @@ import type { OpenableFile } from 'Components/Files'
 import { BlockFile } from './BlockFile'
 import { CommandFile } from './CommandFile'
 import type { Directory, File, FileName } from './FileSystemInterfaces'
+import MeshFile from './MeshFile'
 import { SegmentFile } from './SegmentFile'
 import { VelocityFile } from './VelocityFile'
 
@@ -33,6 +34,12 @@ export async function OpenVelocityFile(
 	return file
 }
 
+export async function OpenMeshFile(fileHandle: File): Promise<MeshFile> {
+	const file = new MeshFile(fileHandle)
+	await file.initialize()
+	return file
+}
+
 export async function OpenCommandFile(
 	folderHandle: Directory,
 	fileHandle: File,
@@ -43,6 +50,7 @@ export async function OpenCommandFile(
 	segments: SegmentFile
 	blocks: BlockFile
 	velocities: VelocityFile
+	mesh: MeshFile
 }> {
 	const commands = new CommandFile(fileHandle)
 	await commands.initialize()
@@ -55,6 +63,11 @@ export async function OpenCommandFile(
 		)
 		const velocities = await OpenVelocityFile(
 			await folderHandle.getFile(commands.data.station_file_name as FileName)
+		)
+		const mesh = await OpenMeshFile(
+			await folderHandle.getFile(
+				commands.data.mesh_parameters_file_name as FileName
+			)
 		)
 		const updatedFiles = { ...openableFiles }
 		if ('command' in updatedFiles) {
@@ -81,12 +94,19 @@ export async function OpenCommandFile(
 				currentFilePath: commands.data.station_file_name
 			}
 		}
+		if ('mesh' in updatedFiles) {
+			updatedFiles.mesh = {
+				...updatedFiles.mesh,
+				currentFilePath: commands.data.mesh_parameters_file_name
+			}
+		}
 		return {
 			openableFiles: updatedFiles,
 			commands,
 			segments,
 			blocks,
-			velocities
+			velocities,
+			mesh
 		}
 	}
 	throw new Error("Can't open command file")

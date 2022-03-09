@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { expect } from 'chai'
 import { createBlock } from '../../src/State/Block/Block'
 import type { InMemorySegment } from '../../src/State/Segment/Segment'
@@ -6,6 +8,7 @@ import { BlockFile } from '../../src/Utilities/BlockFile'
 import { CommandFile, createCommand } from '../../src/Utilities/CommandFile'
 import type { FileName } from '../../src/Utilities/FileSystemInterfaces'
 import OpenDirectory from '../../src/Utilities/InMemoryFileSystem'
+import { MeshFile } from '../../src/Utilities/MeshFile'
 import { createSegment, SegmentFile } from '../../src/Utilities/SegmentFile'
 import { VelocityFile } from '../../src/Utilities/VelocityFile'
 
@@ -147,6 +150,57 @@ BRb                                                                ,245.927,44.7
 			expect(directoryStructure.root['velocity.csv']).to.contain('100')
 		} else {
 			expect(velocity.data).to.not.be.undefined
+		}
+	})
+	it('Can Open Mesh Files Properly', async () => {
+		const directoryStructure = {
+			root: {
+				'mesh.msh': `$MeshFormat
+2 0 8
+$EndMeshFormat
+$Nodes
+3
+1 0.0 0.0 0.0
+2 1.0 0.0 0.0
+3 0.0 -1.0 0.0
+$EndNodes
+$Elements
+3
+1 15 2 3 0 1 2
+1 15 1 0 2 3
+1 15 3 3 0 0 1 3 2
+$EndElements`
+			}
+		}
+		const directory = await OpenDirectory(directoryStructure)
+		const file = await directory.getFile('mesh.msh' as FileName)
+		const mesh = new MeshFile(file)
+		await mesh.initialize()
+		if (mesh.data) {
+			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+			expect(mesh.data).to.have.length(4)
+
+			expect(mesh.data[0][0].lon).to.equal(0)
+			expect(mesh.data[0][0].lat).to.equal(0)
+			expect(mesh.data[0][1].lon).to.equal(1)
+			expect(mesh.data[0][1].lat).to.equal(0)
+
+			expect(mesh.data[1][0].lon).to.equal(1)
+			expect(mesh.data[1][0].lat).to.equal(0)
+			expect(mesh.data[1][1].lon).to.equal(0)
+			expect(mesh.data[1][1].lat).to.equal(-1)
+
+			expect(mesh.data[2][0].lon).to.equal(0)
+			expect(mesh.data[2][0].lat).to.equal(0)
+			expect(mesh.data[2][1].lon).to.equal(0)
+			expect(mesh.data[2][1].lat).to.equal(-1)
+
+			expect(mesh.data[3][0].lon).to.equal(0)
+			expect(mesh.data[3][0].lat).to.equal(-1)
+			expect(mesh.data[3][1].lon).to.equal(1)
+			expect(mesh.data[3][1].lat).to.equal(0)
+		} else {
+			expect(mesh.data).to.not.be.undefined
 		}
 	})
 	it('Can Open Command Files Properly', async () => {

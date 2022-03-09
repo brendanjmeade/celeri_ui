@@ -12,6 +12,8 @@ import type {
 	LineSource,
 	PointSource
 } from 'Components/Map/Sources'
+import type { MeshDisplaySettings } from 'Components/MeshPanel'
+import MeshPanel, { initialMeshDisplaySettings } from 'Components/MeshPanel'
 import type { SegmentsDisplaySettings } from 'Components/SegmentsPanel'
 import SegmentsPanel, {
 	initialSegmentDisplaySettings
@@ -35,6 +37,7 @@ import {
 	moveBlock
 } from 'State/Block/State'
 import { useAppDispatch, useAppSelector } from 'State/Hooks'
+import { loadMeshLineData } from 'State/MeshLines/State'
 import {
 	bridgeVertices,
 	createSegment,
@@ -64,6 +67,7 @@ import type { CommandFile } from 'Utilities/CommandFile'
 import {
 	OpenBlockFile,
 	OpenCommandFile,
+	OpenMeshFile,
 	OpenSegmentFile,
 	OpenVelocityFile
 } from 'Utilities/FileOpeners'
@@ -107,8 +111,8 @@ const windows = {
 	segment: 'Segment',
 	block: 'Block',
 	velocities: 'Velocities',
-	vertex: 'Vertices'
-	//  mesh: 'Mesh'
+	vertex: 'Vertices',
+	mesh: 'Mesh'
 }
 
 export default function App(): ReactElement {
@@ -140,6 +144,12 @@ export default function App(): ReactElement {
 				'A CSV containing velocity estimations for various points on the globe',
 			extension: '.csv',
 			currentFilePath: ''
+		},
+		mesh: {
+			name: 'Mesh Files',
+			description: 'A .msh file containging a triangulation world state',
+			extension: '.msh',
+			currentFilePath: ''
 		}
 	})
 
@@ -151,6 +161,7 @@ export default function App(): ReactElement {
 	const segments = useAppSelector(state => state.main.present.segment)
 	const blocks = useAppSelector(state => state.main.present.block)
 	const velocities = useAppSelector(state => state.main.present.velocity)
+	const meshLines = useAppSelector(state => state.main.present.meshLine)
 
 	const [velocitiesSettings, setVelocitiesSettings] =
 		useState<VelocitiesDisplaySettings>(initialVelocityDisplaySettings)
@@ -161,6 +172,9 @@ export default function App(): ReactElement {
 		useState<SegmentsDisplaySettings>(initialSegmentDisplaySettings)
 	const [vertexSettings, setVertexSettings] = useState<VerticesDisplaySettings>(
 		initialVertexDisplaySettings
+	)
+	const [meshLineSettings, setMeshLineSettings] = useState<MeshDisplaySettings>(
+		initialMeshDisplaySettings
 	)
 
 	const [selectionMode, setSelectionMode] = useState<SelectionMode>('normal')
@@ -285,40 +299,60 @@ export default function App(): ReactElement {
 	])
 
 	useEffect(() => {
-		if (segmentSettings.hide) {
-			setLineSources([])
-		} else {
-			setLineSources([
-				{
-					name: 'segments',
-					color: segmentSettings.color,
-					selectedColor: segmentSettings.activeColor,
-					width: segmentSettings.width,
-					selectedWidth: segmentSettings.activeWidth,
-					lines: segments.segments.map((segment, index) => {
-						const start = segments.vertecies[segment.start] ?? DEFAULT_VERTEX
-						const end = segments.vertecies[segment.end] ?? DEFAULT_VERTEX
-						const [
-							[startLongitude, startLatitude],
-							[endLongitude, endLatitude]
-						] = GetShortestLineCoordinates(start, end)
-						return {
-							startLongitude,
-							startLatitude,
-							endLongitude,
-							endLatitude,
-							name: segment.name,
-							description: `${start.lon},${start.lat} to ${end.lon},${end.lat}`,
-							index
-						}
-					}),
-					click: (index): void => {
-						select.select('segment', [index])
+		const sources: LineSource[] = []
+		if (!segmentSettings.hide) {
+			sources.push({
+				name: 'segments',
+				color: segmentSettings.color,
+				selectedColor: segmentSettings.activeColor,
+				width: segmentSettings.width,
+				selectedWidth: segmentSettings.activeWidth,
+				lines: segments.segments.map((segment, index) => {
+					const start = segments.vertecies[segment.start] ?? DEFAULT_VERTEX
+					const end = segments.vertecies[segment.end] ?? DEFAULT_VERTEX
+					const [[startLongitude, startLatitude], [endLongitude, endLatitude]] =
+						GetShortestLineCoordinates(start, end)
+					return {
+						startLongitude,
+						startLatitude,
+						endLongitude,
+						endLatitude,
+						name: segment.name,
+						description: `${start.lon},${start.lat} to ${end.lon},${end.lat}`,
+						index
 					}
+				}),
+				click: (index): void => {
+					select.select('segment', [index])
 				}
-			])
+			})
 		}
-	}, [segments, segmentSettings, select])
+		if (!meshLineSettings.hide) {
+			sources.push({
+				name: 'meshLines',
+				color: meshLineSettings.color,
+				selectedColor: meshLineSettings.activeColor,
+				width: meshLineSettings.width,
+				selectedWidth: meshLineSettings.activeWidth,
+				lines: meshLines.map((line, index) => {
+					const start = line[0]
+					const end = line[1]
+					const [[startLongitude, startLatitude], [endLongitude, endLatitude]] =
+						GetShortestLineCoordinates(start, end)
+					return {
+						startLongitude,
+						startLatitude,
+						endLongitude,
+						endLatitude,
+						name: '',
+						description: '',
+						index
+					}
+				})
+			})
+		}
+		setLineSources(sources)
+	}, [segments, segmentSettings, meshLineSettings, meshLines, select])
 
 	useEffect(() => {
 		switch (editMode) {
@@ -504,6 +538,13 @@ export default function App(): ReactElement {
 										dispatch(loadNewVelocityData(localVelocityFile.data))
 									}
 									break
+								case 'mesh':
+									// eslint-disable-next-line no-case-declarations
+									const localMeshFile = await OpenMeshFile(handle)
+									if (localMeshFile.data) {
+										dispatch(loadMeshLineData(localMeshFile.data))
+									}
+									break
 								case 'command':
 									// eslint-disable-next-line no-case-declarations
 									const commandResult = await OpenCommandFile(
@@ -523,6 +564,9 @@ export default function App(): ReactElement {
 									setVelocityFile(commandResult.velocities)
 									if (commandResult.velocities.data) {
 										dispatch(loadNewVelocityData(commandResult.velocities.data))
+									}
+									if (commandResult.mesh.data) {
+										dispatch(loadMeshLineData(commandResult.mesh.data))
 									}
 									updated = commandResult.openableFiles
 									break
@@ -659,6 +703,14 @@ export default function App(): ReactElement {
 				/>
 			)
 			break
+		case 'mesh':
+			view = (
+				<MeshPanel
+					settings={meshLineSettings}
+					setSettings={setMeshLineSettings}
+				/>
+			)
+			break
 		default:
 			break
 	}
@@ -695,6 +747,15 @@ export default function App(): ReactElement {
 			state: !displayGrid,
 			change: () => {
 				setDisplayGrid(!displayGrid)
+			}
+		},
+		Mesh: {
+			state: meshLineSettings.hide,
+			change: () => {
+				setMeshLineSettings({
+					...meshLineSettings,
+					hide: !meshLineSettings.hide
+				})
 			}
 		}
 	}
