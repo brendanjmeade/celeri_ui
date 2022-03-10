@@ -203,6 +203,40 @@ $EndElements`
 			expect(mesh.data).to.not.be.undefined
 		}
 	})
+	it('Can open arbitrary CSV files properly', async () => {
+		const directoryStructure = {
+			root: {
+				'test.csv': `lon1, lat1, lon2, lat2, some_strange_data
+0, 0, 1, 1, 150
+3, 2, 7, 8, 200`
+			}
+		}
+		const directory = await OpenDirectory(directoryStructure)
+		const file = await directory.getFile('test.csv' as FileName)
+		const mesh = new MeshFile(file)
+
+		mesh.startLonColumn = 'lon1'
+		mesh.startLatColumn = 'lat1'
+		mesh.endLonColumn = 'lon2'
+		mesh.endLatColumn = 'lat2'
+
+		await mesh.initialize()
+		if (mesh.data) {
+			expect(mesh.data).to.have.length(2)
+
+			expect(mesh.data[0][0].lon).to.equal(0)
+			expect(mesh.data[0][0].lat).to.equal(0)
+			expect(mesh.data[0][1].lon).to.equal(1)
+			expect(mesh.data[0][1].lat).to.equal(1)
+
+			expect(mesh.data[1][0].lon).to.equal(3)
+			expect(mesh.data[1][0].lat).to.equal(2)
+			expect(mesh.data[1][1].lon).to.equal(7)
+			expect(mesh.data[1][1].lat).to.equal(8)
+		} else {
+			expect(mesh.data).to.not.be.undefined
+		}
+	})
 	it('Can Open Command Files Properly', async () => {
 		const directoryStructure = {
 			root: {

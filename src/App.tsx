@@ -334,21 +334,24 @@ export default function App(): ReactElement {
 				selectedColor: meshLineSettings.activeColor,
 				width: meshLineSettings.width,
 				selectedWidth: meshLineSettings.activeWidth,
-				lines: meshLines.map((line, index) => {
-					const start = line[0]
-					const end = line[1]
-					const [[startLongitude, startLatitude], [endLongitude, endLatitude]] =
-						GetShortestLineCoordinates(start, end)
-					return {
-						startLongitude,
-						startLatitude,
-						endLongitude,
-						endLatitude,
-						name: '',
-						description: '',
-						index
-					}
-				})
+				lines:
+					meshLines.mesh?.map((line, index) => {
+						const start = line[0]
+						const end = line[1]
+						const [
+							[startLongitude, startLatitude],
+							[endLongitude, endLatitude]
+						] = GetShortestLineCoordinates(start, end)
+						return {
+							startLongitude,
+							startLatitude,
+							endLongitude,
+							endLatitude,
+							name: '',
+							description: '',
+							index
+						}
+					}) || []
 			})
 		}
 		setLineSources(sources)
@@ -542,7 +545,12 @@ export default function App(): ReactElement {
 									// eslint-disable-next-line no-case-declarations
 									const localMeshFile = await OpenMeshFile(handle)
 									if (localMeshFile.data) {
-										dispatch(loadMeshLineData(localMeshFile.data))
+										dispatch(
+											loadMeshLineData({
+												mesh: 'mesh',
+												data: localMeshFile.data
+											})
+										)
 									}
 									break
 								case 'command':
@@ -566,7 +574,12 @@ export default function App(): ReactElement {
 										dispatch(loadNewVelocityData(commandResult.velocities.data))
 									}
 									if (commandResult.mesh.data) {
-										dispatch(loadMeshLineData(commandResult.mesh.data))
+										dispatch(
+											loadMeshLineData({
+												mesh: 'mesh',
+												data: commandResult.mesh.data
+											})
+										)
 									}
 									updated = commandResult.openableFiles
 									break

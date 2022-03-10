@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 export function parse(contents: string): Record<string, number | string>[] {
 	const rows = contents.split(/\n/g)
-	const headers = rows[0].split(',')
+	const headers = rows[0].split(',').map(h => h.trim())
 	const remaining = rows.slice(1)
 	const items: Record<string, number | string>[] = []
 	for (const row of remaining) {

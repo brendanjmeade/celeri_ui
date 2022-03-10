@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import type { MeshLineState } from '../State/MeshLines/State'
+import type { MeshLine } from '../State/MeshLines/MeshLine'
 import type { Vertex } from '../State/Segment/Vertex'
+import { parse } from './CsvUtils'
 import type { ParsedFile } from './FileOpeners'
 import type { File } from './FileSystemInterfaces'
 
@@ -55,7 +56,7 @@ export function ParseElementSection(section: string): [number, number][] {
 export function BuildMeshLines(
 	vertices: Vertex[],
 	elements: [number, number][]
-): MeshLineState {
+): MeshLine[] {
 	return elements
 		.map(([a, b]): [Vertex, Vertex] =>
 			a !== b && a > -1 && a < vertices.length && b > -1 && b < vertices.length
@@ -65,7 +66,7 @@ export function BuildMeshLines(
 		.filter(l => l)
 }
 
-export function ParseMeshFileV2(file: string): MeshLineState {
+export function ParseMeshFileV2(file: string): MeshLine[] {
 	const sections = file.split('$')
 	let vertices: Vertex[] = []
 	let elements: [number, number][] = []
@@ -82,19 +83,53 @@ export function ParseMeshFileV2(file: string): MeshLineState {
 	return BuildMeshLines(vertices, elements)
 }
 
-export class MeshFile implements ParsedFile<MeshLineState> {
-	public data: MeshLineState | undefined
+export class MeshFile implements ParsedFile<MeshLine[]> {
+	public data: MeshLine[] | undefined
 
 	public handle: File
+
+	public startLonColumn: string
+
+	public endLonColumn: string
+
+	public startLatColumn: string
+
+	public endLatColumn: string
 
 	public constructor(handle: File) {
 		this.handle = handle
 		this.data = undefined
+		this.startLonColumn = ''
+		this.endLonColumn = ''
+		this.startLatColumn = ''
+		this.endLatColumn = ''
 	}
 
 	public async initialize(): Promise<void> {
 		const contents = await this.handle.getContents()
-		this.data = ParseMeshFileV2(contents)
+		if (contents.startsWith('$')) {
+			this.data = ParseMeshFileV2(contents)
+		} else {
+			const parser = parse(contents)
+			this.data = parser.map((row): MeshLine => {
+				const start: Vertex = { lon: 0, lat: 0 }
+				const end: Vertex = { lon: 0, lat: 0 }
+				console.log('parsing row', row)
+				if (typeof row[this.startLonColumn] === 'number') {
+					start.lon = row[this.startLonColumn] as number
+				}
+				if (typeof row[this.startLatColumn] === 'number') {
+					start.lat = row[this.startLatColumn] as number
+				}
+				if (typeof row[this.endLonColumn] === 'number') {
+					end.lon = row[this.endLonColumn] as number
+				}
+				if (typeof row[this.endLatColumn] === 'number') {
+					end.lat = row[this.endLatColumn] as number
+				}
+				return [start, end]
+			})
+		}
 	}
 
 	// eslint-disable-next-line class-methods-use-this
