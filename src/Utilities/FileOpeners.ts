@@ -64,10 +64,14 @@ export async function OpenCommandFile(
 		const velocities = await OpenVelocityFile(
 			await folderHandle.getFile(commands.data.station_file_name as FileName)
 		)
+		const meshSettingFile = await folderHandle.getFile(
+			commands.data.mesh_parameters_file_name as FileName
+		)
+		const meshSettings = JSON.parse(await meshSettingFile.getContents()) as {
+			mesh_filename: FileName
+		}[]
 		const mesh = await OpenMeshFile(
-			await folderHandle.getFile(
-				commands.data.mesh_parameters_file_name as FileName
-			)
+			await folderHandle.getFile(meshSettings[0].mesh_filename)
 		)
 		const updatedFiles = { ...openableFiles }
 		if ('command' in updatedFiles) {
@@ -97,7 +101,7 @@ export async function OpenCommandFile(
 		if ('mesh' in updatedFiles) {
 			updatedFiles.mesh = {
 				...updatedFiles.mesh,
-				currentFilePath: commands.data.mesh_parameters_file_name
+				currentFilePath: meshSettings[0].mesh_filename
 			}
 		}
 		return {

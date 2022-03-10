@@ -206,6 +206,19 @@ $EndElements`
 	it('Can Open Command Files Properly', async () => {
 		const directoryStructure = {
 			root: {
+				'mesh_parameters.json': `[
+					{
+							"mesh_filename": "slab_contours_GCS_WGS84-trench_LL.msh",
+							"smoothing_weight": 1e7,
+							"edge_constraints": [
+									0,
+									1,
+									0
+							],
+							"n_eigenvalues": 20,
+							"a_priori_slip_filename": ""
+					}
+			]`,
 				'command.json': `{
 					"file_name": "basic_command_default_values.json",
 					"reuse_elastic": "no",
