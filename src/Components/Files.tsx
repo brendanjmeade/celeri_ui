@@ -9,7 +9,7 @@ export interface OpenableFile {
 	name: string
 	description: string
 	extension: string
-	currentFilePath: string
+	currentFilePath: string[] | string
 }
 
 export default function Files({

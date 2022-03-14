@@ -89,67 +89,72 @@ export default function MapLineSegments(
 						]
 					}
 				})
-				map.addLayer({
-					id: `layer:line:${source.name}:click`,
-					type: 'line',
-					source: `line:${source.name}`,
-					layout: {
-						'line-cap': 'round',
-						'line-join': 'miter'
-					},
-					paint: {
-						'line-color': 'rgba(0,0,0,0.01)',
-						'line-width': source.width * 10
+				if (source.click) {
+					map.addLayer({
+						id: `layer:line:${source.name}:click`,
+						type: 'line',
+						source: `line:${source.name}`,
+						layout: {
+							'line-cap': 'round',
+							'line-join': 'miter'
+						},
+						paint: {
+							'line-color': 'rgba(0,0,0,0.01)',
+							'line-width': source.width * 10
+						}
+					})
+					if (isNewLayer) {
+						map.on('mouseenter', `layer:line:${source.name}:click`, event => {
+							if (!event.features) return
+							const feature = event.features[0]
+							if (
+								feature.geometry.type === 'LineString' &&
+								feature.properties &&
+								typeof feature.properties.description === 'string' &&
+								feature.properties.description
+							) {
+								const coordinates = [
+									(feature.geometry.coordinates[0][0] +
+										feature.geometry.coordinates[1][0]) /
+										2,
+									(feature.geometry.coordinates[0][1] +
+										feature.geometry.coordinates[1][1]) /
+										2
+								] as [number, number]
+								const { description } = feature.properties
+
+								while (Math.abs(event.lngLat.lng - coordinates[0]) > 180) {
+									coordinates[0] +=
+										event.lngLat.lng > coordinates[0] ? 360 : -360
+								}
+
+								popup.setLngLat(coordinates).setHTML(description).addTo(map)
+							}
+						})
+						map.on('mouseleave', `layer:line:${source.name}:click`, () => {
+							popup.remove()
+						})
+						map.on('click', `layer:line:${source.name}:click`, event => {
+							let currentClick: ((index: number) => void) | undefined
+							if (celeriMap.state.internalLineSources) {
+								for (const layer of celeriMap.state.internalLineSources) {
+									if (layer.name === source.name) {
+										currentClick = layer.click
+									}
+								}
+							}
+							if (!event.features || !currentClick) return
+							const feature = event.features[0]
+							if (
+								feature.properties &&
+								typeof feature.properties.index === 'number' &&
+								typeof feature.properties.name === 'string'
+							) {
+								const { index } = feature.properties
+								currentClick(index)
+							}
+						})
 					}
-				})
-				if (isNewLayer) {
-					map.on('mouseenter', `layer:line:${source.name}:click`, event => {
-						if (!event.features) return
-						const feature = event.features[0]
-						if (
-							feature.geometry.type === 'LineString' &&
-							feature.properties &&
-							typeof feature.properties.description === 'string' &&
-							feature.properties.description
-						) {
-							const coordinates = [
-								(feature.geometry.coordinates[0][0] +
-									feature.geometry.coordinates[1][0]) /
-									2,
-								(feature.geometry.coordinates[0][1] +
-									feature.geometry.coordinates[1][1]) /
-									2
-							] as [number, number]
-							const { description } = feature.properties
-
-							while (Math.abs(event.lngLat.lng - coordinates[0]) > 180) {
-								coordinates[0] += event.lngLat.lng > coordinates[0] ? 360 : -360
-							}
-
-							popup.setLngLat(coordinates).setHTML(description).addTo(map)
-						}
-					})
-					map.on('mouseleave', `layer:line:${source.name}:click`, () => {
-						popup.remove()
-					})
-					map.on('click', `layer:line:${source.name}:click`, event => {
-						let currentClick: ((index: number) => void) | undefined
-						if (celeriMap.state.internalLineSources) {
-							for (const layer of celeriMap.state.internalLineSources) {
-								currentClick = layer.click
-							}
-						}
-						if (!event.features || !currentClick) return
-						const feature = event.features[0]
-						if (
-							feature.properties &&
-							typeof feature.properties.index === 'number' &&
-							typeof feature.properties.name === 'string'
-						) {
-							const { index } = feature.properties
-							currentClick(index)
-						}
-					})
 				}
 			}
 			setState({ internalLineSources: lineSources })
