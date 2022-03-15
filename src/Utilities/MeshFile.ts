@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-at */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { MeshLine } from '../State/MeshLines/MeshLine'
 import type { Vertex } from '../State/Segment/Vertex'
@@ -7,7 +8,7 @@ import type { File } from './FileSystemInterfaces'
 
 export function ParseNodeSection(section: string): Vertex[] {
 	const matches = [
-		...section.matchAll(/^\s*\d+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)/gm)
+		...section.matchAll(/^\s*\d+\s+(-?\d+\.?\d+)\s+(-?\d+\.?\d+)/gm)
 	]
 	const vertices = matches.map((line): Vertex => {
 		const lon = Number.parseFloat(line[1])
@@ -18,36 +19,41 @@ export function ParseNodeSection(section: string): Vertex[] {
 	return vertices
 }
 
+const elementTypes: Record<string, (line: string[]) => [number, number][]> = {
+	'1': line => {
+		const a = Number.parseInt(line[line.length - 2] ?? '', 10)
+		const b = Number.parseInt(line[line.length - 1] ?? '', 10)
+		if (!Number.isNaN(a) && !Number.isNaN(b)) {
+			return [[a, b]]
+		}
+		return false as unknown as [number, number][]
+	},
+	'2': line => {
+		const a = Number.parseInt(line[line.length - 3] ?? '', 10)
+		const b = Number.parseInt(line[line.length - 2] ?? '', 10)
+		const c = Number.parseInt(line[line.length - 1] ?? '', 10)
+		if (!Number.isNaN(a) && !Number.isNaN(b) && !Number.isNaN(c)) {
+			return [
+				[a, b],
+				[b, c],
+				[c, a]
+			]
+		}
+		return false as unknown as [number, number][]
+	}
+}
+
 export function ParseElementSection(section: string): [number, number][] {
 	return section
 		.split(/\n/)
+		.map(line => line.trim())
 		.map(line => line.split(/\s+/))
 		.filter(line => line.length > 2)
 		.map(line => {
-			const tagCount = Number.parseInt(line[2], 10)
-			const startNodeList = tagCount + 3
-			const vertexCount = line.length - startNodeList
-			console.log('line:', line, vertexCount, tagCount)
-			if (line.length >= startNodeList + 2) {
-				const lines: [number, number][] = []
-				for (let index = startNodeList + 1; index < line.length; index += 1) {
-					const a = Number.parseInt(line[index - 1], 10)
-					const b = Number.parseInt(line[index], 10)
-					if (!Number.isNaN(a) && !Number.isNaN(b)) {
-						lines.push([a, b])
-					}
-				}
-				if (vertexCount > 2) {
-					console.log('closing stuff')
-					const a = Number.parseInt(line[startNodeList], 10)
-					const b = Number.parseInt(line[-1], 10)
-					if (!Number.isNaN(a) && !Number.isNaN(b)) {
-						lines.push([a, b])
-					}
-				}
-				return lines
-			}
-			return false as unknown as [number, number][]
+			const type =
+				elementTypes[line[1]] ??
+				((): [number, number][] => false as unknown as [number, number][])
+			return type(line)
 		})
 		.filter(v => v)
 		.flat()

@@ -166,9 +166,9 @@ $Nodes
 $EndNodes
 $Elements
 3
-1 15 2 3 0 1 2
-1 15 1 0 2 3
-1 15 3 3 0 0 1 3 2
+1 1 2 3 0 1 2
+1 1 1 0 2 3
+1 2 3 3 0 0 1 3 2
 $EndElements`
 			}
 		}
@@ -178,7 +178,7 @@ $EndElements`
 		await mesh.initialize()
 		if (mesh.data) {
 			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-			expect(mesh.data).to.have.length(4)
+			expect(mesh.data).to.have.length(5)
 
 			expect(mesh.data[0][0].lon).to.equal(0)
 			expect(mesh.data[0][0].lat).to.equal(0)
@@ -199,6 +199,11 @@ $EndElements`
 			expect(mesh.data[3][0].lat).to.equal(-1)
 			expect(mesh.data[3][1].lon).to.equal(1)
 			expect(mesh.data[3][1].lat).to.equal(0)
+
+			expect(mesh.data[4][0].lon).to.equal(1)
+			expect(mesh.data[4][0].lat).to.equal(0)
+			expect(mesh.data[4][1].lon).to.equal(0)
+			expect(mesh.data[4][1].lat).to.equal(0)
 		} else {
 			expect(mesh.data).to.not.be.undefined
 		}
