@@ -50,7 +50,7 @@ export async function OpenCommandFile(
 	segments: SegmentFile
 	blocks: BlockFile
 	velocities: VelocityFile
-	mesh: MeshFile
+	mesh: MeshFile[]
 }> {
 	const commands = new CommandFile(fileHandle)
 	await commands.initialize()
@@ -70,8 +70,10 @@ export async function OpenCommandFile(
 		const meshSettings = JSON.parse(await meshSettingFile.getContents()) as {
 			mesh_filename: FileName
 		}[]
-		const mesh = await OpenMeshFile(
-			await folderHandle.getFile(meshSettings[0].mesh_filename)
+		const mesh = await Promise.all(
+			meshSettings.map(async m =>
+				OpenMeshFile(await folderHandle.getFile(m.mesh_filename))
+			)
 		)
 		const updatedFiles = { ...openableFiles }
 		if ('command' in updatedFiles) {
@@ -101,7 +103,7 @@ export async function OpenCommandFile(
 		if ('mesh' in updatedFiles) {
 			updatedFiles.mesh = {
 				...updatedFiles.mesh,
-				currentFilePath: meshSettings[0].mesh_filename
+				currentFilePath: meshSettings.map(m => m.mesh_filename)
 			}
 		}
 		return {

@@ -14,7 +14,7 @@ describe('The files panel displays openable files & their descriptions, and allo
 
 		const directory = await OpenDirectory(directoryStructure)
 		// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-		const setFile = stub<[string, string], void>()
+		const setFile = stub<[number, string, string], void>()
 
 		render(
 			<Files
@@ -34,7 +34,7 @@ describe('The files panel displays openable files & their descriptions, and allo
 		expect(screen.getByTestId('file-main-description').textContent).to.equal(
 			'The Main File'
 		)
-		screen.getByTestId('file-main-select')
+		screen.getByTestId('file-main-select-0')
 		expect(
 			screen.getByTestId('file-main-select-file.test').textContent
 		).to.equal('file.test')
@@ -44,9 +44,10 @@ describe('The files panel displays openable files & their descriptions, and allo
 
 		const directory = await OpenDirectory(directoryStructure)
 		// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-		const setFile = stub<[string, string, File | undefined], void>()
+		const setFile = stub<[number, string, string, File | undefined], void>()
 		setFile.returns()
-		setFile.callsFake((type, name, file) => {
+		setFile.callsFake((index, type, name, file) => {
+			expect(index).to.equal(0)
 			expect(type).to.equal('main')
 			expect(name).to.equal('file.test')
 			if (file) {
@@ -75,7 +76,7 @@ describe('The files panel displays openable files & their descriptions, and allo
 				setFile={setFile}
 			/>
 		)
-		fireEvent.change(screen.getByTestId('file-main-select'), {
+		fireEvent.change(screen.getByTestId('file-main-select-0'), {
 			target: { value: 'file.test' }
 		})
 	})
@@ -84,7 +85,7 @@ describe('The files panel displays openable files & their descriptions, and allo
 
 		const directory = await OpenDirectory(directoryStructure)
 		// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-		const setFile = stub<[string, string], void>()
+		const setFile = stub<[number, string, string], void>()
 
 		render(
 			<Files

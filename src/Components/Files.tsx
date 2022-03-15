@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 import type { ReactElement } from 'react'
 import type {
 	Directory,
@@ -10,6 +11,7 @@ export interface OpenableFile {
 	description: string
 	extension: string
 	currentFilePath: string[] | string
+	allowMultiple?: boolean
 }
 
 export default function Files({
@@ -19,10 +21,21 @@ export default function Files({
 }: {
 	folder: Directory
 	files: Record<string, OpenableFile>
-	setFile: (type: string, file: string, fileHandle?: File) => void
+	setFile: (
+		index: number,
+		type: string,
+		file: string,
+		fileHandle?: File
+	) => void
 }): ReactElement {
 	const fileElements = Object.keys(files).map((key): ReactElement => {
 		const file = files[key]
+		const filePaths = Array.isArray(file.currentFilePath)
+			? [...file.currentFilePath]
+			: [file.currentFilePath]
+		if (file.allowMultiple) {
+			filePaths.push('')
+		}
 		return (
 			<div className='flex flex-row justify-between items-center' key={key}>
 				<div className='flex flex-col'>
@@ -34,39 +47,44 @@ export default function Files({
 					</span>
 				</div>
 				<span className='w-2/5 flex-shrink-0'>
-					<select
-						data-testid={`file-${key}-select`}
-						className='w-full rounded'
-						value={file.currentFilePath}
-						onChange={async (event): Promise<void> => {
-							const chosenFileName = event.currentTarget.value
-							try {
-								const chosenFile = await folder.getFile(
-									chosenFileName as FileName
-								)
-								setFile(key, chosenFile.name, chosenFile)
-							} catch {
-								setFile(key, '')
-							}
-						}}
-					>
-						<option value='' data-testid={`file-${key}-empty`}>
-							&nbsp;
-						</option>
-						{folder.fileList
-							.filter(filename => filename.endsWith(file.extension))
-							.map(
-								(filename): ReactElement => (
-									<option
-										key={filename}
-										value={filename}
-										data-testid={`file-${key}-select-${filename}`}
-									>
-										{filename}
-									</option>
-								)
-							)}
-					</select>
+					{filePaths.map(
+						(fiePath, index): ReactElement => (
+							<select
+								key={index}
+								data-testid={`file-${key}-select-${index}`}
+								className='w-full rounded'
+								value={fiePath}
+								onChange={async (event): Promise<void> => {
+									const chosenFileName = event.currentTarget.value
+									try {
+										const chosenFile = await folder.getFile(
+											chosenFileName as FileName
+										)
+										setFile(index, key, chosenFile.name, chosenFile)
+									} catch {
+										setFile(index, key, '')
+									}
+								}}
+							>
+								<option value='' data-testid={`file-${key}-empty`}>
+									&nbsp;
+								</option>
+								{folder.fileList
+									.filter(filename => filename.endsWith(file.extension))
+									.map(
+										(filename): ReactElement => (
+											<option
+												key={filename}
+												value={filename}
+												data-testid={`file-${key}-select-${filename}`}
+											>
+												{filename}
+											</option>
+										)
+									)}
+							</select>
+						)
+					)}
 				</span>
 			</div>
 		)
