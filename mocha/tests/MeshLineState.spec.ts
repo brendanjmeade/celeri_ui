@@ -9,18 +9,14 @@ describe('Mesh Lines', () => {
 			type: 'loadMeshLineData',
 			payload: {
 				mesh: 'mesh',
-				data: [
-					[
-						{ lon: 0, lat: 0 },
-						{ lon: 1, lat: 1 }
-					]
-				]
+				data: [[{ lon: 0, lat: 0 }, { lon: 1, lat: 1 }, { test: 123 }]]
 			}
 		})
 
 		expect(state.mesh).to.exist
-		expect(state.mesh[0]).to.have.length(2)
+		expect(state.mesh[0]).to.have.length(3)
 		expect(state.mesh[0][0].lon).to.equal(0)
+		expect(state.mesh[0][2]?.test).to.equal(123)
 	})
 	it('Can remove a mesh from state', () => {
 		let state = MeshLineReducer(initialState, {

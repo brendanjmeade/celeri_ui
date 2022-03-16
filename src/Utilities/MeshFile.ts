@@ -133,6 +133,20 @@ export class MeshFile implements ParsedFile<MeshLine[]> {
 				if (typeof row[this.endLatColumn] === 'number') {
 					end.lat = row[this.endLatColumn] as number
 				}
+				const keys = Object.keys(row).filter(
+					k =>
+						k !== this.startLatColumn &&
+						k !== this.endLatColumn &&
+						k !== this.startLonColumn &&
+						k !== this.endLonColumn
+				)
+				if (keys.length > 0) {
+					const data: Record<string, number | string> = {}
+					for (const key of keys) {
+						data[key] = row[key]
+					}
+					return [start, end, data]
+				}
 				return [start, end]
 			})
 		}
