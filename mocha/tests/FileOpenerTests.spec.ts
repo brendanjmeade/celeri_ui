@@ -233,13 +233,11 @@ $EndElements`
 			expect(mesh.data[0][0].lat).to.equal(0)
 			expect(mesh.data[0][1].lon).to.equal(1)
 			expect(mesh.data[0][1].lat).to.equal(1)
-			expect(mesh.data[0][2]?.some_strange_data).to.equal(150)
 
 			expect(mesh.data[1][0].lon).to.equal(3)
 			expect(mesh.data[1][0].lat).to.equal(2)
 			expect(mesh.data[1][1].lon).to.equal(7)
 			expect(mesh.data[1][1].lat).to.equal(8)
-			expect(mesh.data[1][2]?.some_strange_data).to.equal(200)
 		} else {
 			expect(mesh.data).to.not.be.undefined
 		}

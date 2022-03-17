@@ -145,7 +145,7 @@ export class MeshFile implements ParsedFile<MeshLine[]> {
 					for (const key of keys) {
 						data[key] = row[key]
 					}
-					return [start, end, data]
+					return [start, end]
 				}
 				return [start, end]
 			})

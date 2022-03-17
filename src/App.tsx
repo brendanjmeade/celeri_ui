@@ -151,6 +151,13 @@ export default function App(): ReactElement {
 			extension: '.msh',
 			currentFilePath: '',
 			allowMultiple: true
+		},
+		csv: {
+			name: 'Custom CSV',
+			description: 'Arbitrary CSV files with lines',
+			extension: '.csv',
+			currentFilePath: '',
+			allowMultiple: true
 		}
 	})
 
