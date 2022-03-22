@@ -28,6 +28,57 @@ function FieldDefinitionEditor({
 	useEffect(() => {
 		setLocalValue(value)
 	}, [value])
+
+	let input = (
+		<input
+			data-testid={`input-editor-${fieldDefinition.name}`}
+			className='rounded w-full'
+			type={typeof value === 'number' ? 'number' : 'text'}
+			value={localValue}
+			onChange={(event): void => {
+				const v =
+					typeof value === 'number'
+						? Number.parseFloat(event.target.value)
+						: event.target.value
+				setLocalValue(v)
+				if (timeout > -1) clearTimeout(timeout)
+				setTimeoutId(setTimeout(() => setField(v), 1000) as unknown as number)
+			}}
+		/>
+	)
+
+	if (fieldDefinition.type === 'select') {
+		// eslint-disable-next-line jsx-a11y/control-has-associated-label
+		input = (
+			<select
+				data-testid={`input-editor-${fieldDefinition.name}`}
+				className='rounded w-full'
+				value={localValue}
+				onChange={(event): void => {
+					setField(event.currentTarget.value)
+				}}
+			>
+				<option
+					value=''
+					data-testid={`input-editor-${fieldDefinition.name}-empty`}
+				>
+					&nbsp;
+				</option>
+				{fieldDefinition.items.map(
+					(item): ReactElement => (
+						<option
+							key={item.name}
+							value={item.name}
+							data-testid={`input-editor-${fieldDefinition.name}-${item.name}`}
+						>
+							{item.name}
+						</option>
+					)
+				)}
+			</select>
+		)
+	}
+
 	return (
 		<div className='flex flex-row justify-between items-center'>
 			<div className='flex flex-col'>
@@ -43,25 +94,7 @@ function FieldDefinitionEditor({
 					<></>
 				)}
 			</div>
-			<span className='w-2/5 flex-shrink-0'>
-				<input
-					data-testid={`input-editor-${fieldDefinition.name}`}
-					className='rounded w-full'
-					type={typeof value === 'number' ? 'number' : 'text'}
-					value={localValue}
-					onChange={(event): void => {
-						const v =
-							typeof value === 'number'
-								? Number.parseFloat(event.target.value)
-								: event.target.value
-						setLocalValue(v)
-						if (timeout > -1) clearTimeout(timeout)
-						setTimeoutId(
-							setTimeout(() => setField(v), 1000) as unknown as number
-						)
-					}}
-				/>
-			</span>
+			<span className='w-2/5 flex-shrink-0'>{input}</span>
 		</div>
 	)
 }

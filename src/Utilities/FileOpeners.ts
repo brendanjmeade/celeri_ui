@@ -3,6 +3,7 @@ import type { OpenableFile } from 'Components/Files'
 import { BlockFile } from './BlockFile'
 import { CommandFile } from './CommandFile'
 import type { Directory, File, FileName } from './FileSystemInterfaces'
+import { GenericSegmentFile } from './GenericSegmentFile'
 import { MeshFile } from './MeshFile'
 import { SegmentFile } from './SegmentFile'
 import { VelocityFile } from './VelocityFile'
@@ -36,6 +37,14 @@ export async function OpenVelocityFile(
 
 export async function OpenMeshFile(fileHandle: File): Promise<MeshFile> {
 	const file = new MeshFile(fileHandle)
+	await file.initialize()
+	return file
+}
+
+export async function OpenGenericSegmentFile(
+	fileHandle: File
+): Promise<GenericSegmentFile> {
+	const file = new GenericSegmentFile(fileHandle)
 	await file.initialize()
 	return file
 }

@@ -4,6 +4,10 @@ import type { BlockDisplaySettings } from 'Components/BlockPanel'
 import BlockPanel, { initialBlockDisplaySettings } from 'Components/BlockPanel'
 import type { OpenableFile } from 'Components/Files'
 import Files from 'Components/Files'
+import type { GenericSegmentDisplaySettings } from 'Components/GenericSegmentPanel'
+import GenericSegmentPanel, {
+	initialGenericSegmentDisplaySettings
+} from 'Components/GenericSegmentPanel'
 import InspectorPanel from 'Components/InspectorPanel'
 import CeleriMap from 'Components/Map/CeleriMap'
 import type {
@@ -36,6 +40,10 @@ import {
 	loadNewBlockData,
 	moveBlock
 } from 'State/Block/State'
+import {
+	loadNewGenericCollectionData,
+	setGenericSegmentPositionKeys
+} from 'State/GenericSegments/State'
 import { useAppDispatch, useAppSelector } from 'State/Hooks'
 import { loadMeshLineData } from 'State/MeshLines/State'
 import {
@@ -67,6 +75,7 @@ import type { CommandFile } from 'Utilities/CommandFile'
 import {
 	OpenBlockFile,
 	OpenCommandFile,
+	OpenGenericSegmentFile,
 	OpenMeshFile,
 	OpenSegmentFile,
 	OpenVelocityFile
@@ -112,7 +121,8 @@ const windows = {
 	block: 'Block',
 	velocities: 'Velocities',
 	vertex: 'Vertices',
-	mesh: 'Mesh'
+	mesh: 'Mesh',
+	csv: 'Generic Segments'
 }
 
 export default function App(): ReactElement {
@@ -170,6 +180,9 @@ export default function App(): ReactElement {
 	const blocks = useAppSelector(state => state.main.present.block)
 	const velocities = useAppSelector(state => state.main.present.velocity)
 	const meshLines = useAppSelector(state => state.main.present.meshLine)
+	const genericSegments = useAppSelector(
+		state => state.main.present.genericSegments
+	)
 
 	const [velocitiesSettings, setVelocitiesSettings] =
 		useState<VelocitiesDisplaySettings>(initialVelocityDisplaySettings)
@@ -184,6 +197,10 @@ export default function App(): ReactElement {
 	const [meshLineSettings, setMeshLineSettings] = useState<MeshDisplaySettings>(
 		initialMeshDisplaySettings
 	)
+	const [genericSegmentSettings, setGenericSegmentSettings] =
+		useState<GenericSegmentDisplaySettings>(
+			initialGenericSegmentDisplaySettings
+		)
 
 	const [selectionMode, setSelectionMode] = useState<SelectionMode>('normal')
 	const [editMode, setEditMode] = useState<EditMode>(EditMode.Vertex)
@@ -365,8 +382,76 @@ export default function App(): ReactElement {
 				})
 			}
 		}
+		if (!genericSegmentSettings.hide) {
+			for (const key of Object.keys(genericSegments)) {
+				const {
+					startLat,
+					startLon,
+					endLat,
+					endLon,
+					segments: availableSegments
+				} = genericSegments[key]
+				if (
+					startLat in availableSegments[0] &&
+					endLat in availableSegments[0] &&
+					startLon in availableSegments[0] &&
+					endLon in availableSegments[0]
+				) {
+					sources.push({
+						name: `generic_segment:${key}`,
+						color: genericSegmentSettings.color,
+						selectedColor: genericSegmentSettings.activeColor,
+						width: genericSegmentSettings.width,
+						selectedWidth: genericSegmentSettings.activeWidth,
+						lines:
+							availableSegments
+								.map((line, index) => {
+									const start = { lat: line[startLat], lon: line[startLon] }
+									const end = { lat: line[endLat], lon: line[endLon] }
+									if (
+										typeof start.lat !== 'number' ||
+										typeof start.lon !== 'number' ||
+										typeof end.lat !== 'number' ||
+										typeof end.lon !== 'number'
+									)
+										return false as unknown as {
+											startLongitude: number
+											startLatitude: number
+											endLongitude: number
+											endLatitude: number
+											name: string
+											description: string
+											index: number
+										}
+									const [
+										[startLongitude, startLatitude],
+										[endLongitude, endLatitude]
+									] = GetShortestLineCoordinates(start as Vertex, end as Vertex)
+									return {
+										startLongitude,
+										startLatitude,
+										endLongitude,
+										endLatitude,
+										name: '',
+										description: '',
+										index
+									}
+								})
+								.filter(v => v) || []
+					})
+				}
+			}
+		}
 		setLineSources(sources)
-	}, [segments, segmentSettings, meshLineSettings, meshLines, select])
+	}, [
+		segments,
+		segmentSettings,
+		genericSegmentSettings,
+		genericSegments,
+		meshLineSettings,
+		meshLines,
+		select
+	])
 
 	useEffect(() => {
 		switch (editMode) {
@@ -581,6 +666,18 @@ export default function App(): ReactElement {
 										)
 									}
 									break
+								case 'csv':
+									// eslint-disable-next-line no-case-declarations
+									const localGenericFile = await OpenGenericSegmentFile(handle)
+									if (localGenericFile.data) {
+										dispatch(
+											loadNewGenericCollectionData({
+												name: `generic_segment_${index}`,
+												data: localGenericFile.data
+											})
+										)
+									}
+									break
 								case 'command':
 									// eslint-disable-next-line no-case-declarations
 									const commandResult = await OpenCommandFile(
@@ -757,6 +854,18 @@ export default function App(): ReactElement {
 				/>
 			)
 			break
+		case 'csv':
+			view = (
+				<GenericSegmentPanel
+					settings={genericSegmentSettings}
+					setSettings={setGenericSegmentSettings}
+					setCollectionVertexKeys={(value): void => {
+						dispatch(setGenericSegmentPositionKeys(value))
+					}}
+					collections={genericSegments}
+				/>
+			)
+			break
 		default:
 			break
 	}
@@ -801,6 +910,15 @@ export default function App(): ReactElement {
 				setMeshLineSettings({
 					...meshLineSettings,
 					hide: !meshLineSettings.hide
+				})
+			}
+		},
+		GenericSegments: {
+			state: genericSegmentSettings.hide,
+			change: () => {
+				setGenericSegmentSettings({
+					...genericSegmentSettings,
+					hide: !genericSegmentSettings.hide
 				})
 			}
 		}

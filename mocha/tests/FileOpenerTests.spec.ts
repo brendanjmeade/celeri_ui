@@ -7,6 +7,7 @@ import { createVelocity } from '../../src/State/Velocity/Velocity'
 import { BlockFile } from '../../src/Utilities/BlockFile'
 import { CommandFile, createCommand } from '../../src/Utilities/CommandFile'
 import type { FileName } from '../../src/Utilities/FileSystemInterfaces'
+import { GenericSegmentFile } from '../../src/Utilities/GenericSegmentFile'
 import OpenDirectory from '../../src/Utilities/InMemoryFileSystem'
 import { MeshFile } from '../../src/Utilities/MeshFile'
 import { createSegment, SegmentFile } from '../../src/Utilities/SegmentFile'
@@ -218,28 +219,23 @@ $EndElements`
 		}
 		const directory = await OpenDirectory(directoryStructure)
 		const file = await directory.getFile('test.csv' as FileName)
-		const mesh = new MeshFile(file)
+		const content = new GenericSegmentFile(file)
 
-		mesh.startLonColumn = 'lon1'
-		mesh.startLatColumn = 'lat1'
-		mesh.endLonColumn = 'lon2'
-		mesh.endLatColumn = 'lat2'
+		await content.initialize()
+		if (content.data) {
+			expect(content.data).to.have.length(2)
 
-		await mesh.initialize()
-		if (mesh.data) {
-			expect(mesh.data).to.have.length(2)
+			expect(content.data[0].lon1).to.equal(0)
+			expect(content.data[0].lat1).to.equal(0)
+			expect(content.data[0].lon2).to.equal(1)
+			expect(content.data[0].lat2).to.equal(1)
 
-			expect(mesh.data[0][0].lon).to.equal(0)
-			expect(mesh.data[0][0].lat).to.equal(0)
-			expect(mesh.data[0][1].lon).to.equal(1)
-			expect(mesh.data[0][1].lat).to.equal(1)
-
-			expect(mesh.data[1][0].lon).to.equal(3)
-			expect(mesh.data[1][0].lat).to.equal(2)
-			expect(mesh.data[1][1].lon).to.equal(7)
-			expect(mesh.data[1][1].lat).to.equal(8)
+			expect(content.data[1].lon1).to.equal(3)
+			expect(content.data[1].lat1).to.equal(2)
+			expect(content.data[1].lon2).to.equal(7)
+			expect(content.data[1].lat2).to.equal(8)
 		} else {
-			expect(mesh.data).to.not.be.undefined
+			expect(content.data).to.not.be.undefined
 		}
 	})
 	it('Can Open Command Files Properly', async () => {
