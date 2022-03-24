@@ -46,13 +46,13 @@ export default function Files({
 						{file.description}
 					</span>
 				</div>
-				<span className='w-2/5 flex-shrink-0'>
+				<span className='w-2/5 flex-shrink-0 flex-col gap-2 items-stretch'>
 					{filePaths.map(
 						(fiePath, index): ReactElement => (
 							<select
 								key={index}
 								data-testid={`file-${key}-select-${index}`}
-								className='w-full rounded'
+								className='bg-gray-800 flex-grow m-1'
 								value={fiePath}
 								onChange={async (event): Promise<void> => {
 									const chosenFileName = event.currentTarget.value

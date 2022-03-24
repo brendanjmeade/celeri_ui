@@ -50,7 +50,7 @@ function MeshPanel({
 				<span className='text-l font-bold'>Display</span>
 				<span className='w-2/5 flex-shrink-0'>
 					<input
-						className='form-check-input appearance-none w-9 -ml-10 rounded-full float-left h-5 align-top bg-white bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer shadow-sm'
+						className='form-check-input appearance-none w-9 -ml-10 -full float-left h-5 align-top bg-black bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer shadow-sm'
 						type='checkbox'
 						role='switch'
 						checked={!settings.hide}
@@ -64,7 +64,7 @@ function MeshPanel({
 				<span className='text-l font-bold'>Color</span>
 				<span className='w-2/5 flex-shrink-0'>
 					<input
-						className='rounded w-full'
+						className='bg-gray-800 w-full'
 						type='color'
 						value={settings.color}
 						onChange={(event): void => {
@@ -78,7 +78,7 @@ function MeshPanel({
 				<span className='text-l font-bold'>Width</span>
 				<span className='w-2/5 flex-shrink-0'>
 					<input
-						className='rounded w-full'
+						className='bg-gray-800 w-full'
 						type='range'
 						min='0.1'
 						max='2'

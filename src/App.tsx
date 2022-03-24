@@ -928,7 +928,7 @@ export default function App(): ReactElement {
 		// eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
 		<div
 			role='document'
-			className='w-screen h-screen flex flex-col'
+			className='w-screen h-screen flex flex-col text-white'
 			onKeyDown={(event): void => {
 				if (event.key === 'Escape') {
 					setSelectionMode('normal')
@@ -961,7 +961,7 @@ export default function App(): ReactElement {
 			/>
 			{selectionMode !== 'normal' ? (
 				<div className='fixed top-12 z-10 left-10 right-10 flex flex-row justify-center'>
-					<div className='flex flex-col justify-center items-center bg-white p-3 gap-1 rounded'>
+					<div className='flex flex-col justify-center items-center bg-black p-3 gap-1 '>
 						<span className='text-lg font-semibold'>{selectionMode.label}</span>
 						{selectionMode.subtitle ? (
 							<span className='text-md font-thin text-gray-500'>
@@ -978,7 +978,7 @@ export default function App(): ReactElement {
 			) : (
 				<></>
 			)}
-			<div className='absolute bottom-0 left-2 flex flex-col bg-white rounded-t p-2 gap-5 shadow-sm z-50'>
+			<div className='absolute bottom-0 left-2 flex flex-col bg-black  p-2 gap-5 shadow-sm z-50'>
 				<div className='flex flex-row items-center justify-start gap-5'>
 					<span className='p-1 text-sm text-center'>
 						Hold <span className='font-bold'>Shift</span> to box select{' '}
@@ -1003,8 +1003,8 @@ export default function App(): ReactElement {
 								key={label}
 								type='button'
 								className={`${
-									editMode === mode ? 'bg-gray-200' : 'bg-white'
-								} p-2 shaddow-inner hover:bg-gray-100 rounded`}
+									editMode === mode ? 'bg-gray-700' : 'bg-black'
+								} p-2 shaddow-inner hover:bg-gray-800 `}
 								onClick={(): void => {
 									setEditMode(mode)
 								}}
@@ -1026,8 +1026,8 @@ export default function App(): ReactElement {
 								key={label}
 								type='button'
 								className={`${
-									!state.state ? 'bg-gray-200' : 'bg-white'
-								} p-2 shaddow-inner hover:bg-gray-100 rounded`}
+									!state.state ? 'bg-gray-700' : 'bg-black'
+								} p-2 shaddow-inner hover:bg-gray-800 `}
 								onClick={(): void => {
 									state.change()
 								}}

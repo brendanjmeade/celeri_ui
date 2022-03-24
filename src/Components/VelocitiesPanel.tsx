@@ -82,7 +82,7 @@ function VelocitiesPanel({
 					<span className='text-l font-bold'>Display</span>
 					<span className='w-2/5 flex-shrink-0'>
 						<input
-							className='form-check-input appearance-none w-9 -ml-10 rounded-full float-left h-5 align-top bg-white bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer shadow-sm'
+							className='form-check-input appearance-none w-9 -ml-10 -full float-left h-5 align-top bg-black bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer shadow-sm'
 							type='checkbox'
 							role='switch'
 							checked={!settings.hide}
@@ -96,7 +96,7 @@ function VelocitiesPanel({
 					<span className='text-l font-bold'>Color</span>
 					<span className='w-2/5 flex-shrink-0'>
 						<input
-							className='rounded w-full'
+							className='bg-gray-800 w-full'
 							type='color'
 							value={settings.color}
 							onChange={(event): void => {
@@ -109,7 +109,7 @@ function VelocitiesPanel({
 					<span className='text-l font-bold'>Selected Color</span>
 					<span className='w-2/5 flex-shrink-0'>
 						<input
-							className='rounded w-full'
+							className='bg-gray-800 w-full'
 							type='color'
 							value={settings.selectedColor}
 							onChange={(event): void => {
@@ -123,7 +123,7 @@ function VelocitiesPanel({
 					<span className='text-l font-bold'>Scale</span>
 					<span className='w-2/5 flex-shrink-0'>
 						<input
-							className='rounded w-full'
+							className=' w-full'
 							type='range'
 							min='0.001'
 							max='0.1'
@@ -143,7 +143,7 @@ function VelocitiesPanel({
 					<span className='text-l font-bold'>Width</span>
 					<span className='w-2/5 flex-shrink-0'>
 						<input
-							className='rounded w-full'
+							className=' w-full'
 							type='range'
 							min='0.1'
 							max='2'
@@ -163,7 +163,7 @@ function VelocitiesPanel({
 					<span className='text-l font-bold'>Arrow Head Size</span>
 					<span className='w-2/5 flex-shrink-0'>
 						<input
-							className='rounded w-full'
+							className=' w-full'
 							type='range'
 							min='0.5'
 							max='5'
@@ -183,7 +183,7 @@ function VelocitiesPanel({
 				<span className='text-l font-bold'>Add New Velocity</span>
 				<button
 					type='button'
-					className='rounded bg-gray-700 text-white hover:bg-gray-800 p-2'
+					className=' bg-gray-700 text-white hover:bg-gray-800 p-2'
 					onClick={addNewVelocity}
 				>
 					New Velocity

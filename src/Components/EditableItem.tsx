@@ -32,7 +32,7 @@ function FieldDefinitionEditor({
 	let input = (
 		<input
 			data-testid={`input-editor-${fieldDefinition.name}`}
-			className='rounded w-full'
+			className='bg-gray-800 w-full'
 			type={typeof value === 'number' ? 'number' : 'text'}
 			value={localValue}
 			onChange={(event): void => {
@@ -52,7 +52,7 @@ function FieldDefinitionEditor({
 		input = (
 			<select
 				data-testid={`input-editor-${fieldDefinition.name}`}
-				className='rounded w-full'
+				className=' w-full'
 				value={localValue}
 				onChange={(event): void => {
 					setField(event.currentTarget.value)
@@ -168,7 +168,7 @@ function EditableItem<T extends object>({
 								<span className='w-2/5 flex-shrink-0'>
 									<input
 										data-testid={`input-editor-${key}`}
-										className='rounded w-full'
+										className='bg-gray-800 w-full'
 										type={typeof value === 'number' ? 'number' : 'text'}
 										value={value}
 										onChange={(event): void => {
@@ -190,7 +190,7 @@ function EditableItem<T extends object>({
 		.sort((a, b): number => a.order - b.order)
 		.map(value => value.element)
 	return (
-		<div className='flex flex-col gap-2 border-2 rounded p-2'>
+		<div className='flex flex-col gap-2 border-2 border-slate-700 p-2'>
 			<div className='flex flex-row justify-between items-center'>
 				<span
 					data-testid='editable-item-title'
@@ -203,7 +203,7 @@ function EditableItem<T extends object>({
 					{deletable ? (
 						<button
 							type='button'
-							className='rounded bg-white hover:bg-gray-200 p-2'
+							className=' bg-black hover:bg-gray-200 p-2'
 							onClick={(): void => {
 								setItem()
 							}}
