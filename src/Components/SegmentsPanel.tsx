@@ -46,7 +46,8 @@ function SegmentsPanel({
 	setSegmentData,
 	addNewSegment,
 	splitSegment,
-	setSelectionMode
+	setSelectionMode,
+	save
 }: {
 	settings: SegmentsDisplaySettings
 	setSettings: (settings: SegmentsDisplaySettings) => void
@@ -56,6 +57,7 @@ function SegmentsPanel({
 	setSelectionMode: (mode: SelectionMode) => void
 	addNewSegment: (a: Vertex, b: Vertex) => void
 	splitSegment: (index: number[]) => void
+	save: () => void
 }): ReactElement {
 	const set = (s: SegmentsDisplaySettings): void => {
 		setSettings(s)
@@ -103,8 +105,8 @@ function SegmentsPanel({
 	return (
 		<div className='flex flex-col gap-2'>
 			<div className='flex flex-row justify-between items-center'>
-				<span className='text-l font-bold'>Display</span>
-				<span className='w-2/5 flex-shrink-0'>
+				<span className='text-l font-bold flex-grow'>Display</span>
+				<span className='w-2/5 flex-shrink'>
 					<input
 						className='form-check-input appearance-none w-9 -ml-10 -full float-left h-5 align-top bg-black bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer shadow-sm'
 						type='checkbox'
@@ -115,6 +117,13 @@ function SegmentsPanel({
 						}}
 					/>
 				</span>
+				<button
+					type='button'
+					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+					onClick={save}
+				>
+					Save Segments & Vertices
+				</button>
 			</div>
 			<div className='flex flex-row justify-between items-center'>
 				<span className='text-l font-bold'>Color</span>

@@ -753,6 +753,12 @@ export default function App(): ReactElement {
 							}
 						})
 					}}
+					save={async (): Promise<void> => {
+						if (velocityFile) {
+							velocityFile.data = velocities
+							await velocityFile.save()
+						}
+					}}
 				/>
 			)
 			break
@@ -791,6 +797,12 @@ export default function App(): ReactElement {
 							select.select('block', [])
 						}
 					}}
+					save={async (): Promise<void> => {
+						if (blockFile) {
+							blockFile.data = blocks
+							await blockFile.save()
+						}
+					}}
 				/>
 			)
 			break
@@ -818,6 +830,12 @@ export default function App(): ReactElement {
 						dispatch(splitSegment(index))
 						select.select('segment', [])
 					}}
+					save={async (): Promise<void> => {
+						if (segmentFile) {
+							segmentFile.data = segments
+							await segmentFile.save()
+						}
+					}}
 				/>
 			)
 			break
@@ -842,6 +860,12 @@ export default function App(): ReactElement {
 					}}
 					extrudeVertex={(start, end): void => {
 						dispatch(extrudeSegment({ index: start, targetPoint: end }))
+					}}
+					save={async (): Promise<void> => {
+						if (segmentFile) {
+							segmentFile.data = segments
+							await segmentFile.save()
+						}
 					}}
 				/>
 			)

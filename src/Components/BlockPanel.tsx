@@ -29,7 +29,8 @@ function BlockPanel({
 	selected,
 	blocks,
 	setBlockData,
-	addNewBlock
+	addNewBlock,
+	save
 }: {
 	selected: number[]
 	blocks: Block[]
@@ -37,6 +38,7 @@ function BlockPanel({
 	addNewBlock: () => void
 	settings: BlockDisplaySettings
 	setSettings: (settings: BlockDisplaySettings) => void
+	save: () => void
 }): ReactElement {
 	const set = (s: BlockDisplaySettings): void => {
 		setSettings(s)
@@ -75,8 +77,8 @@ function BlockPanel({
 		<>
 			<div className='flex flex-col gap-2'>
 				<div className='flex flex-row justify-between items-center'>
-					<span className='text-l font-bold'>Display</span>
-					<span className='w-2/5 flex-shrink-0'>
+					<span className='text-l font-bold flex-grow'>Display</span>
+					<span className='w-2/5 flex-shrink'>
 						<input
 							className='form-check-input appearance-none w-9 -ml-10 -full float-left h-5 align-top bg-black bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer shadow-sm'
 							type='checkbox'
@@ -87,6 +89,13 @@ function BlockPanel({
 							}}
 						/>
 					</span>
+					<button
+						type='button'
+						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+						onClick={save}
+					>
+						Save Blocks
+					</button>
 				</div>
 				<div className='flex flex-row justify-between items-center'>
 					<span className='text-l font-bold'>Color</span>

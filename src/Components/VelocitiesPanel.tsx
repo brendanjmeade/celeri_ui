@@ -33,7 +33,8 @@ function VelocitiesPanel({
 	selected,
 	velocitys,
 	setVelocityData,
-	addNewVelocity
+	addNewVelocity,
+	save
 }: {
 	settings: VelocitiesDisplaySettings
 	setSettings: (settings: VelocitiesDisplaySettings) => void
@@ -41,6 +42,7 @@ function VelocitiesPanel({
 	velocitys: Velocity[]
 	setVelocityData: (indices: number[], data?: Partial<Velocity>) => void
 	addNewVelocity: () => void
+	save: () => void
 }): ReactElement {
 	const set = (s: VelocitiesDisplaySettings): void => {
 		setSettings(s)
@@ -79,8 +81,8 @@ function VelocitiesPanel({
 		<>
 			<div className='flex flex-col gap-2'>
 				<div className='flex flex-row justify-between items-center'>
-					<span className='text-l font-bold'>Display</span>
-					<span className='w-2/5 flex-shrink-0'>
+					<span className='text-l font-bold flex-grow'>Display</span>
+					<span className='w-2/5 flex-shrink'>
 						<input
 							className='form-check-input appearance-none w-9 -ml-10 -full float-left h-5 align-top bg-black bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer shadow-sm'
 							type='checkbox'
@@ -91,6 +93,13 @@ function VelocitiesPanel({
 							}}
 						/>
 					</span>
+					<button
+						type='button'
+						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+						onClick={save}
+					>
+						Save Velocities
+					</button>
 				</div>
 				<div className='flex flex-row justify-between items-center'>
 					<span className='text-l font-bold'>Color</span>
