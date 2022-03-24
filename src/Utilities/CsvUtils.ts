@@ -37,10 +37,15 @@ export function stringify<T>(array: T[], headers: string[]): string {
 			headers
 				.map(key => {
 					if (key in record) {
-						return typeof record[key] === 'string' &&
-							/\s/.test(`${record[key]}`)
-							? `"${record[key]}"`
-							: `${record[key]}`
+						const value = record[key]
+						return typeof value === 'string' && /\s/.test(`${value}`)
+							? `"${value}"`
+							: `${
+									typeof value === 'number' &&
+									(key.includes('lon') || key.includes('lat'))
+										? value.toFixed(6)
+										: value
+							  }`
 					}
 					return ''
 				})

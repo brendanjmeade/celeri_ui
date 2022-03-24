@@ -55,7 +55,7 @@ export function GetShortestLineCoordinates(
 	return [a, b]
 }
 
-export const VERTEX_PRECISION_MULTIPLIER = 1000
+export const VERTEX_PRECISION_MULTIPLIER = 1_000_000
 
 export function getVertexIdOrInsert(
 	vertex: Vertex,
