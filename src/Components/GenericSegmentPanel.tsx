@@ -78,28 +78,28 @@ function GenericSegmentPanel({
 				}}
 				fieldDefinitions={{
 					startLat: {
-						order: 0,
+						order: 1,
 						name: 'Start Latitude',
 						description: 'the column containing the segment start latitude',
 						type: 'select',
 						items: collectionFields
 					},
 					startLon: {
-						order: 1,
+						order: 0,
 						name: 'Start Longitude',
 						description: 'the column containing the segment start longitude',
 						type: 'select',
 						items: collectionFields
 					},
 					endLat: {
-						order: 2,
+						order: 3,
 						name: 'End Latitude',
 						description: 'the column containing the segment end latitude',
 						type: 'select',
 						items: collectionFields
 					},
 					endLon: {
-						order: 3,
+						order: 2,
 						name: 'End Longitude',
 						description: 'the column containing the segment end longitude',
 						type: 'select',
