@@ -34,12 +34,12 @@ function InspectorPanel({
 	return (
 		<div
 			data-testid='inspector-container'
-			className='absolute bottom-0 right-2 h-1/2 w-1/3 flex flex-col-reverse z-50'
+			className='absolute bottom-0 right-0 h-1/2 w-1/3 flex flex-col-reverse z-50'
 		>
 			{active ? (
 				<div
 					data-testid='inspector-view'
-					className='flex flex-col bg-black flex-grow r p-2 shadow-sm overflow-y-auto'
+					className='flex flex-col bg-black flex-grow items-stretch r p-2 shadow-sm overflow-y-auto overflow-x-hidden'
 				>
 					{view}
 				</div>

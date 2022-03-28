@@ -52,7 +52,7 @@ export default function Files({
 							<select
 								key={index}
 								data-testid={`file-${key}-select-${index}`}
-								className='bg-gray-800 flex-grow m-1'
+								className='bg-gray-800 w-full m-1'
 								value={fiePath}
 								onChange={async (event): Promise<void> => {
 									const chosenFileName = event.currentTarget.value
