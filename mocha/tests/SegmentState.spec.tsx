@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { expect } from 'chai'
-import { initialState, SegmentReducer } from '../../src/State/Segment/State'
+import {
+	FaultDipProjection,
+	initialState,
+	SegmentReducer
+} from '../../src/State/Segment/State'
 
 describe('Segment Actions mutate state as expected', () => {
 	it('Can load new data into the segment state', () => {
@@ -258,5 +262,59 @@ describe('Segment Actions mutate state as expected', () => {
 		expect(state.segments[1].end).to.equal(1)
 		expect(state.segments[1].name).to.equal('test_name_b')
 		expect(state.vertecies[2].lon).to.equal(0.5)
+	})
+	describe('can calculate fault dip projections', () => {
+		it('fault dip projections ignore a locking depth less than or equal to zero', () => {
+			const state = SegmentReducer(initialState, {
+				type: 'createSegmet',
+				payload: {
+					start: { lon: 0, lat: 0 },
+					end: { lon: 1, lat: 1 },
+					locking_depth: 0,
+					dip: 50
+				}
+			})
+			const projection = FaultDipProjection(state)
+			expect(projection).to.have.length(0)
+		})
+		it('fault dip projections ignore a dip of 90 degrees', () => {
+			const state = SegmentReducer(initialState, {
+				type: 'createSegmet',
+				payload: {
+					start: { lon: 0, lat: 0 },
+					end: { lon: 1, lat: 1 },
+					locking_depth: 10,
+					dip: 90
+				}
+			})
+			const projection = FaultDipProjection(state)
+			expect(projection).to.have.length(0)
+		})
+		it('projects a segment with a dip of 45 & depth of 1 correctly', () => {
+			const state = SegmentReducer(initialState, {
+				type: 'createSegmet',
+				payload: {
+					start: { lon: 0, lat: 0 },
+					end: { lon: 0, lat: 1 },
+					locking_depth: 1,
+					dip: 45
+				}
+			})
+			const projection = FaultDipProjection(state)
+			expect(projection).to.have.length(1)
+			const rect = projection[0]
+
+			expect(rect[0].lon).to.be.closeTo(0, 0.001)
+			expect(rect[0].lat).to.be.closeTo(0, 0.001)
+
+			expect(rect[1].lon).to.be.closeTo(0.008_993_203_637_245_385, 0.001)
+			expect(rect[1].lat).to.be.closeTo(0, 0.001)
+
+			expect(rect[2].lon).to.be.closeTo(0.008_993_203_637_245_385, 0.001)
+			expect(rect[2].lat).to.be.closeTo(1, 0.001)
+
+			expect(rect[3].lon).to.be.closeTo(0, 0.001)
+			expect(rect[3].lat).to.be.closeTo(1, 0.001)
+		})
 	})
 })

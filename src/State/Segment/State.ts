@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { createAction, createReducer } from '@reduxjs/toolkit'
+import { along, lineString } from '@turf/turf'
 import type { BridgeVerticesAction } from './BridgeVertices'
 import BridgeVertices from './BridgeVertices'
 import type { CreateSegmentAction } from './CreateSegment'
@@ -47,6 +49,72 @@ export const loadNewSegmentData =
 export const mergeVertices = createAction<MergeVerticesAction>('mergeVertices')
 export const moveVertex = createAction<MoveVertexAction>('moveVertex')
 export const splitSegment = createAction<SplitSegmentAction>('splitSegment')
+
+function projectSegment(
+	startVertex: Vertex,
+	endVertex: Vertex,
+	segment: InMemorySegment
+): false | [Vertex, Vertex, Vertex, Vertex] {
+	if (segment.dip === 90 || segment.locking_depth <= 0) return false
+	const dipAngle = (90 - segment.dip) * (Math.PI / 180)
+	const projectionDistance = Math.abs(
+		Math.tan(dipAngle) * segment.locking_depth
+	)
+
+	const [start, end] =
+		startVertex.lon >= endVertex.lon
+			? [startVertex, endVertex]
+			: [endVertex, startVertex]
+
+	const normal = {
+		lon: end.lat - start.lat,
+		lat: -(end.lon - start.lon)
+	}
+
+	const pointA = along(
+		lineString([
+			[start.lon, start.lat],
+			[start.lon + normal.lon, start.lat + normal.lat]
+		]),
+		projectionDistance,
+		{ units: 'kilometers' }
+	)
+	const pointB = along(
+		lineString([
+			[end.lon, end.lat],
+			[end.lon + normal.lon, end.lat + normal.lat]
+		]),
+		projectionDistance,
+		{ units: 'kilometers' }
+	)
+
+	return [
+		start,
+		{
+			lon: pointA.geometry.coordinates[0],
+			lat: pointA.geometry.coordinates[1]
+		},
+		{
+			lon: pointB.geometry.coordinates[0],
+			lat: pointB.geometry.coordinates[1]
+		},
+		end
+	]
+}
+
+export function FaultDipProjection(
+	state: SegmentState
+): [Vertex, Vertex, Vertex, Vertex][] {
+	return state.segments
+		.map(segment =>
+			projectSegment(
+				state.vertecies[segment.start],
+				state.vertecies[segment.end],
+				segment
+			)
+		)
+		.filter(v => v) as [Vertex, Vertex, Vertex, Vertex][]
+}
 
 export const SegmentReducer = createReducer(initialState, builder => {
 	builder

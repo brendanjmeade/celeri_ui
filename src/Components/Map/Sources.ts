@@ -64,3 +64,16 @@ export interface DrawnPointSource {
 	select?: (index: number[]) => void
 	update?: (index: number, coordinates: Vertex) => void
 }
+
+export interface PolygonSource {
+	name: string
+	borderColor: string
+	color: string
+	borderRadius: number
+	polygons: {
+		polygon: Vertex[]
+		index: number
+		name: string
+		description: string
+	}[]
+}

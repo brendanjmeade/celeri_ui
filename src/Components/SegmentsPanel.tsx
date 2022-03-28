@@ -15,6 +15,8 @@ export interface SegmentsDisplaySettings {
 	vertexRadius: number
 	activeVertexRadius: number
 	hide: boolean
+	hideProjection: boolean
+	projectionColor: string
 }
 
 const defaultSegmentDisplaySettings: SegmentsDisplaySettings = {
@@ -26,7 +28,9 @@ const defaultSegmentDisplaySettings: SegmentsDisplaySettings = {
 	activeVertexColor: '#00ffff',
 	vertexRadius: 3,
 	activeVertexRadius: 3,
-	hide: false
+	hide: false,
+	hideProjection: false,
+	projectionColor: '#ffff00'
 }
 
 export const initialSegmentDisplaySettings =
@@ -104,16 +108,28 @@ function SegmentsPanel({
 
 	return (
 		<div className='flex flex-col gap-2'>
-			<div className='flex flex-row justify-between items-center'>
+			<div className='flex flex-row justify-between items-center gap-1'>
 				<span className='text-l font-bold flex-grow'>Display</span>
 				<span className='w-2/5 flex-shrink'>
 					<input
-						className='form-check-input appearance-none w-9 -ml-10 -full float-left h-5 align-top bg-black bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer shadow-sm'
+						className='form-check-input appearance-none w-9 float-left h-5 align-top bg-black bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer shadow-sm'
 						type='checkbox'
 						role='switch'
 						checked={!settings.hide}
 						onChange={(): void => {
 							set({ ...settings, hide: !settings.hide })
+						}}
+					/>
+				</span>
+				<span className='text-l font-bold flex-grow'>Projection</span>
+				<span className='w-2/5 flex-shrink'>
+					<input
+						className='form-check-input appearance-none w-9 float-left h-5 align-top bg-black bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer shadow-sm'
+						type='checkbox'
+						role='switch'
+						checked={!settings.hideProjection}
+						onChange={(): void => {
+							set({ ...settings, hideProjection: !settings.hideProjection })
 						}}
 					/>
 				</span>
@@ -192,6 +208,21 @@ function SegmentsPanel({
 					/>
 				</span>
 			</div>
+
+			<div className='flex flex-row justify-between items-center'>
+				<span className='text-l font-bold'>Projection Color</span>
+				<span className='w-2/5 flex-shrink-0'>
+					<input
+						className='bg-gray-800 w-full'
+						type='color'
+						value={settings.projectionColor}
+						onChange={(event): void => {
+							set({ ...settings, projectionColor: event.target.value })
+						}}
+					/>
+				</span>
+			</div>
+
 			<div className='flex flex-row justify-between items-center'>
 				<span className='text-l font-bold'>Add New Segment</span>
 				<button

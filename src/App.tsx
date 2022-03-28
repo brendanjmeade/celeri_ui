@@ -14,7 +14,8 @@ import type {
 	ArrowSource,
 	DrawnPointSource,
 	LineSource,
-	PointSource
+	PointSource,
+	PolygonSource
 } from 'Components/Map/Sources'
 import type { MeshDisplaySettings } from 'Components/MeshPanel'
 import MeshPanel, { initialMeshDisplaySettings } from 'Components/MeshPanel'
@@ -52,6 +53,7 @@ import {
 	deleteSegment,
 	editSegmentData,
 	extrudeSegment,
+	FaultDipProjection,
 	loadNewSegmentData,
 	mergeVertices,
 	moveVertex,
@@ -225,6 +227,7 @@ export default function App(): ReactElement {
 	const [pointSources, setPointSources] = useState<PointSource[]>([])
 	const [arrowSources, setArrowSources] = useState<ArrowSource[]>([])
 	const [lineSources, setLineSources] = useState<LineSource[]>([])
+	const [polygonSources, setPolygonSources] = useState<PolygonSource[]>([])
 	const [drawnPointSource, setDrawnPointSource] = useState<DrawnPointSource>({
 		color: vertexSettings.color,
 		selectedColor: vertexSettings.activeColor,
@@ -599,6 +602,27 @@ export default function App(): ReactElement {
 			])
 		}
 	}, [select, velocitiesSettings, velocities])
+
+	useEffect(() => {
+		if (segmentSettings.hideProjection) {
+			setPolygonSources([])
+		} else {
+			setPolygonSources([
+				{
+					name: 'fault_dip_projections',
+					color: segmentSettings.projectionColor,
+					borderColor: segmentSettings.projectionColor,
+					borderRadius: 0.5,
+					polygons: FaultDipProjection(segments).map((poly, index) => ({
+						polygon: poly,
+						index,
+						name: '',
+						description: ''
+					}))
+				}
+			])
+		}
+	}, [segmentSettings, segments])
 
 	let view = <span />
 
@@ -1092,6 +1116,7 @@ export default function App(): ReactElement {
 				arrowSources={arrowSources}
 				lineSources={lineSources}
 				drawnPointSource={drawnPointSource}
+				polygonSources={polygonSources}
 				selections={{
 					segments: selectedSegment,
 					blocks: selectedBlock,

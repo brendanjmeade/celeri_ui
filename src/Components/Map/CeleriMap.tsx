@@ -12,11 +12,13 @@ import MapDrawnPoints from './MapDrawnPoints'
 import MapGrid from './MapGrid'
 import MapLineSegments from './MapLineSegments'
 import MapPoints from './MapPoints'
+import MapPolygonSources from './MapPolygonSources'
 import type {
 	ArrowSource,
 	DrawnPointSource,
 	LineSource,
-	PointSource
+	PointSource,
+	PolygonSource
 } from './Sources'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string
@@ -30,6 +32,7 @@ export interface MapState {
 	internalArrowSources?: ArrowSource[]
 	internalLineSources?: LineSource[]
 	internalDrawnPointSource?: DrawnPointSource
+	internalPolygonSources?: PolygonSource[]
 	drawnPointSettings: {
 		selectedColor: string
 		selectedRadius: number
@@ -45,6 +48,7 @@ export interface MapProperties {
 	pointSources: PointSource[]
 	arrowSources: ArrowSource[]
 	lineSources: LineSource[]
+	polygonSources: PolygonSource[]
 	drawnPointSource: DrawnPointSource
 	selections: Record<string, number[]>
 	click: (coordinates: Vertex) => void
@@ -154,6 +158,12 @@ export class CeleriMap extends React.Component<MapProperties, MapState> {
 
 	public componentDidUpdate(): boolean {
 		MapGrid(
+			this,
+			state => this.setState(state as unknown as MapState),
+			this.state,
+			this.props
+		)
+		MapPolygonSources(
 			this,
 			state => this.setState(state as unknown as MapState),
 			this.state,

@@ -84,7 +84,6 @@ export function ParseMeshFileV2(file: string): MeshLine[] {
 			elements = ParseElementSection(section)
 		}
 	}
-	console.log('mesh file:', vertices, elements)
 
 	return BuildMeshLines(vertices, elements)
 }
