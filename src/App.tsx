@@ -685,17 +685,42 @@ export default function App(): ReactElement {
 										handle,
 										files
 									)
-									setCommandFile(commandResult.commands)
-									setSegmentFile(commandResult.segments)
-									if (commandResult.segments.data) {
+									setCommandFile(
+										commandResult.commands !== false
+											? commandResult.commands
+											: undefined
+									)
+									setSegmentFile(
+										commandResult.segments !== false
+											? commandResult.segments
+											: undefined
+									)
+									if (
+										commandResult.segments !== false &&
+										commandResult.segments.data
+									) {
 										dispatch(loadNewSegmentData(commandResult.segments.data))
 									}
-									setBlockFile(commandResult.blocks)
-									if (commandResult.blocks.data) {
+									setBlockFile(
+										commandResult.blocks !== false
+											? commandResult.blocks
+											: undefined
+									)
+									if (
+										commandResult.blocks !== false &&
+										commandResult.blocks.data
+									) {
 										dispatch(loadNewBlockData(commandResult.blocks.data))
 									}
-									setVelocityFile(commandResult.velocities)
-									if (commandResult.velocities.data) {
+									setVelocityFile(
+										commandResult.velocities !== false
+											? commandResult.velocities
+											: undefined
+									)
+									if (
+										commandResult.velocities !== false &&
+										commandResult.velocities.data
+									) {
 										dispatch(loadNewVelocityData(commandResult.velocities.data))
 									}
 									if (commandResult.mesh) {

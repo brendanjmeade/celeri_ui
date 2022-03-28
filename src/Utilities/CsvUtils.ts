@@ -14,12 +14,11 @@ export function parse(contents: string): Record<string, number | string>[] {
 				const header = headers[index]
 				const number = Number.parseFloat(value)
 				value = Number.isNaN(number) ? value : number
-				if (
-					typeof value === 'string' &&
-					value.startsWith(`"`) &&
-					value.endsWith(`"`)
-				) {
-					value = value.slice(1, -1)
+				if (typeof value === 'string') {
+					value =
+						value.startsWith(`"`) && value.endsWith(`"`)
+							? value.slice(1, -1).trim()
+							: value.trim()
 				}
 				item[header] = value
 			}
@@ -39,7 +38,7 @@ export function stringify<T>(array: T[], headers: string[]): string {
 					if (key in record) {
 						const value = record[key]
 						return typeof value === 'string' && /\s/.test(`${value}`)
-							? `"${value}"`
+							? `"${value.trim()}"`
 							: `${
 									typeof value === 'number' &&
 									(key.includes('lon') || key.includes('lat'))
