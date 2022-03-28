@@ -1027,7 +1027,7 @@ export default function App(): ReactElement {
 			) : (
 				<></>
 			)}
-			<div className='absolute bottom-0 left-2 flex flex-col bg-black  p-2 gap-5 shadow-sm z-50'>
+			<div className='absolute bottom-0 left-0 flex flex-col bg-black  p-2 gap-5 shadow-sm z-50'>
 				<div className='flex flex-row items-center justify-start gap-5'>
 					<span className='p-1 text-sm text-center'>
 						Hold <span className='font-bold'>Shift</span> to box select{' '}
