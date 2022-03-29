@@ -307,10 +307,10 @@ describe('Segment Actions mutate state as expected', () => {
 			expect(rect[0].lon).to.be.closeTo(0, 0.001)
 			expect(rect[0].lat).to.be.closeTo(0, 0.001)
 
-			expect(rect[1].lon).to.be.closeTo(0.008_993_203_637_245_385, 0.001)
+			expect(rect[1].lon).to.be.closeTo(-0.008_993_203_637_245_385, 0.001)
 			expect(rect[1].lat).to.be.closeTo(0, 0.001)
 
-			expect(rect[2].lon).to.be.closeTo(0.008_993_203_637_245_385, 0.001)
+			expect(rect[2].lon).to.be.closeTo(-0.008_993_203_637_245_385, 0.001)
 			expect(rect[2].lat).to.be.closeTo(1, 0.001)
 
 			expect(rect[3].lon).to.be.closeTo(0, 0.001)

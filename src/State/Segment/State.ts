@@ -56,7 +56,9 @@ function projectSegment(
 	segment: InMemorySegment
 ): false | [Vertex, Vertex, Vertex, Vertex] {
 	if (segment.dip === 90 || segment.locking_depth <= 0) return false
-	const dipAngle = (90 - segment.dip) * (Math.PI / 180)
+	const dipToTheLeft = segment.dip < 90
+	const dipBase = dipToTheLeft ? 90 - segment.dip : segment.dip - 90
+	const dipAngle = dipBase * (Math.PI / 180)
 	const projectionDistance = Math.abs(
 		Math.tan(dipAngle) * segment.locking_depth
 	)
@@ -69,6 +71,11 @@ function projectSegment(
 	const normal = {
 		lon: end.lat - start.lat,
 		lat: -(end.lon - start.lon)
+	}
+
+	if (dipToTheLeft) {
+		normal.lon *= -1
+		normal.lat *= -1
 	}
 
 	const pointA = along(
