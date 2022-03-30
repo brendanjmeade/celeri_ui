@@ -52,7 +52,7 @@ function FieldDefinitionEditor({
 		input = (
 			<select
 				data-testid={`input-editor-${fieldDefinition.name}`}
-				className=' w-full'
+				className='bg-gray-800 w-full'
 				value={localValue}
 				onChange={(event): void => {
 					setField(event.currentTarget.value)

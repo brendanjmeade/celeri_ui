@@ -48,6 +48,7 @@ export interface LineSource {
 		name: string
 		description: string
 		index: number
+		label?: string
 	}[]
 	click?: (index: number) => void
 }

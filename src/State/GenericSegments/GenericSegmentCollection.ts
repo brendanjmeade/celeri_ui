@@ -4,5 +4,6 @@ export interface GenericSegmentCollection {
 	startLat: string
 	endLon: string
 	endLat: string
+	plot: string
 	segments: Record<string, number | string>[]
 }

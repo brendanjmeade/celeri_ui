@@ -17,6 +17,7 @@ export function LoadNewGenericCollectionData(
 			startLon: 'startLon',
 			endLat: 'endLat',
 			endLon: 'endLon',
+			plot: '',
 			segments: action.data
 		}
 	}

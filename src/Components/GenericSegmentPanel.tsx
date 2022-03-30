@@ -55,7 +55,8 @@ function GenericSegmentPanel({
 	}
 
 	const collectionEditors = Object.keys(collections).map(key => {
-		const { startLat, startLon, endLat, endLon, segments } = collections[key]
+		const { startLat, startLon, endLat, endLon, segments, plot } =
+			collections[key]
 		const collectionFields = Object.keys(segments[0]).map((field, index) => ({
 			name: field,
 			value: index
@@ -64,7 +65,7 @@ function GenericSegmentPanel({
 			<EditableItem
 				key={key}
 				title={key}
-				items={[{ startLat, startLon, endLat, endLon }]}
+				items={[{ startLat, startLon, endLat, endLon, plot }]}
 				deletable={false}
 				setItems={(value): void => {
 					setCollectionVertexKeys({
@@ -73,6 +74,7 @@ function GenericSegmentPanel({
 						startLon,
 						endLat,
 						endLon,
+						plot,
 						...value
 					})
 				}}
@@ -102,6 +104,13 @@ function GenericSegmentPanel({
 						order: 2,
 						name: 'End Longitude',
 						description: 'the column containing the segment end longitude',
+						type: 'select',
+						items: collectionFields
+					},
+					plot: {
+						order: 3,
+						name: 'Plot Key',
+						description: 'the column to be plotted on the map',
 						type: 'select',
 						items: collectionFields
 					}

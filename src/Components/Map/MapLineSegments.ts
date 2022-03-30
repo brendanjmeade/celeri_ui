@@ -22,7 +22,16 @@ export default function MapLineSegments(
 					})
 				}
 				map.removeLayer(`layer:line:${source.name}`)
-				map.removeLayer(`layer:line:${source.name}:click`)
+				try {
+					map.removeLayer(`layer:line:${source.name}:click`)
+				} catch {
+					console.log('no click layer')
+				}
+				try {
+					map.removeLayer(`layer:line:${source.name}:labels`)
+				} catch {
+					console.log('no label layer')
+				}
 			}
 			setState({ internalLineSources: undefined })
 		} else {
@@ -54,6 +63,7 @@ export default function MapLineSegments(
 										: '',
 								index: line.index,
 								name: line.name,
+								label: line.label ?? '',
 								selected: selections[source.name]?.includes(line.index) || false
 							},
 							geometry: {
@@ -89,6 +99,24 @@ export default function MapLineSegments(
 						]
 					}
 				})
+				if (source.lines[0]?.label) {
+					map.addLayer({
+						id: `layer:line:${source.name}:labels`,
+						type: 'symbol',
+						source: `line:${source.name}`,
+						layout: {
+							'symbol-placement': 'line-center',
+							'text-anchor': 'center',
+							'text-field': ['get', 'label'],
+							'text-offset': [1, 1]
+						},
+						paint: {
+							'text-halo-color': 'rgba(255,255,255,255)',
+							'text-halo-width': 1,
+							'text-color': '#000'
+						}
+					})
+				}
 				if (source.click) {
 					map.addLayer({
 						id: `layer:line:${source.name}:click`,

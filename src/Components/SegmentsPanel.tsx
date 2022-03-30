@@ -2,6 +2,7 @@
 import type { SelectionMode } from 'App'
 import type { ReactElement } from 'react'
 import type { Segment } from 'State/Segment/Segment'
+import { fieldNames } from 'State/Segment/Segment'
 import type { Vertex } from 'State/Segment/Vertex'
 import EditableItem from './EditableItem'
 
@@ -17,6 +18,7 @@ export interface SegmentsDisplaySettings {
 	hide: boolean
 	hideProjection: boolean
 	projectionColor: string
+	plottableKey: string
 }
 
 const defaultSegmentDisplaySettings: SegmentsDisplaySettings = {
@@ -30,7 +32,8 @@ const defaultSegmentDisplaySettings: SegmentsDisplaySettings = {
 	activeVertexRadius: 3,
 	hide: false,
 	hideProjection: false,
-	projectionColor: '#ffff00'
+	projectionColor: '#ffff00',
+	plottableKey: ''
 }
 
 export const initialSegmentDisplaySettings =
@@ -41,6 +44,8 @@ export const initialSegmentDisplaySettings =
 			window.localStorage.getItem('segmentDisplaySettings') ?? '{}'
 		) as SegmentsDisplaySettings)
 	}
+
+const plotKeyOptions = ['', ...fieldNames]
 
 function SegmentsPanel({
 	settings,
@@ -220,6 +225,25 @@ function SegmentsPanel({
 							set({ ...settings, projectionColor: event.target.value })
 						}}
 					/>
+				</span>
+			</div>
+
+			<div className='flex flex-row justify-between items-center'>
+				<span className='text-l font-bold'>Plotted Value</span>
+				<span className='w-2/5 flex-shrink-0'>
+					<select
+						className='bg-gray-800 w-full'
+						value={settings.plottableKey}
+						onChange={(event): void => {
+							set({ ...settings, plottableKey: event.currentTarget.value })
+						}}
+					>
+						{plotKeyOptions.map(key => (
+							<option key={key} value={key}>
+								{key}
+							</option>
+						))}
+					</select>
 				</span>
 			</div>
 

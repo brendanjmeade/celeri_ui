@@ -347,7 +347,15 @@ export default function App(): ReactElement {
 						endLatitude,
 						name: segment.name,
 						description: `${start.lon},${start.lat} to ${end.lon},${end.lat}`,
-						index
+						index,
+						label:
+							segmentSettings.plottableKey in segment
+								? `${
+										(segment as unknown as Record<string, number | string>)[
+											segmentSettings.plottableKey
+										]
+								  }`
+								: ``
 					}
 				}),
 				click: (index): void => {
@@ -392,6 +400,7 @@ export default function App(): ReactElement {
 					startLon,
 					endLat,
 					endLon,
+					plot,
 					segments: availableSegments
 				} = genericSegments[key]
 				if (
@@ -437,7 +446,8 @@ export default function App(): ReactElement {
 										endLatitude,
 										name: '',
 										description: '',
-										index
+										index,
+										label: plot in line ? `${line[plot]}` : ''
 									}
 								})
 								.filter(v => v) || []

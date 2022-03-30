@@ -30,7 +30,7 @@ describe('Generic Segments', () => {
 		expect(state.segments.segments[0].some_string).to.equal('test')
 		expect(state.segments.segments[0].some_value).to.equal(15)
 	})
-	it('Can set a generic segments longitude and latitude keys', () => {
+	it('Can set a generic segments longitude, latitude & plot keys', () => {
 		let state = GenericSegmentReducer(initialState, {
 			type: 'loadNewGenericCollectionData',
 			payload: {
@@ -54,13 +54,15 @@ describe('Generic Segments', () => {
 				startLon: 'lon',
 				startLat: 'lat',
 				endLon: 'elon',
-				endLat: 'elat'
+				endLat: 'elat',
+				plot: 'some_string'
 			}
 		})
 		expect(state.segments.startLon).to.equal('lon')
 		expect(state.segments.startLat).to.equal('lat')
 		expect(state.segments.endLon).to.equal('elon')
 		expect(state.segments.endLat).to.equal('elat')
+		expect(state.segments.plot).to.equal('some_string')
 	})
 	it('Can remove a collection of segments with generic data', () => {
 		let state = GenericSegmentReducer(initialState, {

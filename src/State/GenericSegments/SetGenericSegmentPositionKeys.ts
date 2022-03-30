@@ -6,6 +6,7 @@ export interface SetGenericSegmentPositionKeysAction {
 	startLat: string
 	endLon: string
 	endLat: string
+	plot: string
 }
 
 export function SetGenericSegmentPositionKeys(
@@ -19,7 +20,8 @@ export function SetGenericSegmentPositionKeys(
 		startLon: action.startLon,
 		startLat: action.startLat,
 		endLon: action.endLon,
-		endLat: action.endLat
+		endLat: action.endLat,
+		plot: action.plot
 	}
 	return {
 		...state,
