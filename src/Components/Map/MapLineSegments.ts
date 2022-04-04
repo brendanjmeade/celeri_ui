@@ -48,6 +48,14 @@ export default function MapLineSegments(
 							features: []
 						}
 					})
+
+					map.addSource(`line:${source.name}:points`, {
+						type: 'geojson',
+						data: {
+							type: 'FeatureCollection',
+							features: []
+						}
+					})
 					mapSource = map.getSource(`line:${source.name}`) as GeoJSONSource
 				}
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -100,22 +108,46 @@ export default function MapLineSegments(
 					}
 				})
 				if (source.lines[0]?.label) {
-					map.addLayer({
-						id: `layer:line:${source.name}:labels`,
-						type: 'symbol',
-						source: `line:${source.name}`,
-						layout: {
-							'symbol-placement': 'line-center',
-							'text-anchor': 'center',
-							'text-field': ['get', 'label'],
-							'text-offset': [1, 1]
-						},
-						paint: {
-							'text-halo-color': 'rgba(255,255,255,255)',
-							'text-halo-width': 1,
-							'text-color': '#000'
-						}
-					})
+					const pointSource = map.getSource(`line:${source.name}:points`) as
+						| GeoJSONSource
+						| undefined
+					if (pointSource) {
+						pointSource.setData({
+							type: 'FeatureCollection',
+							features: source.lines.map(line => ({
+								type: 'Feature',
+								properties: {
+									label: line.label
+								},
+								geometry: {
+									type: 'Point',
+									coordinates: [
+										(line.startLongitude + line.endLongitude) / 2,
+										(line.startLatitude + line.endLatitude) / 2
+									]
+								}
+							}))
+						})
+						map.addLayer({
+							id: `layer:line:${source.name}:labels`,
+							type: 'symbol',
+							source: `line:${source.name}:points`,
+							layout: {
+								'symbol-placement': 'point',
+								'text-anchor': 'center',
+								'text-field': ['get', 'label'],
+								'text-justify': 'center',
+								'text-size': 10,
+								'symbol-z-order': 'source',
+								'symbol-sort-key': 10
+							},
+							paint: {
+								'text-halo-color': 'rgba(255,255,255,255)',
+								'text-halo-width': 1,
+								'text-color': '#000'
+							}
+						})
+					}
 				}
 				if (source.click) {
 					map.addLayer({
