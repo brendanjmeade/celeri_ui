@@ -447,7 +447,7 @@ export default function App(): ReactElement {
 										name: '',
 										description: '',
 										index,
-										label: plot in line ? `${line[plot]}` : ''
+										label: plot && plot in line ? `${line[plot]}` : ''
 									}
 								})
 								.filter(v => v) || []

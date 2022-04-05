@@ -23,12 +23,18 @@ export default function MapLineSegments(
 				}
 				map.removeLayer(`layer:line:${source.name}`)
 				try {
-					map.removeLayer(`layer:line:${source.name}:click`)
+					const layer = map.getLayer(`layer:line:${source.name}:click`)
+					if (layer) {
+						map.removeLayer(`layer:line:${source.name}:click`)
+					}
 				} catch {
 					console.log('no click layer')
 				}
 				try {
-					map.removeLayer(`layer:line:${source.name}:labels`)
+					const layer = map.getLayer(`layer:line:${source.name}:labels`)
+					if (layer) {
+						map.removeLayer(`layer:line:${source.name}:labels`)
+					}
 				} catch {
 					console.log('no label layer')
 				}
