@@ -56,8 +56,7 @@ class FileSystemDirectory implements Directory {
 	}
 
 	public async getFile(file: FileName): Promise<File> {
-		if (!this.fileList.includes(file)) throw new Error('Missing File')
-		const fileHandle = await this.handle.getFileHandle(file)
+		const fileHandle = await this.handle.getFileHandle(file, { create: true })
 		return new FileSystemFile(fileHandle)
 	}
 

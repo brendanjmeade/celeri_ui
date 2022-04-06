@@ -72,7 +72,7 @@ import {
 	moveVelocity
 } from 'State/Velocity/State'
 import type { Velocity } from 'State/Velocity/Velocity'
-import type { BlockFile } from 'Utilities/BlockFile'
+import { BlockFile } from 'Utilities/BlockFile'
 import type { CommandFile } from 'Utilities/CommandFile'
 import {
 	OpenBlockFile,
@@ -83,12 +83,12 @@ import {
 	OpenVelocityFile
 } from 'Utilities/FileOpeners'
 import FSOpenDirectory from 'Utilities/FileSystem'
-import type { Directory } from 'Utilities/FileSystemInterfaces'
+import type { Directory, FileName } from 'Utilities/FileSystemInterfaces'
 import OpenDirectory, {
 	SetDirectoryHandle
 } from 'Utilities/FileSystemInterfaces'
-import type { SegmentFile } from 'Utilities/SegmentFile'
-import type { VelocityFile } from 'Utilities/VelocityFile'
+import { SegmentFile } from 'Utilities/SegmentFile'
+import { VelocityFile } from 'Utilities/VelocityFile'
 
 if (!window.location.search.includes('fake-dir')) {
 	SetDirectoryHandle(FSOpenDirectory)
@@ -680,7 +680,7 @@ export default function App(): ReactElement {
 										dispatch(loadNewBlockData(localBlockFile.data))
 									}
 									break
-								case 'velocity':
+								case 'velocities':
 									// eslint-disable-next-line no-case-declarations
 									const localVelocityFile = await OpenVelocityFile(handle)
 									setVelocityFile(localVelocityFile)
@@ -818,6 +818,13 @@ export default function App(): ReactElement {
 							await velocityFile.save()
 						}
 					}}
+					fileName={velocityFile?.handle.name ?? ''}
+					changeFileName={async (value): Promise<void> => {
+						if (folderHandle) {
+							const handle = await folderHandle.getFile(value as FileName)
+							setVelocityFile(new VelocityFile(handle))
+						}
+					}}
 				/>
 			)
 			break
@@ -862,6 +869,13 @@ export default function App(): ReactElement {
 							await blockFile.save()
 						}
 					}}
+					fileName={blockFile?.handle.name ?? ''}
+					changeFileName={async (value): Promise<void> => {
+						if (folderHandle) {
+							const handle = await folderHandle.getFile(value as FileName)
+							setBlockFile(new BlockFile(handle))
+						}
+					}}
 				/>
 			)
 			break
@@ -893,6 +907,13 @@ export default function App(): ReactElement {
 						if (segmentFile) {
 							segmentFile.data = segments
 							await segmentFile.save()
+						}
+					}}
+					fileName={segmentFile?.handle.name ?? ''}
+					changeFileName={async (value): Promise<void> => {
+						if (folderHandle) {
+							const handle = await folderHandle.getFile(value as FileName)
+							setSegmentFile(new SegmentFile(handle))
 						}
 					}}
 				/>

@@ -56,7 +56,9 @@ function SegmentsPanel({
 	addNewSegment,
 	splitSegment,
 	setSelectionMode,
-	save
+	save,
+	fileName,
+	changeFileName
 }: {
 	settings: SegmentsDisplaySettings
 	setSettings: (settings: SegmentsDisplaySettings) => void
@@ -67,6 +69,8 @@ function SegmentsPanel({
 	addNewSegment: (a: Vertex, b: Vertex) => void
 	splitSegment: (index: number[]) => void
 	save: () => void
+	fileName: string
+	changeFileName: (name: string) => void
 }): ReactElement {
 	const set = (s: SegmentsDisplaySettings): void => {
 		setSettings(s)
@@ -138,6 +142,16 @@ function SegmentsPanel({
 						}}
 					/>
 				</span>
+			</div>
+			<div className='flex flex-row justify-between items-center gap-1'>
+				<input
+					type='text'
+					className='bg-gray-800 flex-grow'
+					value={fileName}
+					onChange={(event): void => {
+						changeFileName(event.target.value)
+					}}
+				/>
 				<button
 					type='button'
 					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'

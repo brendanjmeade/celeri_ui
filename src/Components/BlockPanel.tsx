@@ -30,7 +30,9 @@ function BlockPanel({
 	blocks,
 	setBlockData,
 	addNewBlock,
-	save
+	save,
+	fileName,
+	changeFileName
 }: {
 	selected: number[]
 	blocks: Block[]
@@ -39,6 +41,8 @@ function BlockPanel({
 	settings: BlockDisplaySettings
 	setSettings: (settings: BlockDisplaySettings) => void
 	save: () => void
+	fileName: string
+	changeFileName: (name: string) => void
 }): ReactElement {
 	const set = (s: BlockDisplaySettings): void => {
 		setSettings(s)
@@ -89,6 +93,16 @@ function BlockPanel({
 							}}
 						/>
 					</span>
+				</div>
+				<div className='flex flex-row justify-between items-center'>
+					<input
+						type='text'
+						className='bg-gray-800 flex-grow'
+						value={fileName}
+						onChange={(event): void => {
+							changeFileName(event.target.value)
+						}}
+					/>
 					<button
 						type='button'
 						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
