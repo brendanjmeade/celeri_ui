@@ -7,7 +7,7 @@ import type {
 	OpenDirectoryInterface
 } from './FileSystemInterfaces'
 
-class FileSystemFile implements File {
+export class FileSystemFile implements File {
 	public readonly name: string
 
 	private readonly handle: FileSystemFileHandle
@@ -29,7 +29,7 @@ class FileSystemFile implements File {
 	}
 }
 
-class FileSystemDirectory implements Directory {
+export class FileSystemDirectory implements Directory {
 	public readonly name: string
 
 	private readonly handle: FileSystemDirectoryHandle

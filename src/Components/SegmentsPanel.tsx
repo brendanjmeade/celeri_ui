@@ -4,6 +4,8 @@ import type { ReactElement } from 'react'
 import type { Segment } from 'State/Segment/Segment'
 import { fieldNames } from 'State/Segment/Segment'
 import type { Vertex } from 'State/Segment/Vertex'
+import type { File } from 'Utilities/FileSystemInterfaces'
+import { OpenSavableFile } from 'Utilities/FileSystemInterfaces'
 import EditableItem from './EditableItem'
 
 export interface SegmentsDisplaySettings {
@@ -56,9 +58,7 @@ function SegmentsPanel({
 	addNewSegment,
 	splitSegment,
 	setSelectionMode,
-	save,
-	fileName,
-	changeFileName
+	save
 }: {
 	settings: SegmentsDisplaySettings
 	setSettings: (settings: SegmentsDisplaySettings) => void
@@ -68,9 +68,7 @@ function SegmentsPanel({
 	setSelectionMode: (mode: SelectionMode) => void
 	addNewSegment: (a: Vertex, b: Vertex) => void
 	splitSegment: (index: number[]) => void
-	save: () => void
-	fileName: string
-	changeFileName: (name: string) => void
+	save: (file?: File) => void
 }): ReactElement {
 	const set = (s: SegmentsDisplaySettings): void => {
 		setSettings(s)
@@ -144,20 +142,22 @@ function SegmentsPanel({
 				</span>
 			</div>
 			<div className='flex flex-row justify-between items-center gap-1'>
-				<input
-					type='text'
-					className='bg-gray-800 flex-grow'
-					value={fileName}
-					onChange={(event): void => {
-						changeFileName(event.target.value)
-					}}
-				/>
 				<button
 					type='button'
 					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
-					onClick={save}
+					onClick={(): void => save()}
 				>
 					Save Segments & Vertices
+				</button>
+				<button
+					type='button'
+					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+					onClick={async (): Promise<void> => {
+						const file = await OpenSavableFile(['.csv'])
+						save(file)
+					}}
+				>
+					Save As
 				</button>
 			</div>
 			<div className='flex flex-row justify-between items-center'>

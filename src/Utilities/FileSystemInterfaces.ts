@@ -1,4 +1,5 @@
 /* eslint-disable max-classes-per-file */
+import { FileSystemFile } from './FileSystem'
 import type { InMemoryFS } from './InMemoryFileSystem'
 import InMemoryOpenDirectory from './InMemoryFileSystem'
 
@@ -21,6 +22,8 @@ export interface File {
 
 export type OpenDirectoryInterface = () => Promise<Directory>
 
+export type OpenSaveableFileInterface = () => Promise<File>
+
 let openDirectoryHandle: OpenDirectoryInterface = async () => {
 	const global = window as unknown as { FakeDirectory: InMemoryFS | undefined }
 	return InMemoryOpenDirectory(global.FakeDirectory ?? {})
@@ -32,4 +35,19 @@ export function SetDirectoryHandle(handle: OpenDirectoryInterface): void {
 
 export default async function OpenDirectory(): Promise<Directory> {
 	return openDirectoryHandle()
+}
+
+export async function OpenSavableFile(extensions: string[]): Promise<File> {
+	const options = {
+		types: [
+			{
+				description: 'CSV Files',
+				accept: {
+					'text/plain': extensions
+				}
+			}
+		]
+	}
+	const handle = await window.showSaveFilePicker(options)
+	return new FileSystemFile(handle)
 }

@@ -50,7 +50,7 @@ function VerticesPanel({
 	mergeVertices: (a: number, b: number) => void
 	bridgeVertices: (a: number, b: number) => void
 	extrudeVertex: (start: number, end: Vertex) => void
-	save: () => void
+	save: (file?: File) => void
 }): ReactElement {
 	const set = (s: VerticesDisplaySettings): void => {
 		setSettings(s)
@@ -153,7 +153,7 @@ function VerticesPanel({
 				<button
 					type='button'
 					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
-					onClick={save}
+					onClick={(): void => save()}
 				>
 					Save Segments & Vertices
 				</button>

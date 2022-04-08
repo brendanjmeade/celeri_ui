@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { ReactElement } from 'react'
 import type { Block } from 'State/Block/Block'
+import type { File } from 'Utilities/FileSystemInterfaces'
+import { OpenSavableFile } from 'Utilities/FileSystemInterfaces'
 import EditableItem from './EditableItem'
 
 export interface BlockDisplaySettings {
@@ -30,9 +32,7 @@ function BlockPanel({
 	blocks,
 	setBlockData,
 	addNewBlock,
-	save,
-	fileName,
-	changeFileName
+	save
 }: {
 	selected: number[]
 	blocks: Block[]
@@ -40,9 +40,7 @@ function BlockPanel({
 	addNewBlock: () => void
 	settings: BlockDisplaySettings
 	setSettings: (settings: BlockDisplaySettings) => void
-	save: () => void
-	fileName: string
-	changeFileName: (name: string) => void
+	save: (file?: File) => void
 }): ReactElement {
 	const set = (s: BlockDisplaySettings): void => {
 		setSettings(s)
@@ -95,20 +93,22 @@ function BlockPanel({
 					</span>
 				</div>
 				<div className='flex flex-row justify-between items-center'>
-					<input
-						type='text'
-						className='bg-gray-800 flex-grow'
-						value={fileName}
-						onChange={(event): void => {
-							changeFileName(event.target.value)
-						}}
-					/>
 					<button
 						type='button'
 						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
-						onClick={save}
+						onClick={(): void => save()}
 					>
 						Save Blocks
+					</button>
+					<button
+						type='button'
+						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+						onClick={async (): Promise<void> => {
+							const file = await OpenSavableFile(['.csv'])
+							save(file)
+						}}
+					>
+						Save As
 					</button>
 				</div>
 				<div className='flex flex-row justify-between items-center'>

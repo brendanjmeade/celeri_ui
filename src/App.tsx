@@ -83,7 +83,7 @@ import {
 	OpenVelocityFile
 } from 'Utilities/FileOpeners'
 import FSOpenDirectory from 'Utilities/FileSystem'
-import type { Directory, FileName } from 'Utilities/FileSystemInterfaces'
+import type { Directory, File } from 'Utilities/FileSystemInterfaces'
 import OpenDirectory, {
 	SetDirectoryHandle
 } from 'Utilities/FileSystemInterfaces'
@@ -812,17 +812,15 @@ export default function App(): ReactElement {
 							}
 						})
 					}}
-					save={async (): Promise<void> => {
-						if (velocityFile) {
+					save={async (file?: File): Promise<void> => {
+						if (file) {
+							const updatedVelocityFile = new VelocityFile(file)
+							updatedVelocityFile.data = velocities
+							setVelocityFile(updatedVelocityFile)
+							await updatedVelocityFile.save()
+						} else if (velocityFile) {
 							velocityFile.data = velocities
 							await velocityFile.save()
-						}
-					}}
-					fileName={velocityFile?.handle.name ?? ''}
-					changeFileName={async (value): Promise<void> => {
-						if (folderHandle) {
-							const handle = await folderHandle.getFile(value as FileName)
-							setVelocityFile(new VelocityFile(handle))
 						}
 					}}
 				/>
@@ -863,17 +861,15 @@ export default function App(): ReactElement {
 							select.select('block', [])
 						}
 					}}
-					save={async (): Promise<void> => {
-						if (blockFile) {
+					save={async (file?: File): Promise<void> => {
+						if (file) {
+							const updatedBlockFile = new BlockFile(file)
+							updatedBlockFile.data = blocks
+							setBlockFile(updatedBlockFile)
+							await updatedBlockFile.save()
+						} else if (blockFile) {
 							blockFile.data = blocks
 							await blockFile.save()
-						}
-					}}
-					fileName={blockFile?.handle.name ?? ''}
-					changeFileName={async (value): Promise<void> => {
-						if (folderHandle) {
-							const handle = await folderHandle.getFile(value as FileName)
-							setBlockFile(new BlockFile(handle))
 						}
 					}}
 				/>
@@ -903,17 +899,15 @@ export default function App(): ReactElement {
 						dispatch(splitSegment(index))
 						select.select('segment', [])
 					}}
-					save={async (): Promise<void> => {
-						if (segmentFile) {
+					save={async (file?: File): Promise<void> => {
+						if (file) {
+							const updatedSegmentFile = new SegmentFile(file)
+							updatedSegmentFile.data = segments
+							setSegmentFile(updatedSegmentFile)
+							await updatedSegmentFile.save()
+						} else if (segmentFile) {
 							segmentFile.data = segments
 							await segmentFile.save()
-						}
-					}}
-					fileName={segmentFile?.handle.name ?? ''}
-					changeFileName={async (value): Promise<void> => {
-						if (folderHandle) {
-							const handle = await folderHandle.getFile(value as FileName)
-							setSegmentFile(new SegmentFile(handle))
 						}
 					}}
 				/>
