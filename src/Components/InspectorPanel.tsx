@@ -34,7 +34,7 @@ function InspectorPanel({
 	return (
 		<div
 			data-testid='inspector-container'
-			className='absolute bottom-0 right-0 h-1/2 w-1/3 flex flex-col-reverse z-50'
+			className='absolute bottom-0 right-0 h-1/2 w-2/5 flex flex-col-reverse z-50'
 		>
 			{active ? (
 				<div

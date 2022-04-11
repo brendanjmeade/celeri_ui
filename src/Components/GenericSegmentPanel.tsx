@@ -51,7 +51,10 @@ function GenericSegmentPanel({
 }): ReactElement {
 	const set = (s: GenericSegmentDisplaySettings): void => {
 		setSettings(s)
-		window.localStorage.setItem('meshDisplaySettings', JSON.stringify(s))
+		window.localStorage.setItem(
+			'genericSegmentDisplaySettings',
+			JSON.stringify(s)
+		)
 	}
 
 	const collectionEditors = Object.keys(collections).map(key => {

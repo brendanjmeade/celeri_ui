@@ -25,6 +25,7 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string
 
 export interface MapState {
 	map?: Map
+	style: string
 	mapLoaded?: boolean
 	draw?: MapboxDraw
 	popup: Popup
@@ -54,6 +55,7 @@ export interface MapProperties {
 	click: (coordinates: Vertex) => void
 	mouseMove?: (coordinates: Vertex) => void
 	displayGrid?: number
+	styleUri?: string
 }
 
 export class CeleriMap extends React.Component<MapProperties, MapState> {
@@ -68,18 +70,21 @@ export class CeleriMap extends React.Component<MapProperties, MapState> {
 			},
 			internalSelections: {},
 			mapReference: createRef(),
-			popup: new Popup({ closeButton: false, closeOnClick: false })
+			popup: new Popup({ closeButton: false, closeOnClick: false }),
+			style:
+				properties.styleUri ??
+				'mapbox://styles/mapbox-public/ckngin2db09as17p84ejhe24y'
 		}
 	}
 
 	public componentDidMount(): void {
-		const { mapReference } = this.state
+		const { mapReference, style } = this.state
 		const element =
 			typeof mapReference === 'object' ? mapReference?.current : undefined
 		if (mapboxgl.accessToken && element) {
 			const innerMap = new Map({
 				container: element,
-				style: 'mapbox://styles/mapbox-public/ckngin2db09as17p84ejhe24y',
+				style,
 				// eslint-disable-next-line @typescript-eslint/no-magic-numbers
 				center: [0, 0],
 				// eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -157,6 +162,12 @@ export class CeleriMap extends React.Component<MapProperties, MapState> {
 	}
 
 	public componentDidUpdate(): boolean {
+		const { styleUri } = this.props
+		const { style, map } = this.state
+		if (styleUri && styleUri !== style) {
+			this.setState({ style: styleUri })
+			map?.setStyle(styleUri)
+		}
 		MapGrid(
 			this,
 			state => this.setState(state as unknown as MapState),

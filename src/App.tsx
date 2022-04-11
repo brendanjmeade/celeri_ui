@@ -17,6 +17,11 @@ import type {
 	PointSource,
 	PolygonSource
 } from 'Components/Map/Sources'
+import type { MapSettings } from 'Components/MapSettingsPanel'
+import {
+	initialMapSettings,
+	MapSettingsPanel
+} from 'Components/MapSettingsPanel'
 import type { MeshDisplaySettings } from 'Components/MeshPanel'
 import MeshPanel, { initialMeshDisplaySettings } from 'Components/MeshPanel'
 import type { SegmentsDisplaySettings } from 'Components/SegmentsPanel'
@@ -124,7 +129,8 @@ const windows = {
 	velocities: 'Velocities',
 	vertex: 'Vertices',
 	mesh: 'Mesh',
-	csv: 'Generic Segments'
+	csv: 'Generic Segments',
+	map: 'Map'
 }
 
 export default function App(): ReactElement {
@@ -203,6 +209,8 @@ export default function App(): ReactElement {
 		useState<GenericSegmentDisplaySettings>(
 			initialGenericSegmentDisplaySettings
 		)
+	const [mapSettings, setMapSettings] =
+		useState<MapSettings>(initialMapSettings)
 
 	const [selectionMode, setSelectionMode] = useState<SelectionMode>('normal')
 	const [editMode, setEditMode] = useState<EditMode>(EditMode.Vertex)
@@ -989,6 +997,11 @@ export default function App(): ReactElement {
 				/>
 			)
 			break
+		case 'map':
+			view = (
+				<MapSettingsPanel settings={mapSettings} setSettings={setMapSettings} />
+			)
+			break
 		default:
 			break
 	}
@@ -1102,7 +1115,7 @@ export default function App(): ReactElement {
 				<></>
 			)}
 			<div className='absolute bottom-0 left-0 flex flex-col bg-black  p-2 gap-5 shadow-sm z-50'>
-				<div className='flex flex-row items-center justify-start gap-5'>
+				<div className='flex flex-row items-center justify-between gap-5'>
 					<span className='p-1 text-sm text-center'>
 						Hold <span className='font-bold'>Shift</span> to box select{' '}
 						<span className='font-bold'>{editMode}</span>
@@ -1185,6 +1198,7 @@ export default function App(): ReactElement {
 				mouseMove={(point): void => {
 					setHoverPoint(point)
 				}}
+				styleUri={`mapbox://styles/${mapSettings.currentStyle.user}/${mapSettings.currentStyle.styleId}`}
 			/>
 			<InspectorPanel
 				view={view}
