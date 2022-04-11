@@ -11,6 +11,7 @@ export interface PointSource {
 		name: string
 		description: string
 		index: number
+		label?: string
 	}[]
 	click?: (index: number) => void
 }
@@ -30,6 +31,7 @@ export interface ArrowSource {
 		name: string
 		description: string
 		index: number
+		label?: string
 	}[]
 	click?: (index: number) => void
 }
@@ -61,6 +63,7 @@ export interface DrawnPointSource {
 		longitude: number
 		latitude: number
 		index: number
+		label?: string
 	}[]
 	select?: (index: number[]) => void
 	update?: (index: number, coordinates: Vertex) => void

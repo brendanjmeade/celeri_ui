@@ -272,7 +272,15 @@ export default function App(): ReactElement {
 					latitude: block.interior_lat,
 					name: block.name,
 					description: ``,
-					index
+					index,
+					label:
+						blockSettings.plottableKey in block
+							? `${
+									(block as unknown as Record<string, number | string>)[
+										blockSettings.plottableKey
+									]
+							  }`
+							: ``
 				})),
 				click: (index): void => {
 					select.select('block', [index])
@@ -517,7 +525,15 @@ export default function App(): ReactElement {
 								latitude: block.interior_lat,
 								name: block.name,
 								description: ``,
-								index
+								index,
+								label:
+									blockSettings.plottableKey in block
+										? `${
+												(block as unknown as Record<string, number | string>)[
+													blockSettings.plottableKey
+												]
+										  }`
+										: ``
 						  })),
 					update: (index, vertex) => {
 						dispatch(moveBlock({ index, position: vertex }))
@@ -572,7 +588,8 @@ export default function App(): ReactElement {
 		velocitiesSettings.width,
 		velocitiesSettings.selectedColor,
 		velocitiesSettings.hide,
-		velocities
+		velocities,
+		blockSettings.plottableKey
 	])
 
 	useEffect(() => {
@@ -602,7 +619,15 @@ export default function App(): ReactElement {
 							scale,
 							name: velocity.name,
 							description: `north: ${velocity.north_vel}, east: ${velocity.east_vel}`,
-							index
+							index,
+							label:
+								velocitiesSettings.plottableKey in velocity
+									? `${
+											(velocity as unknown as Record<string, number | string>)[
+												velocitiesSettings.plottableKey
+											]
+									  }`
+									: ``
 						}
 					}),
 					click: (index): void => {
@@ -614,7 +639,7 @@ export default function App(): ReactElement {
 	}, [select, velocitiesSettings, velocities])
 
 	useEffect(() => {
-		if (segmentSettings.hideProjection) {
+		if (segmentSettings.hideProjection || segmentSettings.hide) {
 			setPolygonSources([])
 		} else {
 			setPolygonSources([

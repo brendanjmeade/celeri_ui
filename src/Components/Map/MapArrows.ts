@@ -26,6 +26,14 @@ export default function MapArrows(
 				}
 				map.removeLayer(`layer:arrow:${source.name}`)
 				map.removeLayer(`layer:arrow:${source.name}:click`)
+				try {
+					const layer = map.getLayer(`layer:arrow:${source.name}:labels`)
+					if (layer) {
+						map.removeLayer(`layer:arrow:${source.name}:labels`)
+					}
+				} catch {
+					console.log('no label layer')
+				}
 			}
 			// eslint-disable-next-line unicorn/no-useless-undefined
 			setState({ internalArrowSources: undefined })
@@ -37,6 +45,13 @@ export default function MapArrows(
 				const isNewLayer = mapSource === undefined
 				if (isNewLayer) {
 					map.addSource(`arrow:${source.name}`, {
+						type: 'geojson',
+						data: {
+							type: 'FeatureCollection',
+							features: []
+						}
+					})
+					map.addSource(`arrow:${source.name}:points`, {
 						type: 'geojson',
 						data: {
 							type: 'FeatureCollection',
@@ -132,6 +147,46 @@ export default function MapArrows(
 						'line-width': 10
 					}
 				})
+
+				if (source.arrows[0]?.label) {
+					const pointSource = map.getSource(`arrow:${source.name}:points`) as
+						| GeoJSONSource
+						| undefined
+					if (pointSource) {
+						pointSource.setData({
+							type: 'FeatureCollection',
+							features: source.arrows.map(arrow => ({
+								type: 'Feature',
+								properties: {
+									label: arrow.label
+								},
+								geometry: {
+									type: 'Point',
+									coordinates: [arrow.longitude, arrow.latitude]
+								}
+							}))
+						})
+						map.addLayer({
+							id: `layer:arrow:${source.name}:labels`,
+							type: 'symbol',
+							source: `arrow:${source.name}:points`,
+							layout: {
+								'symbol-placement': 'point',
+								'text-anchor': 'center',
+								'text-field': ['get', 'label'],
+								'text-justify': 'center',
+								'text-size': 10,
+								'symbol-z-order': 'source',
+								'symbol-sort-key': 10
+							},
+							paint: {
+								'text-halo-color': 'rgba(255,255,255,255)',
+								'text-halo-width': 1,
+								'text-color': '#000'
+							}
+						})
+					}
+				}
 				if (isNewLayer) {
 					map.on('mouseenter', `layer:arrow:${source.name}:click`, event => {
 						if (!event.features) return
@@ -178,6 +233,7 @@ export default function MapArrows(
 					})
 				}
 			}
+
 			setState({ internalArrowSources: arrowSources })
 		}
 	}

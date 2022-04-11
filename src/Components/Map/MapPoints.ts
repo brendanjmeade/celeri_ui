@@ -23,7 +23,17 @@ export default function MapPoints(
 					})
 				}
 				map.removeLayer(`layer:point:${source.name}`)
+
+				try {
+					const layer = map.getLayer(`layer:point:${source.name}:labels`)
+					if (layer) {
+						map.removeLayer(`layer:point:${source.name}:labels`)
+					}
+				} catch {
+					console.log('no label layer')
+				}
 			}
+
 			// eslint-disable-next-line unicorn/no-useless-undefined
 			setState({ internalPointSources: undefined })
 		} else {
@@ -55,7 +65,8 @@ export default function MapPoints(
 										: '',
 								index: point.index,
 								name: point.name,
-								selected: !selections[source.name]?.includes(point.index)
+								selected: !selections[source.name]?.includes(point.index),
+								label: point.label
 							},
 							geometry: {
 								type: 'Point',
@@ -78,6 +89,28 @@ export default function MapPoints(
 						'circle-radius': source.radius
 					}
 				})
+				if (source.points[0]?.label) {
+					map.addLayer({
+						id: `layer:point:${source.name}:labels`,
+						type: 'symbol',
+						source: `point:${source.name}`,
+						layout: {
+							'symbol-placement': 'point',
+							'text-anchor': 'center',
+							'text-field': ['get', 'label'],
+							'text-justify': 'center',
+							'text-size': 10,
+							'symbol-z-order': 'source',
+							'symbol-sort-key': 10,
+							'text-offset': [0, 1]
+						},
+						paint: {
+							'text-halo-color': 'rgba(255,255,255,255)',
+							'text-halo-width': 1,
+							'text-color': '#000'
+						}
+					})
+				}
 				if (isNewLayer) {
 					map.on('mouseenter', `layer:point:${source.name}`, event => {
 						if (!event.features) return

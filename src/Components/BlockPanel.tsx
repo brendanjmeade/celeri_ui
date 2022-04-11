@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { ReactElement } from 'react'
 import type { Block } from 'State/Block/Block'
+import { fieldNames } from 'State/Block/Block'
 import type { File } from 'Utilities/FileSystemInterfaces'
 import { OpenSavableFile } from 'Utilities/FileSystemInterfaces'
 import EditableItem from './EditableItem'
@@ -10,14 +11,18 @@ export interface BlockDisplaySettings {
 	selectedColor: string
 	radius: number
 	hide: boolean
+	plottableKey: string
 }
 
 const defaultBlockDisplaySettings: BlockDisplaySettings = {
 	color: '#0000ff',
 	selectedColor: '#ff0000',
 	radius: 6,
-	hide: false
+	hide: false,
+	plottableKey: ''
 }
+
+const plotKeyOptions = ['', ...fieldNames]
 
 export const initialBlockDisplaySettings =
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -157,6 +162,25 @@ function BlockPanel({
 						/>
 					</span>
 				</div>
+			</div>
+
+			<div className='flex flex-row justify-between items-center'>
+				<span className='text-l font-bold'>Plotted Value</span>
+				<span className='w-2/5 flex-shrink-0'>
+					<select
+						className='bg-gray-800 w-full'
+						value={settings.plottableKey}
+						onChange={(event): void => {
+							set({ ...settings, plottableKey: event.currentTarget.value })
+						}}
+					>
+						{plotKeyOptions.map(key => (
+							<option key={key} value={key}>
+								{key}
+							</option>
+						))}
+					</select>
+				</span>
 			</div>
 			<div className='flex flex-row justify-between items-center'>
 				<span className='text-l font-bold'>Add New Block</span>

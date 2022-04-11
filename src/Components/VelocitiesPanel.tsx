@@ -3,6 +3,7 @@ import type { ReactElement } from 'react'
 import type { File } from 'Utilities/FileSystemInterfaces'
 import { OpenSavableFile } from 'Utilities/FileSystemInterfaces'
 import type { Velocity } from '../State/Velocity/Velocity'
+import { fieldNames } from '../State/Velocity/Velocity'
 import EditableItem from './EditableItem'
 
 export interface VelocitiesDisplaySettings {
@@ -12,6 +13,7 @@ export interface VelocitiesDisplaySettings {
 	arrowHead: number
 	selectedColor: string
 	hide: boolean
+	plottableKey: string
 }
 
 const defaultVelocityDisplaySettings: VelocitiesDisplaySettings = {
@@ -20,8 +22,10 @@ const defaultVelocityDisplaySettings: VelocitiesDisplaySettings = {
 	width: 1,
 	arrowHead: 1,
 	selectedColor: '#aaaaaa',
-	hide: false
+	hide: false,
+	plottableKey: ''
 }
+const plotKeyOptions = ['', ...fieldNames]
 
 export const initialVelocityDisplaySettings =
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -201,6 +205,25 @@ function VelocitiesPanel({
 						/>
 					</span>
 				</div>
+			</div>
+
+			<div className='flex flex-row justify-between items-center'>
+				<span className='text-l font-bold'>Plotted Value</span>
+				<span className='w-2/5 flex-shrink-0'>
+					<select
+						className='bg-gray-800 w-full'
+						value={settings.plottableKey}
+						onChange={(event): void => {
+							set({ ...settings, plottableKey: event.currentTarget.value })
+						}}
+					>
+						{plotKeyOptions.map(key => (
+							<option key={key} value={key}>
+								{key}
+							</option>
+						))}
+					</select>
+				</span>
 			</div>
 			<div className='flex flex-row justify-between items-center'>
 				<span className='text-l font-bold'>Add New Velocity</span>
