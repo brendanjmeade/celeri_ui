@@ -1175,6 +1175,7 @@ export default function App(): ReactElement {
 				</div>
 			</div>
 			<CeleriMap
+				key={`${mapSettings.currentStyle.user}:${mapSettings.currentStyle.styleId}`}
 				pointSources={pointSources}
 				arrowSources={arrowSources}
 				lineSources={lineSources}
