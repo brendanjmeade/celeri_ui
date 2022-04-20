@@ -14,6 +14,72 @@ export function createSegment(partial: Partial<FileSegment>): FileSegment {
 	return segment
 }
 
+export function ProcessParsedSegmentFile(
+	parsed: Record<string, number | string>[]
+): {
+	vertecies: Record<number, Vertex>
+	segments: InMemorySegment[]
+	vertexDictionary: Record<string, number>
+	lastIndex: number
+} {
+	const rawData = parsed.map((row): FileSegment => {
+		const result: Record<string, number | string> = {}
+		for (const field of fieldNames) {
+			result[field] = row[field] || (field === 'name' ? '' : 0)
+		}
+		return result as unknown as FileSegment
+	})
+	const vertexDictionary: Record<string, number> = {}
+	const vertecies: Record<number, Vertex> = {}
+	const segments: InMemorySegment[] = []
+	let lastIndex = 0
+	for (const segment of rawData) {
+		const [start, nextIndex] = getVertexIdOrInsert(
+			{ lon: segment.lon1, lat: segment.lat1 },
+			vertexDictionary,
+			vertecies,
+			lastIndex
+		)
+		const [end, nextIndex2] = getVertexIdOrInsert(
+			{ lon: segment.lon2, lat: segment.lat2 },
+			vertexDictionary,
+			vertecies,
+			nextIndex
+		)
+		const inMemorySegment = { ...segment, start, end }
+		lastIndex = nextIndex2
+		segments.push(inMemorySegment)
+	}
+	return {
+		vertecies,
+		vertexDictionary,
+		segments,
+		lastIndex
+	}
+}
+
+export function GenerateSegmentFileString({
+	vertecies,
+	segments
+}: {
+	vertecies: Record<number, Vertex>
+	segments: InMemorySegment[]
+}): string {
+	const data = segments.map(segment => {
+		const start = vertecies[segment.start]
+		const end = vertecies[segment.end]
+		return {
+			...segment,
+			lon1: start.lon,
+			lat1: start.lat,
+			lon2: end.lon,
+			lat2: end.lat
+		}
+	})
+
+	return stringify(data, fieldNames)
+}
+
 export class SegmentFile
 	implements
 		ParsedFile<{
@@ -42,55 +108,13 @@ export class SegmentFile
 	public async initialize(): Promise<void> {
 		const contents = await this.handle.getContents()
 		const parser = parse(contents)
-		const rawData = parser.map((row): FileSegment => {
-			const result: Record<string, number | string> = {}
-			for (const field of fieldNames) {
-				result[field] = row[field] || (field === 'name' ? '' : 0)
-			}
-			return result as unknown as FileSegment
-		})
-		const vertexDictionary: Record<string, number> = {}
-		const vertecies: Record<number, Vertex> = {}
-		const segments: InMemorySegment[] = []
-		let lastIndex = 0
-		for (const segment of rawData) {
-			const [start, nextIndex] = getVertexIdOrInsert(
-				{ lon: segment.lon1, lat: segment.lat1 },
-				vertexDictionary,
-				vertecies,
-				lastIndex
-			)
-			const [end, nextIndex2] = getVertexIdOrInsert(
-				{ lon: segment.lon2, lat: segment.lat2 },
-				vertexDictionary,
-				vertecies,
-				nextIndex
-			)
-			const inMemorySegment = { ...segment, start, end }
-			lastIndex = nextIndex2
-			segments.push(inMemorySegment)
-		}
-		this.data = { vertecies, segments, vertexDictionary, lastIndex }
+		this.data = ProcessParsedSegmentFile(parser)
 	}
 
 	public async save(): Promise<void> {
-		let data: FileSegment[] = []
 		if (this.data) {
-			const { vertecies, segments } = this.data
-			data = segments.map(segment => {
-				const start = vertecies[segment.start]
-				const end = vertecies[segment.end]
-				return {
-					...segment,
-					lon1: start.lon,
-					lat1: start.lat,
-					lon2: end.lon,
-					lat2: end.lat
-				}
-			})
+			await this.handle.setContents(GenerateSegmentFileString(this.data))
 		}
-		const contents = stringify(data, fieldNames)
-		await this.handle.setContents(contents)
 	}
 
 	public clone(): SegmentFile {

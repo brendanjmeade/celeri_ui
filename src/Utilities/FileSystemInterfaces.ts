@@ -51,3 +51,7 @@ export async function OpenSavableFile(extensions: string[]): Promise<File> {
 	const handle = await window.showSaveFilePicker(options)
 	return new FileSystemFile(handle)
 }
+
+export async function GetFileContents(handle: File): Promise<string> {
+	return handle.getContents()
+}

@@ -73,6 +73,7 @@ export function BuildMeshLines(
 }
 
 export function ParseMeshFileV2(file: string): MeshLine[] {
+	if (!file.startsWith('$')) return []
 	const sections = file.split('$')
 	let vertices: Vertex[] = []
 	let elements: [number, number][] = []

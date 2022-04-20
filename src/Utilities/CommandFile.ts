@@ -71,6 +71,15 @@ export function createCommand(partial: Partial<Command>): Command {
 	return command
 }
 
+export function ParseCommandFile(contents: string): Command {
+	const commandContents = JSON.parse(contents) as Partial<Command>
+	return createCommand(commandContents)
+}
+
+export function GenerateCommandFileString(command: Command): string {
+	return JSON.stringify(command)
+}
+
 export class CommandFile implements ParsedFile<Command> {
 	public handle: File
 
@@ -83,14 +92,12 @@ export class CommandFile implements ParsedFile<Command> {
 
 	public async initialize(): Promise<void> {
 		const contents = await this.handle.getContents()
-		const commandContents = JSON.parse(contents) as Partial<Command>
-		this.data = createCommand(commandContents)
+		this.data = ParseCommandFile(contents)
 	}
 
 	public async save(): Promise<void> {
 		if (this.data) {
-			const contents = JSON.stringify(this.data)
-			await this.handle.setContents(contents)
+			await this.handle.setContents(GenerateCommandFileString(this.data))
 		}
 	}
 

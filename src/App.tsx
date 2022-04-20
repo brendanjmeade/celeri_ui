@@ -1203,7 +1203,7 @@ export default function App(): ReactElement {
 			/>
 			<InspectorPanel
 				view={view}
-				buttons={folderHandle ? windows : undefined}
+				buttons={windows}
 				active={activeTab}
 				setActive={(active): void => setActiveTab(active)}
 			/>
