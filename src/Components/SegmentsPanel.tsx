@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import type { SelectionMode } from 'App'
 import type { ReactElement } from 'react'
+import type { SelectionMode } from 'Selectors/SelectionMode'
 import type { Segment } from 'State/Segment/Segment'
 import { fieldNames } from 'State/Segment/Segment'
 import type { Vertex } from 'State/Segment/Vertex'

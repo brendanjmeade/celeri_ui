@@ -39,6 +39,8 @@ import VerticesPanel, {
 } from 'Components/VertexPanel'
 import type { ReactElement } from 'react'
 import { useEffect, useState } from 'react'
+import type { SelectionMode } from 'Selectors/SelectionMode'
+import { SelectionModeSelector } from 'Selectors/SelectionMode'
 import {
 	createBlock,
 	deleteBlock,
@@ -98,17 +100,6 @@ import { VelocityFile } from 'Utilities/VelocityFile'
 if (!window.location.search.includes('fake-dir')) {
 	SetDirectoryHandle(FSOpenDirectory)
 }
-
-export type SelectionMode =
-	| 'normal'
-	| ({ label: string; subtitle?: string } & (
-			| {
-					mode: 'override'
-					type: string
-					callback: (indices: number[]) => void
-			  }
-			| { mode: 'mapClick'; callback: (point: Vertex) => void }
-	  ))
 
 enum EditMode {
 	Vertex = 'Vertices',
@@ -223,13 +214,14 @@ export default function App(): ReactElement {
 	const [select, setSelect] = useState<{
 		select: (type: string, indices: number[]) => void
 	}>({
-		select: (type: string, indices: number[]): void => {
-			setSelectedBlock(type === 'block' ? indices : [])
-			setSelectedSegment(type === 'segment' ? indices : [])
-			setSelectedVelocity(type === 'velocities' ? indices : [])
-			setSelectedVertex(type === 'vertex' ? indices : [])
-			setActiveTab(type)
-		}
+		select: SelectionModeSelector({
+			mode: selectionMode,
+			setSelectedBlock,
+			setSelectedSegment,
+			setSelectedVelocity,
+			setSelectedVertex,
+			setActiveTab
+		})
 	})
 
 	const [pointSources, setPointSources] = useState<PointSource[]>([])
@@ -248,23 +240,14 @@ export default function App(): ReactElement {
 	const [displayGrid, setDisplayGrid] = useState(false)
 
 	useEffect(() => {
-		if (selectionMode === 'normal') {
-			select.select = (type: string, indices: number[]): void => {
-				setSelectedBlock(type === 'block' ? indices : [])
-				setSelectedSegment(type === 'segment' ? indices : [])
-				setSelectedVelocity(type === 'velocities' ? indices : [])
-				setSelectedVertex(type === 'vertex' ? indices : [])
-				setActiveTab(type)
-			}
-		} else if (selectionMode.mode === 'override') {
-			select.select = (type: string, indices: number[]): void => {
-				if (type === selectionMode.type) {
-					selectionMode.callback(indices)
-				}
-			}
-		} else {
-			select.select = (): void => {}
-		}
+		select.select = SelectionModeSelector({
+			mode: selectionMode,
+			setSelectedBlock,
+			setSelectedSegment,
+			setSelectedVelocity,
+			setSelectedVertex,
+			setActiveTab
+		})
 	}, [selectionMode, select])
 
 	useEffect(() => {
