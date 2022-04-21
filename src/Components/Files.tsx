@@ -12,6 +12,7 @@ export interface OpenableFile {
 	extension: string
 	currentFilePath: string[] | string
 	allowMultiple?: boolean
+	currentFile?: File | File[]
 }
 
 export default function Files({

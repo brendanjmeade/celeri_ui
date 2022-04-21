@@ -71,6 +71,7 @@ export class FileSystemDirectory implements Directory {
 
 const OpenDirectory: OpenDirectoryInterface = async () => {
 	const handle = await window.showDirectoryPicker()
+	await handle.requestPermission({ mode: 'readwrite' })
 	const directory = new FileSystemDirectory(handle)
 	await directory.initialize()
 	return directory

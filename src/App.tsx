@@ -1190,6 +1190,16 @@ export default function App(): ReactElement {
 				active={activeTab}
 				setActive={(active): void => setActiveTab(active)}
 			/>
+			{/* {folderHandle ? (
+				<FileExplorer
+					root={folderHandle}
+					chooseFile={(file, path): void => {}}
+					close={(): void => {}}
+					extension='.csv'
+				/>
+			) : (
+				<></>
+			)} */}
 		</div>
 	)
 }
