@@ -40,7 +40,8 @@ function VelocitiesPanel({
 	velocitys,
 	setVelocityData,
 	addNewVelocity,
-	save
+	save,
+	open
 }: {
 	settings: VelocitiesDisplaySettings
 	setSettings: (settings: VelocitiesDisplaySettings) => void
@@ -49,6 +50,7 @@ function VelocitiesPanel({
 	setVelocityData: (indices: number[], data?: Partial<Velocity>) => void
 	addNewVelocity: () => void
 	save: (file?: File) => void
+	open: () => void
 }): ReactElement {
 	const set = (s: VelocitiesDisplaySettings): void => {
 		setSettings(s)
@@ -101,6 +103,13 @@ function VelocitiesPanel({
 					</span>
 				</div>
 				<div className='flex flex-row justify-between items-center'>
+					<button
+						type='button'
+						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+						onClick={(): void => open()}
+					>
+						Open Velocities
+					</button>
 					<button
 						type='button'
 						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'

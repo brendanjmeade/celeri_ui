@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { BlockDisplaySettings } from 'Components/BlockPanel'
 import BlockPanel, { initialBlockDisplaySettings } from 'Components/BlockPanel'
+import FileExplorer from 'Components/FileExplorer'
 import type { OpenableFile } from 'Components/Files'
 import Files from 'Components/Files'
 import type { GenericSegmentDisplaySettings } from 'Components/GenericSegmentPanel'
@@ -91,10 +93,12 @@ import {
 	OpenVelocityFile
 } from 'Utilities/FileOpeners'
 import FSOpenDirectory from 'Utilities/FileSystem'
-import type { File } from 'Utilities/FileSystemInterfaces'
+import type { Directory, File } from 'Utilities/FileSystemInterfaces'
 import OpenDirectory, {
 	SetDirectoryHandle
 } from 'Utilities/FileSystemInterfaces'
+import GenericSegmentFile from 'Utilities/GenericSegmentFile'
+import MeshFile from 'Utilities/MeshFile'
 import { SegmentFile } from 'Utilities/SegmentFile'
 import { VelocityFile } from 'Utilities/VelocityFile'
 
@@ -127,9 +131,14 @@ const windows = {
 
 export default function App(): ReactElement {
 	const dispatch = useAppDispatch()
-	const folderHandle = useAppSelector(
+	const folderHandle = useAppSelector<Directory | undefined>(
 		state => state.main.present.fileHandles.rootFolder
 	)
+	const [fileOpenCallback, setFileOpenCallback] = useState<
+		| false
+		| { callback: (file: File, path: string[]) => void; extension: string }
+	>(false)
+
 	const [activeTab, setActiveTab] = useState<string>('')
 	const [files, setFiles] = useState<Record<string, OpenableFile>>({
 		command: {
@@ -805,6 +814,20 @@ export default function App(): ReactElement {
 		case 'velocities':
 			view = (
 				<VelocitiesPanel
+					open={(): void => {
+						console.log('opening velocities file')
+						setFileOpenCallback({
+							extension: 'csv',
+							callback: async (file): Promise<void> => {
+								const velocity = new VelocityFile(file)
+								await velocity.initialize()
+								if (velocity.data) {
+									dispatch(loadNewVelocityData(velocity.data))
+									setVelocityFile(velocity)
+								}
+							}
+						})
+					}}
 					settings={velocitiesSettings}
 					setSettings={setVelocitiesSettings}
 					selected={selectedVelocity}
@@ -848,6 +871,20 @@ export default function App(): ReactElement {
 		case 'block':
 			view = (
 				<BlockPanel
+					open={(): void => {
+						console.log('opening block file')
+						setFileOpenCallback({
+							extension: 'csv',
+							callback: async (file): Promise<void> => {
+								const block = new BlockFile(file)
+								await block.initialize()
+								if (block.data) {
+									dispatch(loadNewBlockData(block.data))
+									setBlockFile(block)
+								}
+							}
+						})
+					}}
 					settings={blockSettings}
 					setSettings={setBlockSettings}
 					selected={selectedBlock}
@@ -897,14 +934,19 @@ export default function App(): ReactElement {
 		case 'segment':
 			view = (
 				<SegmentsPanel
-					root={folderHandle}
-					open={async (file): Promise<void> => {
-						const segment = new SegmentFile(file)
-						await segment.initialize()
-						if (segment.data) {
-							dispatch(loadNewSegmentData(segment.data))
-							setSegmentFile(segment)
-						}
+					open={(): void => {
+						console.log('opening segment file')
+						setFileOpenCallback({
+							extension: 'csv',
+							callback: async (file): Promise<void> => {
+								const segment = new SegmentFile(file)
+								await segment.initialize()
+								if (segment.data) {
+									dispatch(loadNewSegmentData(segment.data))
+									setSegmentFile(segment)
+								}
+							}
+						})
 					}}
 					settings={segmentSettings}
 					setSettings={setSegmentSettings}
@@ -944,6 +986,20 @@ export default function App(): ReactElement {
 		case 'vertex':
 			view = (
 				<VerticesPanel
+					open={(): void => {
+						console.log('opening segment file')
+						setFileOpenCallback({
+							extension: 'csv',
+							callback: async (file): Promise<void> => {
+								const segment = new SegmentFile(file)
+								await segment.initialize()
+								if (segment.data) {
+									dispatch(loadNewSegmentData(segment.data))
+									setSegmentFile(segment)
+								}
+							}
+						})
+					}}
 					settings={vertexSettings}
 					setSettings={setVertexSettings}
 					vertices={segments.vertecies ?? {}}
@@ -975,6 +1031,21 @@ export default function App(): ReactElement {
 		case 'mesh':
 			view = (
 				<MeshPanel
+					open={(): void => {
+						console.log('opening mesh file')
+						setFileOpenCallback({
+							extension: 'msh',
+							callback: async (file): Promise<void> => {
+								const mesh = new MeshFile(file)
+								await mesh.initialize()
+								if (mesh.data) {
+									dispatch(
+										loadMeshLineData({ mesh: file.name, data: mesh.data })
+									)
+								}
+							}
+						})
+					}}
 					settings={meshLineSettings}
 					setSettings={setMeshLineSettings}
 				/>
@@ -983,6 +1054,24 @@ export default function App(): ReactElement {
 		case 'csv':
 			view = (
 				<GenericSegmentPanel
+					open={(): void => {
+						console.log('opening generic segment file')
+						setFileOpenCallback({
+							extension: 'csv',
+							callback: async (file): Promise<void> => {
+								const mesh = new GenericSegmentFile(file)
+								await mesh.initialize()
+								if (mesh.data) {
+									dispatch(
+										loadNewGenericCollectionData({
+											name: file.name,
+											data: mesh.data
+										})
+									)
+								}
+							}
+						})
+					}}
 					settings={genericSegmentSettings}
 					setSettings={setGenericSegmentSettings}
 					setCollectionVertexKeys={(value): void => {
@@ -1202,6 +1291,21 @@ export default function App(): ReactElement {
 				active={activeTab}
 				setActive={(active): void => setActiveTab(active)}
 			/>
+			{folderHandle && fileOpenCallback ? (
+				<FileExplorer
+					root={folderHandle}
+					chooseFile={(file, path): void => {
+						fileOpenCallback.callback(file, path)
+						setFileOpenCallback(false)
+					}}
+					close={(): void => {
+						setFileOpenCallback(false)
+					}}
+					extension={fileOpenCallback.extension}
+				/>
+			) : (
+				<></>
+			)}
 		</div>
 	)
 }

@@ -1,14 +1,12 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { ReactElement } from 'react'
-import { useState } from 'react'
 import type { SelectionMode } from 'Selectors/SelectionMode'
 import type { Segment } from 'State/Segment/Segment'
 import { fieldNames } from 'State/Segment/Segment'
 import type { Vertex } from 'State/Segment/Vertex'
-import type { Directory, File } from 'Utilities/FileSystemInterfaces'
+import type { File } from 'Utilities/FileSystemInterfaces'
 import { OpenSavableFile } from 'Utilities/FileSystemInterfaces'
 import EditableItem from './EditableItem'
-import FileExplorer from './FileExplorer'
 
 export interface SegmentsDisplaySettings {
 	color: string
@@ -61,7 +59,6 @@ function SegmentsPanel({
 	splitSegment,
 	setSelectionMode,
 	save,
-	root,
 	open
 }: {
 	settings: SegmentsDisplaySettings
@@ -73,11 +70,8 @@ function SegmentsPanel({
 	addNewSegment: (a: Vertex, b: Vertex) => void
 	splitSegment: (index: number[]) => void
 	save: (file?: File) => void
-	root: Directory | undefined
-	open: (file: File, path: string[]) => void
+	open: () => void
 }): ReactElement {
-	const [openFileDialog, setOpenFileDialog] = useState(false)
-
 	const set = (s: SegmentsDisplaySettings): void => {
 		setSettings(s)
 		window.localStorage.setItem('segmentDisplaySettings', JSON.stringify(s))
@@ -153,7 +147,7 @@ function SegmentsPanel({
 				<button
 					type='button'
 					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
-					onClick={(): void => setOpenFileDialog(true)}
+					onClick={(): void => open()}
 				>
 					Open Segments
 				</button>
@@ -302,17 +296,6 @@ function SegmentsPanel({
 				</button>
 			</div>
 			{selectedDisplay}
-
-			{openFileDialog && root ? (
-				<FileExplorer
-					root={root}
-					chooseFile={open}
-					close={(): void => setOpenFileDialog(false)}
-					extension='.csv'
-				/>
-			) : (
-				<></>
-			)}
 		</div>
 	)
 }

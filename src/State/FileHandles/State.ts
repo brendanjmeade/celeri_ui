@@ -20,7 +20,8 @@ export const FileHandlesReducer = createReducer(initialState, builder => {
 	builder
 		.addCase(setRootFolder, (state, action) => ({
 			rootFolder: action.payload,
-			files: {}
+			files: {},
+			fileOpenCallback: (): void => {}
 		}))
 		.addCase(openFile, (state, action) => {
 			const files: Record<string, { file: File; path: string[] }> = {

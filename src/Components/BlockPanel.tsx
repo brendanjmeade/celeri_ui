@@ -37,7 +37,8 @@ function BlockPanel({
 	blocks,
 	setBlockData,
 	addNewBlock,
-	save
+	save,
+	open
 }: {
 	selected: number[]
 	blocks: Block[]
@@ -46,6 +47,7 @@ function BlockPanel({
 	settings: BlockDisplaySettings
 	setSettings: (settings: BlockDisplaySettings) => void
 	save: (file?: File) => void
+	open: () => void
 }): ReactElement {
 	const set = (s: BlockDisplaySettings): void => {
 		setSettings(s)
@@ -98,6 +100,13 @@ function BlockPanel({
 					</span>
 				</div>
 				<div className='flex flex-row justify-between items-center'>
+					<button
+						type='button'
+						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+						onClick={(): void => open()}
+					>
+						Open Blocks
+					</button>
 					<button
 						type='button'
 						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
