@@ -10,11 +10,14 @@ import type {
 export class FileSystemFile implements File {
 	public readonly name: string
 
+	public readonly path: string[]
+
 	private readonly handle: FileSystemFileHandle
 
-	public constructor(handle: FileSystemFileHandle) {
+	public constructor(handle: FileSystemFileHandle, path?: string[]) {
 		this.handle = handle
 		this.name = handle.name
+		this.path = path ?? [this.name]
 	}
 
 	public async getContents(): Promise<string> {
@@ -32,17 +35,20 @@ export class FileSystemFile implements File {
 export class FileSystemDirectory implements Directory {
 	public readonly name: string
 
+	public readonly path: string[]
+
 	private readonly handle: FileSystemDirectoryHandle
 
 	public fileList: FileName[]
 
 	public folderList: DirectoryName[]
 
-	public constructor(handle: FileSystemDirectoryHandle) {
+	public constructor(handle: FileSystemDirectoryHandle, path?: string[]) {
 		this.handle = handle
 		this.fileList = []
 		this.folderList = []
 		this.name = handle.name
+		this.path = path ?? [this.name]
 	}
 
 	public async initialize(): Promise<void> {
@@ -57,13 +63,16 @@ export class FileSystemDirectory implements Directory {
 
 	public async getFile(file: FileName): Promise<File> {
 		const fileHandle = await this.handle.getFileHandle(file, { create: true })
-		return new FileSystemFile(fileHandle)
+		return new FileSystemFile(fileHandle, [...this.path, file])
 	}
 
 	public async getDirectory(name: DirectoryName): Promise<Directory> {
 		if (!this.folderList.includes(name)) throw new Error('Missing Directory')
 		const folderHandle = await this.handle.getDirectoryHandle(name)
-		const directory = new FileSystemDirectory(folderHandle)
+		const directory = new FileSystemDirectory(folderHandle, [
+			...this.path,
+			name
+		])
 		await directory.initialize()
 		return directory
 	}
