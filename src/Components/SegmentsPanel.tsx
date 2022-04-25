@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { ReactElement } from 'react'
+import { useState } from 'react'
 import type { SelectionMode } from 'Selectors/SelectionMode'
 import type { Segment } from 'State/Segment/Segment'
 import { fieldNames } from 'State/Segment/Segment'
 import type { Vertex } from 'State/Segment/Vertex'
-import type { File } from 'Utilities/FileSystemInterfaces'
+import type { Directory, File } from 'Utilities/FileSystemInterfaces'
 import { OpenSavableFile } from 'Utilities/FileSystemInterfaces'
 import EditableItem from './EditableItem'
+import FileExplorer from './FileExplorer'
 
 export interface SegmentsDisplaySettings {
 	color: string
@@ -58,7 +60,9 @@ function SegmentsPanel({
 	addNewSegment,
 	splitSegment,
 	setSelectionMode,
-	save
+	save,
+	root,
+	open
 }: {
 	settings: SegmentsDisplaySettings
 	setSettings: (settings: SegmentsDisplaySettings) => void
@@ -69,7 +73,11 @@ function SegmentsPanel({
 	addNewSegment: (a: Vertex, b: Vertex) => void
 	splitSegment: (index: number[]) => void
 	save: (file?: File) => void
+	root: Directory | undefined
+	open: (file: File, path: string[]) => void
 }): ReactElement {
+	const [openFileDialog, setOpenFileDialog] = useState(false)
+
 	const set = (s: SegmentsDisplaySettings): void => {
 		setSettings(s)
 		window.localStorage.setItem('segmentDisplaySettings', JSON.stringify(s))
@@ -142,6 +150,13 @@ function SegmentsPanel({
 				</span>
 			</div>
 			<div className='flex flex-row justify-between items-center gap-1'>
+				<button
+					type='button'
+					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+					onClick={(): void => setOpenFileDialog(true)}
+				>
+					Open Segments
+				</button>
 				<button
 					type='button'
 					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
@@ -287,6 +302,17 @@ function SegmentsPanel({
 				</button>
 			</div>
 			{selectedDisplay}
+
+			{openFileDialog && root ? (
+				<FileExplorer
+					root={root}
+					chooseFile={open}
+					close={(): void => setOpenFileDialog(false)}
+					extension='.csv'
+				/>
+			) : (
+				<></>
+			)}
 		</div>
 	)
 }

@@ -48,6 +48,7 @@ import {
 	loadNewBlockData,
 	moveBlock
 } from 'State/Block/State'
+import { setRootFolder } from 'State/FileHandles/State'
 import {
 	loadNewGenericCollectionData,
 	setGenericSegmentPositionKeys
@@ -90,7 +91,7 @@ import {
 	OpenVelocityFile
 } from 'Utilities/FileOpeners'
 import FSOpenDirectory from 'Utilities/FileSystem'
-import type { Directory, File } from 'Utilities/FileSystemInterfaces'
+import type { File } from 'Utilities/FileSystemInterfaces'
 import OpenDirectory, {
 	SetDirectoryHandle
 } from 'Utilities/FileSystemInterfaces'
@@ -126,7 +127,9 @@ const windows = {
 
 export default function App(): ReactElement {
 	const dispatch = useAppDispatch()
-	const [folderHandle, setFolderHandle] = useState<Directory>()
+	const folderHandle = useAppSelector(
+		state => state.main.present.fileHandles.rootFolder
+	)
 	const [activeTab, setActiveTab] = useState<string>('')
 	const [files, setFiles] = useState<Record<string, OpenableFile>>({
 		command: {
@@ -894,6 +897,15 @@ export default function App(): ReactElement {
 		case 'segment':
 			view = (
 				<SegmentsPanel
+					root={folderHandle}
+					open={async (file): Promise<void> => {
+						const segment = new SegmentFile(file)
+						await segment.initialize()
+						if (segment.data) {
+							dispatch(loadNewSegmentData(segment.data))
+							setSegmentFile(segment)
+						}
+					}}
 					settings={segmentSettings}
 					setSettings={setSegmentSettings}
 					segments={segments.segments ?? []}
@@ -1074,7 +1086,7 @@ export default function App(): ReactElement {
 				folder={folderHandle}
 				openFolder={async (): Promise<void> => {
 					const directory = await OpenDirectory()
-					setFolderHandle(directory)
+					dispatch(setRootFolder(directory))
 					setActiveTab('files')
 				}}
 			/>
