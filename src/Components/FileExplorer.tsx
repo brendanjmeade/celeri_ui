@@ -96,7 +96,7 @@ export default function FileExplorer({
 		>
 			<div
 				role='none'
-				className='bg-black p-5 flex flex-col gap-2 pointer-events-none'
+				className='bg-black p-5 flex flex-col gap-2'
 				onClick={(event): void => event.stopPropagation()}
 			>
 				<span>Open File</span>
@@ -121,12 +121,14 @@ export default function FileExplorer({
 				</div>
 				<div className='flex flex-row'>
 					<div data-testid='file-path' className='flex-grow p-1'>
-						{selectedFile?.path.join('/') ?? ''}
+						{isSaveDialog
+							? currentDirectory.path.join('/')
+							: selectedFile?.path.join('/') ?? ''}
 					</div>
 					{isSaveDialog ? (
 						<input
 							data-testid='file-path-input'
-							className='flex-grow p-1'
+							className='flex-grow p-1 bg-gray-800'
 							value={typedFileName}
 							onChange={(event): void => setTypedFileName(event.target.value)}
 						/>

@@ -2,8 +2,6 @@
 import type { ReactElement } from 'react'
 import type { Block } from 'State/Block/Block'
 import { fieldNames } from 'State/Block/Block'
-import type { File } from 'Utilities/FileSystemInterfaces'
-import { OpenSavableFile } from 'Utilities/FileSystemInterfaces'
 import EditableItem from './EditableItem'
 
 export interface BlockDisplaySettings {
@@ -46,7 +44,7 @@ function BlockPanel({
 	addNewBlock: () => void
 	settings: BlockDisplaySettings
 	setSettings: (settings: BlockDisplaySettings) => void
-	save: (file?: File) => void
+	save: (saveAs?: boolean) => void
 	open: () => void
 }): ReactElement {
 	const set = (s: BlockDisplaySettings): void => {
@@ -118,8 +116,7 @@ function BlockPanel({
 						type='button'
 						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
 						onClick={async (): Promise<void> => {
-							const file = await OpenSavableFile(['.csv'])
-							save(file)
+							save(true)
 						}}
 					>
 						Save As

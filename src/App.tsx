@@ -136,7 +136,11 @@ export default function App(): ReactElement {
 	)
 	const [fileOpenCallback, setFileOpenCallback] = useState<
 		| false
-		| { callback: (file: File, path: string[]) => void; extension: string }
+		| {
+				callback: (file: File, path: string[]) => void
+				extension: string
+				isSaveFile?: boolean
+		  }
 	>(false)
 
 	const [activeTab, setActiveTab] = useState<string>('')
@@ -854,12 +858,18 @@ export default function App(): ReactElement {
 							}
 						})
 					}}
-					save={async (file?: File): Promise<void> => {
-						if (file) {
-							const updatedVelocityFile = new VelocityFile(file)
-							updatedVelocityFile.data = velocities
-							setVelocityFile(updatedVelocityFile)
-							await updatedVelocityFile.save()
+					save={async (saveAs): Promise<void> => {
+						if (saveAs) {
+							setFileOpenCallback({
+								extension: '.csv',
+								isSaveFile: true,
+								callback: async (file): Promise<void> => {
+									const updatedVelocityFile = new VelocityFile(file)
+									updatedVelocityFile.data = velocities
+									setVelocityFile(updatedVelocityFile)
+									await updatedVelocityFile.save()
+								}
+							})
 						} else if (velocityFile) {
 							velocityFile.data = velocities
 							await velocityFile.save()
@@ -917,12 +927,18 @@ export default function App(): ReactElement {
 							select.select('block', [])
 						}
 					}}
-					save={async (file?: File): Promise<void> => {
-						if (file) {
-							const updatedBlockFile = new BlockFile(file)
-							updatedBlockFile.data = blocks
-							setBlockFile(updatedBlockFile)
-							await updatedBlockFile.save()
+					save={async (saveAs): Promise<void> => {
+						if (saveAs) {
+							setFileOpenCallback({
+								extension: '.csv',
+								isSaveFile: true,
+								callback: async (file): Promise<void> => {
+									const updatedBlockFile = new BlockFile(file)
+									updatedBlockFile.data = blocks
+									setBlockFile(updatedBlockFile)
+									await updatedBlockFile.save()
+								}
+							})
 						} else if (blockFile) {
 							blockFile.data = blocks
 							await blockFile.save()
@@ -969,12 +985,18 @@ export default function App(): ReactElement {
 						dispatch(splitSegment(index))
 						select.select('segment', [])
 					}}
-					save={async (file?: File): Promise<void> => {
-						if (file) {
-							const updatedSegmentFile = new SegmentFile(file)
-							updatedSegmentFile.data = segments
-							setSegmentFile(updatedSegmentFile)
-							await updatedSegmentFile.save()
+					save={async (saveAs): Promise<void> => {
+						if (saveAs) {
+							setFileOpenCallback({
+								extension: '.csv',
+								isSaveFile: true,
+								callback: async (file): Promise<void> => {
+									const updatedSegmentFile = new SegmentFile(file)
+									updatedSegmentFile.data = segments
+									setSegmentFile(updatedSegmentFile)
+									await updatedSegmentFile.save()
+								}
+							})
 						} else if (segmentFile) {
 							segmentFile.data = segments
 							await segmentFile.save()
@@ -1306,7 +1328,7 @@ export default function App(): ReactElement {
 						setFileOpenCallback(false)
 					}}
 					extension={fileOpenCallback.extension}
-					isSaveDialog={false}
+					isSaveDialog={fileOpenCallback.isSaveFile === true}
 				/>
 			) : (
 				<></>
