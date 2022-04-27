@@ -148,10 +148,16 @@ describe('The File Explorer', () => {
 				).to.be.false
 		)
 		fireEvent.click(screen.getByTestId('select-button'))
+		expect(screen.getByTestId('file-file2').classList.contains('font-bold')).to
+			.be.true
 		expect(selected.file?.name).to.equal('file2')
 		expect(selected.file?.path[0]).to.equal('root')
 		expect(selected.file?.path[1]).to.equal('folder')
 		expect(selected.file?.path[2]).to.equal('file2')
+		expect(
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+			(screen.getByTestId('file-path-input') as HTMLInputElement).value
+		).to.equal('root/folder/file2')
 		expect(selected.path).to.have.length(2)
 		expect(selected.path[0]).to.equal('folder')
 		expect(selected.path[1]).to.equal('file2')

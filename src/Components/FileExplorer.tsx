@@ -68,6 +68,7 @@ export default function FileExplorer({
 				type='button'
 				key={fileName}
 				data-testid={`file-${fileName}`}
+				className={selectedFile?.name === fileName ? 'font-bold' : ''}
 				onClick={async (): Promise<void> => {
 					const file = await currentDirectory.getFile(fileName)
 					setSelectedFile(file)
@@ -109,6 +110,14 @@ export default function FileExplorer({
 					) : (
 						<></>
 					)}
+				</div>
+				<div className='flex flex-row'>
+					<input
+						data-testid='file-path-input'
+						value={selectedFile?.path.join('/') ?? ''}
+						disabled
+						className='flex-grow p-1'
+					/>
 				</div>
 				<div className='flex flex-row-reverse gap-2 pointer-events-auto'>
 					<button
