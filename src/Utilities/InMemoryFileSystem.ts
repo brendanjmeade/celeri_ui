@@ -15,11 +15,14 @@ export interface InMemoryFS {
 class InMemoryFile implements File {
 	public readonly name: string
 
+	public readonly path: string[]
+
 	private readonly parent: InMemoryFS
 
-	public constructor(name: string, parent: InMemoryFS) {
+	public constructor(name: string, parent: InMemoryFS, path?: string[]) {
 		this.name = name
 		this.parent = parent
+		this.path = path ?? [this.name]
 	}
 
 	public async getContents(): Promise<string> {
@@ -36,17 +39,20 @@ class InMemoryFile implements File {
 class InMemoryDirectory implements Directory {
 	public readonly name: string
 
+	public readonly path: string[]
+
 	private readonly parent: InMemoryFS
 
 	public fileList: FileName[]
 
 	public folderList: DirectoryName[]
 
-	public constructor(name: string, parent: InMemoryFS) {
+	public constructor(name: string, parent: InMemoryFS, path?: string[]) {
 		this.name = name
 		this.parent = parent
 		this.fileList = []
 		this.folderList = []
+		this.path = path ?? [this.name]
 		const folder = parent[name] as InMemoryFS
 		for (const key of Object.keys(folder)) {
 			if (typeof folder[key] === 'string') {
@@ -58,15 +64,18 @@ class InMemoryDirectory implements Directory {
 	}
 
 	public async getFile(file: FileName): Promise<File> {
-		if (!this.fileList.includes(file)) throw new Error('No Such File')
-		return new InMemoryFile(file, this.parent[this.name] as InMemoryFS)
+		return new InMemoryFile(file, this.parent[this.name] as InMemoryFS, [
+			...this.path,
+			file
+		])
 	}
 
 	public async getDirectory(directory: DirectoryName): Promise<Directory> {
 		if (!this.folderList.includes(directory)) throw new Error('No Such File')
 		return new InMemoryDirectory(
 			directory,
-			this.parent[this.name] as InMemoryFS
+			this.parent[this.name] as InMemoryFS,
+			[...this.path, directory]
 		)
 	}
 }

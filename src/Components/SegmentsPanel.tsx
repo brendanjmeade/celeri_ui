@@ -4,8 +4,6 @@ import type { SelectionMode } from 'Selectors/SelectionMode'
 import type { Segment } from 'State/Segment/Segment'
 import { fieldNames } from 'State/Segment/Segment'
 import type { Vertex } from 'State/Segment/Vertex'
-import type { File } from 'Utilities/FileSystemInterfaces'
-import { OpenSavableFile } from 'Utilities/FileSystemInterfaces'
 import EditableItem from './EditableItem'
 
 export interface SegmentsDisplaySettings {
@@ -58,7 +56,8 @@ function SegmentsPanel({
 	addNewSegment,
 	splitSegment,
 	setSelectionMode,
-	save
+	save,
+	open
 }: {
 	settings: SegmentsDisplaySettings
 	setSettings: (settings: SegmentsDisplaySettings) => void
@@ -68,7 +67,8 @@ function SegmentsPanel({
 	setSelectionMode: (mode: SelectionMode) => void
 	addNewSegment: (a: Vertex, b: Vertex) => void
 	splitSegment: (index: number[]) => void
-	save: (file?: File) => void
+	save: (saveAs?: boolean) => void
+	open: () => void
 }): ReactElement {
 	const set = (s: SegmentsDisplaySettings): void => {
 		setSettings(s)
@@ -145,6 +145,13 @@ function SegmentsPanel({
 				<button
 					type='button'
 					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+					onClick={(): void => open()}
+				>
+					Open Segments
+				</button>
+				<button
+					type='button'
+					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
 					onClick={(): void => save()}
 				>
 					Save Segments & Vertices
@@ -153,8 +160,7 @@ function SegmentsPanel({
 					type='button'
 					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
 					onClick={async (): Promise<void> => {
-						const file = await OpenSavableFile(['.csv'])
-						save(file)
+						save(true)
 					}}
 				>
 					Save As

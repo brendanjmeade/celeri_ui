@@ -2,7 +2,11 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { ReactElement } from 'react'
 import { useState } from 'react'
-import type { Directory, File } from '../Utilities/FileSystemInterfaces'
+import type {
+	Directory,
+	File,
+	FileName
+} from '../Utilities/FileSystemInterfaces'
 
 function GenerateBackPathDots(levels: number): string {
 	let result = '..'
@@ -17,13 +21,16 @@ export default function FileExplorer({
 	root,
 	chooseFile,
 	close,
-	extension
+	extension,
+	isSaveDialog
 }: {
 	root: Directory
 	chooseFile: (file: File, path: string[]) => void
 	close: () => void
 	extension: string
+	isSaveDialog: boolean
 }): ReactElement {
+	const [typedFileName, setTypedFileName] = useState('')
 	const [selectedFile, setSelectedFile] = useState<File>()
 	const [seletedFileContents, setSelectedFileContents] = useState<string>('')
 	const [directoryPath, setDirectoryPath] = useState<Directory[]>([root])
@@ -68,9 +75,11 @@ export default function FileExplorer({
 				type='button'
 				key={fileName}
 				data-testid={`file-${fileName}`}
+				className={selectedFile?.name === fileName ? 'font-bold' : ''}
 				onClick={async (): Promise<void> => {
 					const file = await currentDirectory.getFile(fileName)
 					setSelectedFile(file)
+					setTypedFileName(file.name)
 					setSelectedFileContents(await file.getContents())
 				}}
 			>
@@ -87,7 +96,7 @@ export default function FileExplorer({
 		>
 			<div
 				role='none'
-				className='bg-black p-5 flex flex-col gap-2 pointer-events-none'
+				className='bg-black p-5 flex flex-col gap-2'
 				onClick={(event): void => event.stopPropagation()}
 			>
 				<span>Open File</span>
@@ -110,23 +119,48 @@ export default function FileExplorer({
 						<></>
 					)}
 				</div>
+				<div className='flex flex-row'>
+					<div data-testid='file-path' className='flex-grow p-1'>
+						{isSaveDialog
+							? currentDirectory.path.join('/')
+							: selectedFile?.path.join('/') ?? ''}
+					</div>
+					{isSaveDialog ? (
+						<input
+							data-testid='file-path-input'
+							className='flex-grow p-1 bg-gray-800'
+							value={typedFileName}
+							onChange={(event): void => setTypedFileName(event.target.value)}
+						/>
+					) : (
+						<></>
+					)}
+				</div>
 				<div className='flex flex-row-reverse gap-2 pointer-events-auto'>
 					<button
 						data-testid='select-button'
 						type='button'
 						className=' bg-gray-700 text-white hover:bg-gray-800 p-2 disabled:bg-gray-900'
-						disabled={!selectedFile}
-						onClick={(): void => {
-							if (selectedFile) {
+						disabled={!selectedFile && !typedFileName}
+						onClick={async (): Promise<void> => {
+							let file = selectedFile
+							if (isSaveDialog) {
+								file = await currentDirectory.getFile(
+									(typedFileName.endsWith(extension)
+										? typedFileName
+										: `${typedFileName}${extension}`) as FileName
+								)
+							}
+							if (file) {
 								const path = directoryPath
 									.filter(v => v !== root)
 									.map(v => v.name)
-								path.push(selectedFile.name)
-								chooseFile(selectedFile, path)
+								path.push(file.name)
+								chooseFile(file, path)
 							}
 						}}
 					>
-						Select
+						{isSaveDialog ? 'Save' : 'Select'}
 					</button>
 					<button
 						data-testid='close-button'

@@ -39,7 +39,8 @@ function VerticesPanel({
 	mergeVertices,
 	bridgeVertices,
 	extrudeVertex,
-	save
+	save,
+	open
 }: {
 	settings: VerticesDisplaySettings
 	setSettings: (settings: VerticesDisplaySettings) => void
@@ -51,6 +52,7 @@ function VerticesPanel({
 	bridgeVertices: (a: number, b: number) => void
 	extrudeVertex: (start: number, end: Vertex) => void
 	save: (file?: File) => void
+	open: () => void
 }): ReactElement {
 	const set = (s: VerticesDisplaySettings): void => {
 		setSettings(s)
@@ -150,13 +152,22 @@ function VerticesPanel({
 						}}
 					/>
 				</span>
-				<button
-					type='button'
-					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
-					onClick={(): void => save()}
-				>
-					Save Segments & Vertices
-				</button>
+				<span className='w-2/5 flex-shrink flex flex-row justify-end gap-2'>
+					<button
+						type='button'
+						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+						onClick={(): void => open()}
+					>
+						Open Segments
+					</button>
+					<button
+						type='button'
+						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+						onClick={(): void => save()}
+					>
+						Save Segments & Vertices
+					</button>
+				</span>
 			</div>
 			<div className='flex flex-row justify-between items-center'>
 				<span className='text-l font-bold'>Color</span>

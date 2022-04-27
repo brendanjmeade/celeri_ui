@@ -40,7 +40,8 @@ function GenericSegmentPanel({
 	settings,
 	setSettings,
 	collections,
-	setCollectionVertexKeys
+	setCollectionVertexKeys,
+	open
 }: {
 	settings: GenericSegmentDisplaySettings
 	setSettings: (settings: GenericSegmentDisplaySettings) => void
@@ -48,6 +49,7 @@ function GenericSegmentPanel({
 	setCollectionVertexKeys: (
 		parameters: SetGenericSegmentPositionKeysAction
 	) => void
+	open: () => void
 }): ReactElement {
 	const set = (s: GenericSegmentDisplaySettings): void => {
 		setSettings(s)
@@ -137,7 +139,15 @@ function GenericSegmentPanel({
 						}}
 					/>
 				</span>
+				<button
+					type='button'
+					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+					onClick={(): void => open()}
+				>
+					Open Segments
+				</button>
 			</div>
+
 			<div className='flex flex-row justify-between items-center'>
 				<span className='text-l font-bold'>Color</span>
 				<span className='w-2/5 flex-shrink-0'>

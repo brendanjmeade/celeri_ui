@@ -52,11 +52,11 @@ export async function OpenGenericSegmentFile(
 async function TryOpenFile<T>(
 	file: FileName,
 	folderHandle: Directory,
-	fileOpenFunction: (file: File) => Promise<T>
+	fileOpenCallback: (file: File) => Promise<T>
 ): Promise<T | false> {
 	try {
 		const fileHandle = await folderHandle.getFile(file)
-		const result = await fileOpenFunction(fileHandle)
+		const result = await fileOpenCallback(fileHandle)
 		return result
 	} catch {
 		return false

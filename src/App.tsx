@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { BlockDisplaySettings } from 'Components/BlockPanel'
 import BlockPanel, { initialBlockDisplaySettings } from 'Components/BlockPanel'
+import FileExplorer from 'Components/FileExplorer'
 import type { OpenableFile } from 'Components/Files'
 import Files from 'Components/Files'
 import type { GenericSegmentDisplaySettings } from 'Components/GenericSegmentPanel'
@@ -48,6 +50,7 @@ import {
 	loadNewBlockData,
 	moveBlock
 } from 'State/Block/State'
+import { setRootFolder } from 'State/FileHandles/State'
 import {
 	loadNewGenericCollectionData,
 	setGenericSegmentPositionKeys
@@ -94,6 +97,8 @@ import type { Directory, File } from 'Utilities/FileSystemInterfaces'
 import OpenDirectory, {
 	SetDirectoryHandle
 } from 'Utilities/FileSystemInterfaces'
+import GenericSegmentFile from 'Utilities/GenericSegmentFile'
+import MeshFile from 'Utilities/MeshFile'
 import { SegmentFile } from 'Utilities/SegmentFile'
 import { VelocityFile } from 'Utilities/VelocityFile'
 
@@ -126,7 +131,18 @@ const windows = {
 
 export default function App(): ReactElement {
 	const dispatch = useAppDispatch()
-	const [folderHandle, setFolderHandle] = useState<Directory>()
+	const folderHandle = useAppSelector<Directory | undefined>(
+		state => state.main.present.fileHandles.rootFolder
+	)
+	const [fileOpenCallback, setFileOpenCallback] = useState<
+		| false
+		| {
+				callback: (file: File, path: string[]) => void
+				extension: string
+				isSaveFile?: boolean
+		  }
+	>(false)
+
 	const [activeTab, setActiveTab] = useState<string>('')
 	const [files, setFiles] = useState<Record<string, OpenableFile>>({
 		command: {
@@ -802,6 +818,20 @@ export default function App(): ReactElement {
 		case 'velocities':
 			view = (
 				<VelocitiesPanel
+					open={(): void => {
+						console.log('opening velocities file')
+						setFileOpenCallback({
+							extension: 'csv',
+							callback: async (file): Promise<void> => {
+								const velocity = new VelocityFile(file)
+								await velocity.initialize()
+								if (velocity.data) {
+									dispatch(loadNewVelocityData(velocity.data))
+									setVelocityFile(velocity)
+								}
+							}
+						})
+					}}
 					settings={velocitiesSettings}
 					setSettings={setVelocitiesSettings}
 					selected={selectedVelocity}
@@ -828,12 +858,18 @@ export default function App(): ReactElement {
 							}
 						})
 					}}
-					save={async (file?: File): Promise<void> => {
-						if (file) {
-							const updatedVelocityFile = new VelocityFile(file)
-							updatedVelocityFile.data = velocities
-							setVelocityFile(updatedVelocityFile)
-							await updatedVelocityFile.save()
+					save={async (saveAs): Promise<void> => {
+						if (saveAs) {
+							setFileOpenCallback({
+								extension: '.csv',
+								isSaveFile: true,
+								callback: async (file): Promise<void> => {
+									const updatedVelocityFile = new VelocityFile(file)
+									updatedVelocityFile.data = velocities
+									setVelocityFile(updatedVelocityFile)
+									await updatedVelocityFile.save()
+								}
+							})
 						} else if (velocityFile) {
 							velocityFile.data = velocities
 							await velocityFile.save()
@@ -845,6 +881,20 @@ export default function App(): ReactElement {
 		case 'block':
 			view = (
 				<BlockPanel
+					open={(): void => {
+						console.log('opening block file')
+						setFileOpenCallback({
+							extension: 'csv',
+							callback: async (file): Promise<void> => {
+								const block = new BlockFile(file)
+								await block.initialize()
+								if (block.data) {
+									dispatch(loadNewBlockData(block.data))
+									setBlockFile(block)
+								}
+							}
+						})
+					}}
 					settings={blockSettings}
 					setSettings={setBlockSettings}
 					selected={selectedBlock}
@@ -877,12 +927,18 @@ export default function App(): ReactElement {
 							select.select('block', [])
 						}
 					}}
-					save={async (file?: File): Promise<void> => {
-						if (file) {
-							const updatedBlockFile = new BlockFile(file)
-							updatedBlockFile.data = blocks
-							setBlockFile(updatedBlockFile)
-							await updatedBlockFile.save()
+					save={async (saveAs): Promise<void> => {
+						if (saveAs) {
+							setFileOpenCallback({
+								extension: '.csv',
+								isSaveFile: true,
+								callback: async (file): Promise<void> => {
+									const updatedBlockFile = new BlockFile(file)
+									updatedBlockFile.data = blocks
+									setBlockFile(updatedBlockFile)
+									await updatedBlockFile.save()
+								}
+							})
 						} else if (blockFile) {
 							blockFile.data = blocks
 							await blockFile.save()
@@ -894,6 +950,20 @@ export default function App(): ReactElement {
 		case 'segment':
 			view = (
 				<SegmentsPanel
+					open={(): void => {
+						console.log('opening segment file')
+						setFileOpenCallback({
+							extension: 'csv',
+							callback: async (file): Promise<void> => {
+								const segment = new SegmentFile(file)
+								await segment.initialize()
+								if (segment.data) {
+									dispatch(loadNewSegmentData(segment.data))
+									setSegmentFile(segment)
+								}
+							}
+						})
+					}}
 					settings={segmentSettings}
 					setSettings={setSegmentSettings}
 					segments={segments.segments ?? []}
@@ -915,12 +985,18 @@ export default function App(): ReactElement {
 						dispatch(splitSegment(index))
 						select.select('segment', [])
 					}}
-					save={async (file?: File): Promise<void> => {
-						if (file) {
-							const updatedSegmentFile = new SegmentFile(file)
-							updatedSegmentFile.data = segments
-							setSegmentFile(updatedSegmentFile)
-							await updatedSegmentFile.save()
+					save={async (saveAs): Promise<void> => {
+						if (saveAs) {
+							setFileOpenCallback({
+								extension: '.csv',
+								isSaveFile: true,
+								callback: async (file): Promise<void> => {
+									const updatedSegmentFile = new SegmentFile(file)
+									updatedSegmentFile.data = segments
+									setSegmentFile(updatedSegmentFile)
+									await updatedSegmentFile.save()
+								}
+							})
 						} else if (segmentFile) {
 							segmentFile.data = segments
 							await segmentFile.save()
@@ -932,6 +1008,20 @@ export default function App(): ReactElement {
 		case 'vertex':
 			view = (
 				<VerticesPanel
+					open={(): void => {
+						console.log('opening segment file')
+						setFileOpenCallback({
+							extension: 'csv',
+							callback: async (file): Promise<void> => {
+								const segment = new SegmentFile(file)
+								await segment.initialize()
+								if (segment.data) {
+									dispatch(loadNewSegmentData(segment.data))
+									setSegmentFile(segment)
+								}
+							}
+						})
+					}}
 					settings={vertexSettings}
 					setSettings={setVertexSettings}
 					vertices={segments.vertecies ?? {}}
@@ -963,6 +1053,21 @@ export default function App(): ReactElement {
 		case 'mesh':
 			view = (
 				<MeshPanel
+					open={(): void => {
+						console.log('opening mesh file')
+						setFileOpenCallback({
+							extension: 'msh',
+							callback: async (file): Promise<void> => {
+								const mesh = new MeshFile(file)
+								await mesh.initialize()
+								if (mesh.data) {
+									dispatch(
+										loadMeshLineData({ mesh: file.name, data: mesh.data })
+									)
+								}
+							}
+						})
+					}}
 					settings={meshLineSettings}
 					setSettings={setMeshLineSettings}
 				/>
@@ -971,6 +1076,24 @@ export default function App(): ReactElement {
 		case 'csv':
 			view = (
 				<GenericSegmentPanel
+					open={(): void => {
+						console.log('opening generic segment file')
+						setFileOpenCallback({
+							extension: 'csv',
+							callback: async (file): Promise<void> => {
+								const mesh = new GenericSegmentFile(file)
+								await mesh.initialize()
+								if (mesh.data) {
+									dispatch(
+										loadNewGenericCollectionData({
+											name: file.name,
+											data: mesh.data
+										})
+									)
+								}
+							}
+						})
+					}}
 					settings={genericSegmentSettings}
 					setSettings={setGenericSegmentSettings}
 					setCollectionVertexKeys={(value): void => {
@@ -1074,7 +1197,7 @@ export default function App(): ReactElement {
 				folder={folderHandle}
 				openFolder={async (): Promise<void> => {
 					const directory = await OpenDirectory()
-					setFolderHandle(directory)
+					dispatch(setRootFolder(directory))
 					setActiveTab('files')
 				}}
 			/>
@@ -1184,12 +1307,32 @@ export default function App(): ReactElement {
 				}}
 				styleUri={`mapbox://styles/${mapSettings.currentStyle.user}/${mapSettings.currentStyle.styleId}`}
 			/>
-			<InspectorPanel
-				view={view}
-				buttons={windows}
-				active={activeTab}
-				setActive={(active): void => setActiveTab(active)}
-			/>
+			{folderHandle ? (
+				<InspectorPanel
+					view={view}
+					buttons={windows}
+					active={activeTab}
+					setActive={(active): void => setActiveTab(active)}
+				/>
+			) : (
+				<></>
+			)}
+			{folderHandle && fileOpenCallback ? (
+				<FileExplorer
+					root={folderHandle}
+					chooseFile={(file, path): void => {
+						fileOpenCallback.callback(file, path)
+						setFileOpenCallback(false)
+					}}
+					close={(): void => {
+						setFileOpenCallback(false)
+					}}
+					extension={fileOpenCallback.extension}
+					isSaveDialog={fileOpenCallback.isSaveFile === true}
+				/>
+			) : (
+				<></>
+			)}
 		</div>
 	)
 }

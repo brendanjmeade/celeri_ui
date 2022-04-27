@@ -19,6 +19,7 @@ describe('The File Explorer', () => {
 				chooseFile={(): void => {}}
 				close={(): void => {}}
 				extension=''
+				isSaveDialog={false}
 			/>
 		)
 		expect(screen.getByTestId('file-file.test').textContent).to.equal(
@@ -37,6 +38,7 @@ describe('The File Explorer', () => {
 				chooseFile={(): void => {}}
 				close={(): void => {}}
 				extension=''
+				isSaveDialog={false}
 			/>
 		)
 		fireEvent.click(screen.getByTestId('folder-folder'), {})
@@ -56,6 +58,7 @@ describe('The File Explorer', () => {
 				chooseFile={(): void => {}}
 				close={(): void => {}}
 				extension=''
+				isSaveDialog={false}
 			/>
 		)
 		fireEvent.click(screen.getByTestId('folder-folder'), {})
@@ -84,6 +87,7 @@ describe('The File Explorer', () => {
 					closed += 1
 				}}
 				extension=''
+				isSaveDialog={false}
 			/>
 		)
 		fireEvent.click(screen.getByTestId('close-button'), {})
@@ -102,6 +106,7 @@ describe('The File Explorer', () => {
 				chooseFile={(): void => {}}
 				close={(): void => {}}
 				extension=''
+				isSaveDialog={false}
 			/>
 		)
 		fireEvent.click(screen.getByTestId('file-file.test'), {})
@@ -114,6 +119,11 @@ describe('The File Explorer', () => {
 			expect(screen.getByTestId('selected-file-content').textContent).to.equal(
 				'file contents'
 			)
+		)
+		expect(screen.getByTestId('file-file.test').classList.contains('font-bold'))
+			.to.be.true
+		expect(screen.getByTestId('file-path').textContent).to.equal(
+			'root/file.test'
 		)
 	})
 	it('Can select a file', async () => {
@@ -130,6 +140,7 @@ describe('The File Explorer', () => {
 				}}
 				close={(): void => {}}
 				extension=''
+				isSaveDialog={false}
 			/>
 		)
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
@@ -149,8 +160,103 @@ describe('The File Explorer', () => {
 		)
 		fireEvent.click(screen.getByTestId('select-button'))
 		expect(selected.file?.name).to.equal('file2')
+		expect(selected.file?.path[0]).to.equal('root')
+		expect(selected.file?.path[1]).to.equal('folder')
+		expect(selected.file?.path[2]).to.equal('file2')
 		expect(selected.path).to.have.length(2)
 		expect(selected.path[0]).to.equal('folder')
 		expect(selected.path[1]).to.equal('file2')
+	})
+	it('can display a save dialog', async () => {
+		const directoryStructure = {
+			root: { 'file.test': 'file contents', folder: {} }
+		}
+		const directory = await OpenDirectory(directoryStructure)
+
+		render(
+			<FileExplorer
+				root={directory}
+				chooseFile={(): void => {}}
+				close={(): void => {}}
+				extension='.csv'
+				isSaveDialog
+			/>
+		)
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+		expect((screen.getByTestId('select-button') as HTMLButtonElement).disabled)
+			.to.be.true
+		expect(screen.getByTestId('select-button').textContent).to.equal('Save')
+		expect(screen.getByTestId('file-path')).to.exist
+		expect(screen.getByTestId('file-path-input')).to.exist
+	})
+	it('can save a file in the root directory', async () => {
+		let selected: { path: string[]; file?: File } = { path: [] }
+		const directoryStructure = {
+			root: { 'file.test': 'file contents', folder: {} }
+		}
+		const directory = await OpenDirectory(directoryStructure)
+
+		render(
+			<FileExplorer
+				root={directory}
+				chooseFile={(file, path): void => {
+					selected = { file, path }
+				}}
+				close={(): void => {}}
+				extension='.csv'
+				isSaveDialog
+			/>
+		)
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+		expect((screen.getByTestId('select-button') as HTMLButtonElement).disabled)
+			.to.be.true
+		expect(screen.getByTestId('select-button').textContent).to.equal('Save')
+		expect(screen.getByTestId('file-path')).to.exist
+		expect(screen.getByTestId('file-path-input')).to.exist
+		fireEvent.change(screen.getByTestId('file-path-input'), {
+			target: { value: 'my-file' }
+		})
+		fireEvent.click(screen.getByTestId('select-button'))
+		await waitFor(() => expect(selected.file).to.exist)
+		expect(selected.file?.name).to.equal('my-file.csv')
+		expect(selected.file?.path[0]).to.equal('root')
+		expect(selected.file?.path[1]).to.equal('my-file.csv')
+		expect(selected.path).to.have.length(1)
+		expect(selected.path[0]).to.equal('my-file.csv')
+	})
+	it('can save a file in a sub directory', async () => {
+		let selected: { path: string[]; file?: File } = { path: [] }
+		const directoryStructure = {
+			root: { 'file.test': 'file contents', folder: {} }
+		}
+		const directory = await OpenDirectory(directoryStructure)
+
+		render(
+			<FileExplorer
+				root={directory}
+				chooseFile={(file, path): void => {
+					selected = { file, path }
+				}}
+				close={(): void => {}}
+				extension='.csv'
+				isSaveDialog
+			/>
+		)
+
+		fireEvent.click(screen.getByTestId('folder-folder'), {})
+		await waitFor(() => expect(screen.getByTestId('back-0')).to.exist)
+
+		fireEvent.change(screen.getByTestId('file-path-input'), {
+			target: { value: 'my-file' }
+		})
+		fireEvent.click(screen.getByTestId('select-button'))
+		await waitFor(() => expect(selected.file).to.exist)
+		expect(selected.file?.name).to.equal('my-file.csv')
+		expect(selected.file?.path[0]).to.equal('root')
+		expect(selected.file?.path[1]).to.equal('folder')
+		expect(selected.file?.path[2]).to.equal('my-file.csv')
+		expect(selected.path).to.have.length(2)
+		expect(selected.path[0]).to.equal('folder')
+		expect(selected.path[1]).to.equal('my-file.csv')
 	})
 })

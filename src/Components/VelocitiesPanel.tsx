@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { ReactElement } from 'react'
-import type { File } from 'Utilities/FileSystemInterfaces'
-import { OpenSavableFile } from 'Utilities/FileSystemInterfaces'
 import type { Velocity } from '../State/Velocity/Velocity'
 import { fieldNames } from '../State/Velocity/Velocity'
 import EditableItem from './EditableItem'
@@ -40,7 +38,8 @@ function VelocitiesPanel({
 	velocitys,
 	setVelocityData,
 	addNewVelocity,
-	save
+	save,
+	open
 }: {
 	settings: VelocitiesDisplaySettings
 	setSettings: (settings: VelocitiesDisplaySettings) => void
@@ -48,7 +47,8 @@ function VelocitiesPanel({
 	velocitys: Velocity[]
 	setVelocityData: (indices: number[], data?: Partial<Velocity>) => void
 	addNewVelocity: () => void
-	save: (file?: File) => void
+	save: (saveAs?: boolean) => void
+	open: () => void
 }): ReactElement {
 	const set = (s: VelocitiesDisplaySettings): void => {
 		setSettings(s)
@@ -104,6 +104,13 @@ function VelocitiesPanel({
 					<button
 						type='button'
 						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+						onClick={(): void => open()}
+					>
+						Open Velocities
+					</button>
+					<button
+						type='button'
+						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
 						onClick={(): void => save()}
 					>
 						Save Velocities
@@ -112,8 +119,7 @@ function VelocitiesPanel({
 						type='button'
 						className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
 						onClick={async (): Promise<void> => {
-							const file = await OpenSavableFile(['.csv'])
-							save(file)
+							save(true)
 						}}
 					>
 						Save As

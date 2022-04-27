@@ -8,6 +8,7 @@ export type DirectoryName = string & { isDirectory: never }
 
 export interface Directory {
 	readonly name: string
+	readonly path: string[]
 	fileList: FileName[]
 	folderList: DirectoryName[]
 	getFile: (file: FileName) => Promise<File>
@@ -16,6 +17,7 @@ export interface Directory {
 
 export interface File {
 	readonly name: string
+	readonly path: string[]
 	getContents: () => Promise<string>
 	setContents: (contents: string) => Promise<void>
 }
