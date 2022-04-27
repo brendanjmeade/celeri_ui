@@ -15,7 +15,7 @@ export interface InMemoryFS {
 class InMemoryFile implements File {
 	public readonly name: string
 
-	readonly path: string[]
+	public readonly path: string[]
 
 	private readonly parent: InMemoryFS
 
@@ -64,7 +64,6 @@ class InMemoryDirectory implements Directory {
 	}
 
 	public async getFile(file: FileName): Promise<File> {
-		if (!this.fileList.includes(file)) throw new Error('No Such File')
 		return new InMemoryFile(file, this.parent[this.name] as InMemoryFS, [
 			...this.path,
 			file

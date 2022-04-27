@@ -1285,12 +1285,16 @@ export default function App(): ReactElement {
 				}}
 				styleUri={`mapbox://styles/${mapSettings.currentStyle.user}/${mapSettings.currentStyle.styleId}`}
 			/>
-			<InspectorPanel
-				view={view}
-				buttons={windows}
-				active={activeTab}
-				setActive={(active): void => setActiveTab(active)}
-			/>
+			{folderHandle ? (
+				<InspectorPanel
+					view={view}
+					buttons={windows}
+					active={activeTab}
+					setActive={(active): void => setActiveTab(active)}
+				/>
+			) : (
+				<></>
+			)}
 			{folderHandle && fileOpenCallback ? (
 				<FileExplorer
 					root={folderHandle}
@@ -1302,6 +1306,7 @@ export default function App(): ReactElement {
 						setFileOpenCallback(false)
 					}}
 					extension={fileOpenCallback.extension}
+					isSaveDialog={false}
 				/>
 			) : (
 				<></>
