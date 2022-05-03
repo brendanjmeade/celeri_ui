@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import type { OpenableFile } from '../Components/Files'
+/* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable unicorn/prefer-at */
+import type { MeshData, MeshParameters } from '../State/MeshLines/MeshLine'
 import { BlockFile } from './BlockFile'
-import { CommandFile } from './CommandFile'
-import type { Directory, File, FileName } from './FileSystemInterfaces'
+import type { Directory, File } from './FileSystemInterfaces'
+import { GetRelativeFile } from './FileSystemInterfaces'
 import { GenericSegmentFile } from './GenericSegmentFile'
 import { MeshFile } from './MeshFile'
 import { SegmentFile } from './SegmentFile'
@@ -49,107 +50,131 @@ export async function OpenGenericSegmentFile(
 	return file
 }
 
-async function TryOpenFile<T>(
-	file: FileName,
-	folderHandle: Directory,
-	fileOpenCallback: (file: File) => Promise<T>
-): Promise<T | false> {
-	try {
-		const fileHandle = await folderHandle.getFile(file)
-		const result = await fileOpenCallback(fileHandle)
-		return result
-	} catch {
-		return false
-	}
-}
-
-export async function OpenCommandFile(
-	folderHandle: Directory,
+export async function OpenMeshParametersFile(
 	fileHandle: File,
-	openableFiles: Record<string, OpenableFile>
-): Promise<{
-	openableFiles: Record<string, OpenableFile>
-	commands: CommandFile | false
-	segments: SegmentFile | false
-	blocks: BlockFile | false
-	velocities: VelocityFile | false
-	mesh: MeshFile[] | false
-}> {
-	const commands = new CommandFile(fileHandle)
-	await commands.initialize()
-	if (commands.data) {
-		const segments = await TryOpenFile(
-			commands.data.segment_file_name as FileName,
-			folderHandle,
-			OpenSegmentFile
-		)
-		const blocks = await TryOpenFile(
-			commands.data.block_file_name as FileName,
-			folderHandle,
-			OpenBlockFile
-		)
-		const velocities = await TryOpenFile(
-			commands.data.station_file_name as FileName,
-			folderHandle,
-			OpenVelocityFile
-		)
-
-		const mesh = await TryOpenFile(
-			commands.data.mesh_parameters_file_name as FileName,
-			folderHandle,
-			async meshSettingFile => {
-				const meshSettings = JSON.parse(
-					await meshSettingFile.getContents()
-				) as {
-					mesh_filename: FileName
-				}[]
-				const result = await Promise.all(
-					meshSettings.map(async m =>
-						TryOpenFile(m.mesh_filename, folderHandle, OpenMeshFile)
-					)
-				)
-				return result.filter(v => v) as MeshFile[]
-			}
-		)
-		const updatedFiles = { ...openableFiles }
-		if ('command' in updatedFiles) {
-			updatedFiles.command = {
-				...updatedFiles.command,
-				currentFilePath: fileHandle.name
-			}
-		}
-		if (segments && 'segment' in updatedFiles) {
-			updatedFiles.segment = {
-				...updatedFiles.segment,
-				currentFilePath: commands.data.segment_file_name
-			}
-		}
-		if (blocks && 'block' in updatedFiles) {
-			updatedFiles.block = {
-				...updatedFiles.block,
-				currentFilePath: commands.data.block_file_name
-			}
-		}
-		if (velocities && 'velocities' in updatedFiles) {
-			updatedFiles.velocities = {
-				...updatedFiles.velocities,
-				currentFilePath: commands.data.station_file_name
-			}
-		}
-		if (mesh && 'mesh' in updatedFiles) {
-			updatedFiles.mesh = {
-				...updatedFiles.mesh,
-				currentFilePath: mesh.map(m => m.handle.name)
-			}
-		}
-		return {
-			openableFiles: updatedFiles,
-			commands,
-			segments,
-			blocks,
-			velocities,
-			mesh
-		}
-	}
-	throw new Error("Can't open command file")
+	root: Directory
+): Promise<MeshData[]> {
+	const content = await fileHandle.getContents()
+	const data = JSON.parse(content) as MeshParameters[]
+	if (!Array.isArray(data)) return []
+	const result = await Promise.all(
+		data.map(async parameters => {
+			const meshFileName = parameters.mesh_filename.split('/')
+			const meshFileHandle = await GetRelativeFile(
+				fileHandle,
+				meshFileName[meshFileName.length - 1],
+				root
+			)
+			if (!meshFileHandle) return false as unknown as MeshData
+			const meshFile = await OpenMeshFile(meshFileHandle)
+			if (!meshFile.data) return false as unknown as MeshData
+			return { line: meshFile.data, parameters }
+		})
+	)
+	return result.filter(v => !!v)
 }
+
+// async function TryOpenFile<T>(
+// 	file: FileName,
+// 	folderHandle: Directory,
+// 	fileOpenCallback: (file: File) => Promise<T>
+// ): Promise<T | false> {
+// 	try {
+// 		const fileHandle = await folderHandle.getFile(file)
+// 		const result = await fileOpenCallback(fileHandle)
+// 		return result
+// 	} catch {
+// 		return false
+// 	}
+// }
+
+// export async function OpenCommandFile(
+// 	folderHandle: Directory,
+// 	fileHandle: File,
+// 	openableFiles: Record<string, OpenableFile>
+// ): Promise<{
+// 	openableFiles: Record<string, OpenableFile>
+// 	commands: CommandFile | false
+// 	segments: SegmentFile | false
+// 	blocks: BlockFile | false
+// 	velocities: VelocityFile | false
+// 	mesh: MeshFile[] | false
+// }> {
+// 	const commands = new CommandFile(fileHandle)
+// 	await commands.initialize()
+// 	if (commands.data) {
+// 		const segments = await TryOpenFile(
+// 			commands.data.segment_file_name as FileName,
+// 			folderHandle,
+// 			OpenSegmentFile
+// 		)
+// 		const blocks = await TryOpenFile(
+// 			commands.data.block_file_name as FileName,
+// 			folderHandle,
+// 			OpenBlockFile
+// 		)
+// 		const velocities = await TryOpenFile(
+// 			commands.data.station_file_name as FileName,
+// 			folderHandle,
+// 			OpenVelocityFile
+// 		)
+
+// 		const mesh = await TryOpenFile(
+// 			commands.data.mesh_parameters_file_name as FileName,
+// 			folderHandle,
+// 			async meshSettingFile => {
+// 				const meshSettings = JSON.parse(
+// 					await meshSettingFile.getContents()
+// 				) as {
+// 					mesh_filename: FileName
+// 				}[]
+// 				const result = await Promise.all(
+// 					meshSettings.map(async m =>
+// 						TryOpenFile(m.mesh_filename, folderHandle, OpenMeshFile)
+// 					)
+// 				)
+// 				return result.filter(v => v) as MeshFile[]
+// 			}
+// 		)
+// 		const updatedFiles = { ...openableFiles }
+// 		if ('command' in updatedFiles) {
+// 			updatedFiles.command = {
+// 				...updatedFiles.command,
+// 				currentFilePath: fileHandle.name
+// 			}
+// 		}
+// 		if (segments && 'segment' in updatedFiles) {
+// 			updatedFiles.segment = {
+// 				...updatedFiles.segment,
+// 				currentFilePath: commands.data.segment_file_name
+// 			}
+// 		}
+// 		if (blocks && 'block' in updatedFiles) {
+// 			updatedFiles.block = {
+// 				...updatedFiles.block,
+// 				currentFilePath: commands.data.block_file_name
+// 			}
+// 		}
+// 		if (velocities && 'velocities' in updatedFiles) {
+// 			updatedFiles.velocities = {
+// 				...updatedFiles.velocities,
+// 				currentFilePath: commands.data.station_file_name
+// 			}
+// 		}
+// 		if (mesh && 'mesh' in updatedFiles) {
+// 			updatedFiles.mesh = {
+// 				...updatedFiles.mesh,
+// 				currentFilePath: mesh.map(m => m.handle.name)
+// 			}
+// 		}
+// 		return {
+// 			openableFiles: updatedFiles,
+// 			commands,
+// 			segments,
+// 			blocks,
+// 			velocities,
+// 			mesh
+// 		}
+// 	}
+// 	throw new Error("Can't open command file")
+// }

@@ -20,6 +20,10 @@ export function GenerateBlockFileString(blocks: Block[]): string {
 	return stringify(blocks, fieldNames)
 }
 
+export async function LoadBlockFileData(file: File): Promise<Block[]> {
+	return ProcessParsedBlockFile(parse(await file.getContents()))
+}
+
 export class BlockFile implements ParsedFile<Block[]> {
 	public handle: File
 

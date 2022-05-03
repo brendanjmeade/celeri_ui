@@ -1,6 +1,0 @@
-{
-	"fileServerFolder": "dist",
-	"fixturesFolder": false,
-	"projectId": "etow1b",
-	"integrationFolder": "cypress/e2e"
-}

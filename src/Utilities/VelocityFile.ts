@@ -7,17 +7,31 @@ import type { File } from './FileSystemInterfaces'
 export function ProcessParsedVelocityFile(
 	parsed: Record<string, number | string>[]
 ): Velocity[] {
-	return parsed.map((row): Velocity => {
-		const result: Record<string, number | string> = {}
-		for (const field of fieldNames) {
-			result[field] = row[field] || (field === 'name' ? '' : 0)
-		}
-		return result as unknown as Velocity
-	})
+	return parsed
+		.map((row): Velocity => {
+			const result: Record<string, number | string> = {}
+			for (const field of fieldNames) {
+				result[field] = row[field] || (field === 'name' ? '' : 0)
+			}
+			return result as unknown as Velocity
+		})
+		.filter(v => {
+			for (const field of fieldNames) {
+				if (!(field in v)) {
+					return false
+				}
+			}
+			return true
+		})
 }
 
 export function GenerateVelocityFileString(velocities: Velocity[]): string {
 	return stringify(velocities, fieldNames)
+}
+
+export async function LoadVelocityFile(file: File): Promise<Velocity[]> {
+	const contents = await file.getContents()
+	return ProcessParsedVelocityFile(parse(contents))
 }
 
 export class VelocityFile implements ParsedFile<Velocity[]> {

@@ -36,11 +36,13 @@ export const initialMeshDisplaySettings =
 function MeshPanel({
 	settings,
 	setSettings,
-	open
+	open,
+	openMultiple
 }: {
 	settings: MeshDisplaySettings
 	setSettings: (settings: MeshDisplaySettings) => void
 	open: () => void
+	openMultiple: () => void
 }): ReactElement {
 	const set = (s: MeshDisplaySettings): void => {
 		setSettings(s)
@@ -67,6 +69,13 @@ function MeshPanel({
 					onClick={(): void => open()}
 				>
 					Open Mesh
+				</button>
+				<button
+					type='button'
+					className='flex-grow-0 bg-gray-700 hover:bg-gray-800 p-2 shaddow-inner'
+					onClick={(): void => openMultiple()}
+				>
+					Open Meshes
 				</button>
 			</div>
 			<div className='flex flex-row justify-between items-center'>
