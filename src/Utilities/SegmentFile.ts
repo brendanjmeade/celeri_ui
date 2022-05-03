@@ -22,13 +22,22 @@ export function ProcessParsedSegmentFile(
 	vertexDictionary: Record<string, number>
 	lastIndex: number
 } {
-	const rawData = parsed.map((row): FileSegment => {
-		const result: Record<string, number | string> = {}
-		for (const field of fieldNames) {
-			result[field] = row[field] || (field === 'name' ? '' : 0)
-		}
-		return result as unknown as FileSegment
-	})
+	const rawData = parsed
+		.map((row): FileSegment => {
+			const result: Record<string, number | string> = {}
+			for (const field of fieldNames) {
+				result[field] = row[field] || (field === 'name' ? '' : 0)
+			}
+			return result as unknown as FileSegment
+		})
+		.filter(v => {
+			for (const field of fieldNames) {
+				if (!(field in v)) {
+					return false
+				}
+			}
+			return true
+		})
 	const vertexDictionary: Record<string, number> = {}
 	const vertecies: Record<number, Vertex> = {}
 	const segments: InMemorySegment[] = []
@@ -78,6 +87,16 @@ export function GenerateSegmentFileString({
 	})
 
 	return stringify(data, fieldNames)
+}
+
+export async function LoadSegmentFile(file: File): Promise<{
+	vertecies: Record<number, Vertex>
+	segments: InMemorySegment[]
+	vertexDictionary: Record<string, number>
+	lastIndex: number
+}> {
+	const contents = await file.getContents()
+	return ProcessParsedSegmentFile(parse(contents))
 }
 
 export class SegmentFile

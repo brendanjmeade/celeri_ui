@@ -71,7 +71,8 @@ class InMemoryDirectory implements Directory {
 	}
 
 	public async getDirectory(directory: DirectoryName): Promise<Directory> {
-		if (!this.folderList.includes(directory)) throw new Error('No Such File')
+		if (!this.folderList.includes(directory))
+			throw new Error('No Such Directory')
 		return new InMemoryDirectory(
 			directory,
 			this.parent[this.name] as InMemoryFS,

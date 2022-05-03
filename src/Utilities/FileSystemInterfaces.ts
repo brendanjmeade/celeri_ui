@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable max-classes-per-file */
-import { FileSystemFile } from './FileSystem'
 import type { InMemoryFS } from './InMemoryFileSystem'
 import InMemoryOpenDirectory from './InMemoryFileSystem'
 
@@ -39,21 +39,62 @@ export default async function OpenDirectory(): Promise<Directory> {
 	return openDirectoryHandle()
 }
 
-export async function OpenSavableFile(extensions: string[]): Promise<File> {
-	const options = {
-		types: [
-			{
-				description: 'CSV Files',
-				accept: {
-					'text/plain': extensions
-				}
-			}
-		]
-	}
-	const handle = await window.showSaveFilePicker(options)
-	return new FileSystemFile(handle)
-}
-
 export async function GetFileContents(handle: File): Promise<string> {
 	return handle.getContents()
+}
+
+export async function GetRelativeFile(
+	handle: Directory | File,
+	path: string,
+	root: Directory
+): Promise<File | false> {
+	const adjustedPath = path.split('/')
+	let targetPath = [...handle.path]
+	if ('getContents' in handle) {
+		targetPath.pop()
+	}
+	for (const segment of adjustedPath) {
+		if (segment === '..') {
+			if (targetPath.length === 0) {
+				return false
+			}
+			targetPath.pop()
+		} else if (segment !== '' && segment !== '.') {
+			targetPath.push(segment)
+		}
+	}
+	if (targetPath.length < 2) {
+		return false
+	}
+	const last = targetPath.pop()
+	if (!last) {
+		return false
+	}
+	targetPath = targetPath.slice(1)
+	let current = root
+	for (const folderName of targetPath) {
+		// eslint-disable-next-line no-await-in-loop
+		current = await current.getDirectory(folderName as DirectoryName)
+	}
+	const file = await current.getFile(last as FileName)
+	return file
+}
+
+export function GenerateRelativePath(source: File, target: File): string {
+	let sourcePath = source.path
+	let targetPath = target.path
+	if (sourcePath.length === 0 || targetPath.length === 0) return ''
+	while (sourcePath[0] === targetPath[0]) {
+		sourcePath = sourcePath.slice(1)
+		targetPath = targetPath.slice(1)
+	}
+	if (sourcePath.length === 0 || targetPath.length === 0) return ''
+	const finalPath: string[] = []
+	for (let index = 0; index < sourcePath.length - 1; index += 1) {
+		finalPath.push('..')
+	}
+	for (const element of targetPath) {
+		finalPath.push(element)
+	}
+	return finalPath.join('/')
 }

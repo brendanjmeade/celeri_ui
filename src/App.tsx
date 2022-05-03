@@ -4,8 +4,6 @@
 import type { BlockDisplaySettings } from 'Components/BlockPanel'
 import BlockPanel, { initialBlockDisplaySettings } from 'Components/BlockPanel'
 import FileExplorer from 'Components/FileExplorer'
-import type { OpenableFile } from 'Components/Files'
-import Files from 'Components/Files'
 import type { GenericSegmentDisplaySettings } from 'Components/GenericSegmentPanel'
 import GenericSegmentPanel, {
 	initialGenericSegmentDisplaySettings
@@ -50,13 +48,13 @@ import {
 	loadNewBlockData,
 	moveBlock
 } from 'State/Block/State'
-import { setRootFolder } from 'State/FileHandles/State'
+import { openFile, setRootFolder } from 'State/FileHandles/State'
 import {
 	loadNewGenericCollectionData,
 	setGenericSegmentPositionKeys
 } from 'State/GenericSegments/State'
 import { useAppDispatch, useAppSelector } from 'State/Hooks'
-import { loadMeshLineData } from 'State/MeshLines/State'
+import { clearMeshes, loadMeshLineData } from 'State/MeshLines/State'
 import {
 	bridgeVertices,
 	createSegment,
@@ -82,16 +80,8 @@ import {
 	moveVelocity
 } from 'State/Velocity/State'
 import type { Velocity } from 'State/Velocity/Velocity'
-import { BlockFile } from 'Utilities/BlockFile'
-import type { CommandFile } from 'Utilities/CommandFile'
-import {
-	OpenBlockFile,
-	OpenCommandFile,
-	OpenGenericSegmentFile,
-	OpenMeshFile,
-	OpenSegmentFile,
-	OpenVelocityFile
-} from 'Utilities/FileOpeners'
+import { GenerateBlockFileString, LoadBlockFileData } from 'Utilities/BlockFile'
+import { OpenMeshParametersFile } from 'Utilities/FileOpeners'
 import FSOpenDirectory from 'Utilities/FileSystem'
 import type { Directory, File } from 'Utilities/FileSystemInterfaces'
 import OpenDirectory, {
@@ -99,8 +89,14 @@ import OpenDirectory, {
 } from 'Utilities/FileSystemInterfaces'
 import GenericSegmentFile from 'Utilities/GenericSegmentFile'
 import MeshFile from 'Utilities/MeshFile'
-import { SegmentFile } from 'Utilities/SegmentFile'
-import { VelocityFile } from 'Utilities/VelocityFile'
+import {
+	GenerateSegmentFileString,
+	LoadSegmentFile
+} from 'Utilities/SegmentFile'
+import {
+	GenerateVelocityFileString,
+	LoadVelocityFile
+} from 'Utilities/VelocityFile'
 
 if (!window.location.search.includes('fake-dir')) {
 	SetDirectoryHandle(FSOpenDirectory)
@@ -119,7 +115,6 @@ const editModes: Record<string, EditMode> = {
 }
 
 const windows = {
-	files: 'Files',
 	segment: 'Segment',
 	block: 'Block',
 	velocities: 'Velocities',
@@ -143,53 +138,17 @@ export default function App(): ReactElement {
 		  }
 	>(false)
 
-	const [activeTab, setActiveTab] = useState<string>('')
-	const [files, setFiles] = useState<Record<string, OpenableFile>>({
-		command: {
-			name: 'Command File',
-			description: 'A file pointing to all the other relevant files',
-			extension: '.json',
-			currentFilePath: ''
-		},
-		segment: {
-			name: 'Segment File',
-			description: 'A CSV containing the details of fault locations',
-			extension: '.csv',
-			currentFilePath: ''
-		},
-		block: {
-			name: 'Block File',
-			description: 'A CSV containing information on blocks/plates',
-			extension: '.csv',
-			currentFilePath: ''
-		},
-		velocities: {
-			name: 'Velocity Estimations',
-			description:
-				'A CSV containing velocity estimations for various points on the globe',
-			extension: '.csv',
-			currentFilePath: ''
-		},
-		mesh: {
-			name: 'Mesh Files',
-			description: 'A .msh file containging a triangulation world state',
-			extension: '.msh',
-			currentFilePath: '',
-			allowMultiple: true
-		},
-		csv: {
-			name: 'Custom CSV',
-			description: 'Arbitrary CSV files with lines',
-			extension: '.csv',
-			currentFilePath: '',
-			allowMultiple: true
-		}
-	})
+	const [activeTab, setActiveTab] = useState<string>('map')
 
-	const [commandFile, setCommandFile] = useState<CommandFile>()
-	const [segmentFile, setSegmentFile] = useState<SegmentFile>()
-	const [blockFile, setBlockFile] = useState<BlockFile>()
-	const [velocityFile, setVelocityFile] = useState<VelocityFile>()
+	const segmentFile = useAppSelector<
+		{ path: string[]; file: File } | undefined
+	>(state => state.main.present.fileHandles.files.segment)
+	const blockFile = useAppSelector<{ path: string[]; file: File } | undefined>(
+		state => state.main.present.fileHandles.files.block
+	)
+	const velocityFile = useAppSelector<
+		{ path: string[]; file: File } | undefined
+	>(state => state.main.present.fileHandles.files.velocity)
 
 	const segments = useAppSelector(state => state.main.present.segment)
 	const blocks = useAppSelector(state => state.main.present.block)
@@ -380,7 +339,7 @@ export default function App(): ReactElement {
 		}
 		if (!meshLineSettings.hide) {
 			for (const key of Object.keys(meshLines)) {
-				const mesh = meshLines[key]
+				const mesh = meshLines[key].line
 				sources.push({
 					name: `mesh:${key}`,
 					color: meshLineSettings.color,
@@ -669,152 +628,6 @@ export default function App(): ReactElement {
 	let view = <span />
 
 	switch (activeTab) {
-		case 'files':
-			view = folderHandle ? (
-				<Files
-					folder={folderHandle}
-					files={files}
-					setFile={async (index, file, name, handle): Promise<void> => {
-						if (handle) {
-							let updated = { ...files }
-							const currentFile = updated[file]
-							// eslint-disable-next-line prefer-const
-							let { currentFilePath, allowMultiple } = currentFile
-							if (allowMultiple) {
-								if (!Array.isArray(currentFilePath)) {
-									currentFilePath = [name]
-								} else {
-									currentFilePath = currentFilePath.map(s => s)
-									if (currentFilePath.length > index) {
-										currentFilePath[index] = name
-									} else {
-										currentFilePath.push(name)
-									}
-								}
-							} else {
-								currentFilePath = name
-							}
-							updated[file] = { ...currentFile, currentFilePath }
-							switch (file) {
-								case 'segment':
-									// eslint-disable-next-line no-case-declarations
-									const localSegmentFile = await OpenSegmentFile(handle)
-									setSegmentFile(localSegmentFile)
-									if (localSegmentFile.data) {
-										dispatch(loadNewSegmentData(localSegmentFile.data))
-									}
-									break
-								case 'block':
-									// eslint-disable-next-line no-case-declarations
-									const localBlockFile = await OpenBlockFile(handle)
-									setBlockFile(localBlockFile)
-									if (localBlockFile.data) {
-										dispatch(loadNewBlockData(localBlockFile.data))
-									}
-									break
-								case 'velocities':
-									// eslint-disable-next-line no-case-declarations
-									const localVelocityFile = await OpenVelocityFile(handle)
-									setVelocityFile(localVelocityFile)
-									if (localVelocityFile.data) {
-										dispatch(loadNewVelocityData(localVelocityFile.data))
-									}
-									break
-								case 'mesh':
-									// eslint-disable-next-line no-case-declarations
-									const localMeshFile = await OpenMeshFile(handle)
-									if (localMeshFile.data) {
-										dispatch(
-											loadMeshLineData({
-												mesh: `mesh_file_${index}`,
-												data: localMeshFile.data
-											})
-										)
-									}
-									break
-								case 'csv':
-									// eslint-disable-next-line no-case-declarations
-									const localGenericFile = await OpenGenericSegmentFile(handle)
-									if (localGenericFile.data) {
-										dispatch(
-											loadNewGenericCollectionData({
-												name: `generic_segment_${index}`,
-												data: localGenericFile.data
-											})
-										)
-									}
-									break
-								case 'command':
-									// eslint-disable-next-line no-case-declarations
-									const commandResult = await OpenCommandFile(
-										folderHandle,
-										handle,
-										files
-									)
-									setCommandFile(
-										commandResult.commands !== false
-											? commandResult.commands
-											: undefined
-									)
-									setSegmentFile(
-										commandResult.segments !== false
-											? commandResult.segments
-											: undefined
-									)
-									if (
-										commandResult.segments !== false &&
-										commandResult.segments.data
-									) {
-										dispatch(loadNewSegmentData(commandResult.segments.data))
-									}
-									setBlockFile(
-										commandResult.blocks !== false
-											? commandResult.blocks
-											: undefined
-									)
-									if (
-										commandResult.blocks !== false &&
-										commandResult.blocks.data
-									) {
-										dispatch(loadNewBlockData(commandResult.blocks.data))
-									}
-									setVelocityFile(
-										commandResult.velocities !== false
-											? commandResult.velocities
-											: undefined
-									)
-									if (
-										commandResult.velocities !== false &&
-										commandResult.velocities.data
-									) {
-										dispatch(loadNewVelocityData(commandResult.velocities.data))
-									}
-									if (commandResult.mesh) {
-										commandResult.mesh.map((mesh, meshIndex): number => {
-											if (mesh.data) {
-												dispatch(
-													loadMeshLineData({
-														mesh: `mesh_file_${meshIndex}`,
-														data: mesh.data
-													})
-												)
-											}
-											return meshIndex
-										})
-									}
-									updated = commandResult.openableFiles
-									break
-								default:
-									break
-							}
-							setFiles(updated)
-						}
-					}}
-				/>
-			) : (
-				<span />
-			)
-			break
 		case 'velocities':
 			view = (
 				<VelocitiesPanel
@@ -823,12 +636,15 @@ export default function App(): ReactElement {
 						setFileOpenCallback({
 							extension: 'csv',
 							callback: async (file): Promise<void> => {
-								const velocity = new VelocityFile(file)
-								await velocity.initialize()
-								if (velocity.data) {
-									dispatch(loadNewVelocityData(velocity.data))
-									setVelocityFile(velocity)
-								}
+								const velocity = await LoadVelocityFile(file)
+								dispatch(loadNewVelocityData(velocity))
+								dispatch(
+									openFile({
+										file,
+										key: 'velocity',
+										path: file.path
+									})
+								)
 							}
 						})
 					}}
@@ -864,15 +680,20 @@ export default function App(): ReactElement {
 								extension: '.csv',
 								isSaveFile: true,
 								callback: async (file): Promise<void> => {
-									const updatedVelocityFile = new VelocityFile(file)
-									updatedVelocityFile.data = velocities
-									setVelocityFile(updatedVelocityFile)
-									await updatedVelocityFile.save()
+									dispatch(
+										openFile({
+											file,
+											key: 'velocity',
+											path: file.path
+										})
+									)
+									await file.setContents(GenerateVelocityFileString(velocities))
 								}
 							})
 						} else if (velocityFile) {
-							velocityFile.data = velocities
-							await velocityFile.save()
+							await velocityFile.file.setContents(
+								GenerateVelocityFileString(velocities)
+							)
 						}
 					}}
 				/>
@@ -886,12 +707,15 @@ export default function App(): ReactElement {
 						setFileOpenCallback({
 							extension: 'csv',
 							callback: async (file): Promise<void> => {
-								const block = new BlockFile(file)
-								await block.initialize()
-								if (block.data) {
-									dispatch(loadNewBlockData(block.data))
-									setBlockFile(block)
-								}
+								const block = await LoadBlockFileData(file)
+								dispatch(loadNewBlockData(block))
+								dispatch(
+									openFile({
+										file,
+										key: 'block',
+										path: file.path
+									})
+								)
 							}
 						})
 					}}
@@ -933,15 +757,18 @@ export default function App(): ReactElement {
 								extension: '.csv',
 								isSaveFile: true,
 								callback: async (file): Promise<void> => {
-									const updatedBlockFile = new BlockFile(file)
-									updatedBlockFile.data = blocks
-									setBlockFile(updatedBlockFile)
-									await updatedBlockFile.save()
+									dispatch(
+										openFile({
+											file,
+											key: 'block',
+											path: file.path
+										})
+									)
+									await file.setContents(GenerateBlockFileString(blocks))
 								}
 							})
 						} else if (blockFile) {
-							blockFile.data = blocks
-							await blockFile.save()
+							await blockFile.file.setContents(GenerateBlockFileString(blocks))
 						}
 					}}
 				/>
@@ -955,12 +782,15 @@ export default function App(): ReactElement {
 						setFileOpenCallback({
 							extension: 'csv',
 							callback: async (file): Promise<void> => {
-								const segment = new SegmentFile(file)
-								await segment.initialize()
-								if (segment.data) {
-									dispatch(loadNewSegmentData(segment.data))
-									setSegmentFile(segment)
-								}
+								const segment = await LoadSegmentFile(file)
+								dispatch(loadNewSegmentData(segment))
+								dispatch(
+									openFile({
+										file,
+										key: 'segment',
+										path: file.path
+									})
+								)
 							}
 						})
 					}}
@@ -991,15 +821,20 @@ export default function App(): ReactElement {
 								extension: '.csv',
 								isSaveFile: true,
 								callback: async (file): Promise<void> => {
-									const updatedSegmentFile = new SegmentFile(file)
-									updatedSegmentFile.data = segments
-									setSegmentFile(updatedSegmentFile)
-									await updatedSegmentFile.save()
+									dispatch(
+										openFile({
+											file,
+											key: 'segment',
+											path: file.path
+										})
+									)
+									await file.setContents(GenerateSegmentFileString(segments))
 								}
 							})
 						} else if (segmentFile) {
-							segmentFile.data = segments
-							await segmentFile.save()
+							await segmentFile.file.setContents(
+								GenerateSegmentFileString(segments)
+							)
 						}
 					}}
 				/>
@@ -1013,12 +848,15 @@ export default function App(): ReactElement {
 						setFileOpenCallback({
 							extension: 'csv',
 							callback: async (file): Promise<void> => {
-								const segment = new SegmentFile(file)
-								await segment.initialize()
-								if (segment.data) {
-									dispatch(loadNewSegmentData(segment.data))
-									setSegmentFile(segment)
-								}
+								const segment = await LoadSegmentFile(file)
+								dispatch(loadNewSegmentData(segment))
+								dispatch(
+									openFile({
+										file,
+										key: 'segment',
+										path: file.path
+									})
+								)
 							}
 						})
 					}}
@@ -1043,8 +881,9 @@ export default function App(): ReactElement {
 					}}
 					save={async (): Promise<void> => {
 						if (segmentFile) {
-							segmentFile.data = segments
-							await segmentFile.save()
+							await segmentFile.file.setContents(
+								GenerateSegmentFileString(segments)
+							)
 						}
 					}}
 				/>
@@ -1064,6 +903,33 @@ export default function App(): ReactElement {
 									dispatch(
 										loadMeshLineData({ mesh: file.name, data: mesh.data })
 									)
+								}
+							}
+						})
+					}}
+					openMultiple={(): void => {
+						console.log('opening mesh file')
+						setFileOpenCallback({
+							extension: 'json',
+							callback: async (file): Promise<void> => {
+								if (folderHandle) {
+									dispatch(clearMeshes())
+									const result = await OpenMeshParametersFile(
+										file,
+										folderHandle
+									)
+									dispatch(
+										openFile({ file, key: 'mesh_params', path: file.path })
+									)
+									for (const data of result) {
+										dispatch(
+											loadMeshLineData({
+												mesh: data.parameters.mesh_filename,
+												parameters: data.parameters,
+												data: data.line
+											})
+										)
+									}
 								}
 							}
 						})
@@ -1178,20 +1044,21 @@ export default function App(): ReactElement {
 			}}
 		>
 			<TopBar
-				filesOpen={(commandFile ?? segmentFile ?? blockFile) !== undefined}
+				filesOpen={folderHandle !== undefined}
 				saveFiles={async (): Promise<void> => {
-					if (commandFile) await commandFile.save()
+					// if (commandFile) await commandFile.save()
 					if (segmentFile) {
-						segmentFile.data = segments
-						await segmentFile.save()
+						await segmentFile.file.setContents(
+							GenerateSegmentFileString(segments)
+						)
 					}
 					if (blockFile) {
-						blockFile.data = blocks
-						await blockFile.save()
+						await blockFile.file.setContents(GenerateBlockFileString(blocks))
 					}
 					if (velocityFile) {
-						velocityFile.data = velocities
-						await velocityFile.save()
+						await velocityFile.file.setContents(
+							GenerateVelocityFileString(velocities)
+						)
 					}
 				}}
 				folder={folderHandle}
