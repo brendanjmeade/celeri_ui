@@ -224,8 +224,7 @@ export default function MapArrows(
 						const feature = event.features[0]
 						if (
 							feature.properties &&
-							typeof feature.properties.index === 'number' &&
-							typeof feature.properties.name === 'string'
+							typeof feature.properties.index === 'number'
 						) {
 							const { index } = feature.properties
 							currentClick(index)
