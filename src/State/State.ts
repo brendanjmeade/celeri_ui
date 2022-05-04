@@ -1,6 +1,7 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import undoable from 'redux-undo'
 import { BlockReducer } from './Block/State'
+import { CommandReducer } from './Command/State'
 import { FileHandlesReducer } from './FileHandles/State'
 import { GenericSegmentReducer } from './GenericSegments/State'
 import { MeshLineReducer } from './MeshLines/State'
@@ -16,7 +17,8 @@ export const store = configureStore({
 				velocity: VelocityReducer,
 				meshLine: MeshLineReducer,
 				genericSegments: GenericSegmentReducer,
-				fileHandles: FileHandlesReducer
+				fileHandles: FileHandlesReducer,
+				command: CommandReducer
 			})
 		)
 	}

@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { BlockDisplaySettings } from 'Components/BlockPanel'
 import BlockPanel, { initialBlockDisplaySettings } from 'Components/BlockPanel'
+import CommandPanel from 'Components/CommandPanel'
 import FileExplorer from 'Components/FileExplorer'
 import type { GenericSegmentDisplaySettings } from 'Components/GenericSegmentPanel'
 import GenericSegmentPanel, {
@@ -48,6 +49,7 @@ import {
 	loadNewBlockData,
 	moveBlock
 } from 'State/Block/State'
+import { editCommandData, loadCommandData } from 'State/Command/State'
 import { openFile, setRootFolder } from 'State/FileHandles/State'
 import {
 	loadNewGenericCollectionData,
@@ -81,10 +83,11 @@ import {
 } from 'State/Velocity/State'
 import type { Velocity } from 'State/Velocity/Velocity'
 import { GenerateBlockFileString, LoadBlockFileData } from 'Utilities/BlockFile'
-import { OpenMeshParametersFile } from 'Utilities/FileOpeners'
+import { OpenCommandFile, OpenMeshParametersFile } from 'Utilities/FileOpeners'
 import FSOpenDirectory from 'Utilities/FileSystem'
 import type { Directory, File } from 'Utilities/FileSystemInterfaces'
 import OpenDirectory, {
+	GetProjectPath,
 	SetDirectoryHandle
 } from 'Utilities/FileSystemInterfaces'
 import GenericSegmentFile from 'Utilities/GenericSegmentFile'
@@ -115,10 +118,11 @@ const editModes: Record<string, EditMode> = {
 }
 
 const windows = {
+	command: 'Command',
 	segment: 'Segment',
+	vertex: 'Vertices',
 	block: 'Block',
 	velocities: 'Velocities',
-	vertex: 'Vertices',
 	mesh: 'Mesh',
 	csv: 'Generic Segments',
 	map: 'Map'
@@ -138,7 +142,7 @@ export default function App(): ReactElement {
 		  }
 	>(false)
 
-	const [activeTab, setActiveTab] = useState<string>('map')
+	const [activeTab, setActiveTab] = useState<string>('command')
 
 	const segmentFile = useAppSelector<
 		{ path: string[]; file: File } | undefined
@@ -149,6 +153,12 @@ export default function App(): ReactElement {
 	const velocityFile = useAppSelector<
 		{ path: string[]; file: File } | undefined
 	>(state => state.main.present.fileHandles.files.velocity)
+	const commandFile = useAppSelector<
+		{ path: string[]; file: File } | undefined
+	>(state => state.main.present.fileHandles.files.command)
+	const meshParametersFile = useAppSelector<
+		{ path: string[]; file: File } | undefined
+	>(state => state.main.present.fileHandles.files.mesh_params)
 
 	const segments = useAppSelector(state => state.main.present.segment)
 	const blocks = useAppSelector(state => state.main.present.block)
@@ -157,6 +167,7 @@ export default function App(): ReactElement {
 	const genericSegments = useAppSelector(
 		state => state.main.present.genericSegments
 	)
+	const command = useAppSelector(state => state.main.present.command)
 
 	const [velocitiesSettings, setVelocitiesSettings] =
 		useState<VelocitiesDisplaySettings>(initialVelocityDisplaySettings)
@@ -974,6 +985,131 @@ export default function App(): ReactElement {
 				<MapSettingsPanel settings={mapSettings} setSettings={setMapSettings} />
 			)
 			break
+		case 'command':
+			view = (
+				<CommandPanel
+					command={command}
+					setCommandData={(partial): void => {
+						dispatch(editCommandData(partial))
+					}}
+					open={(): void => {
+						console.log('opening command file')
+						setFileOpenCallback({
+							extension: 'json',
+							callback: async (file): Promise<void> => {
+								if (folderHandle) {
+									const { command: loadedCommand, files } =
+										await OpenCommandFile(folderHandle, file)
+									dispatch(loadCommandData(loadedCommand))
+									dispatch(openFile({ file, key: 'command', path: file.path }))
+
+									if (files.blocks) {
+										const block = await LoadBlockFileData(files.blocks)
+										dispatch(loadNewBlockData(block))
+										dispatch(
+											openFile({
+												file: files.blocks,
+												key: 'block',
+												path: files.blocks.path
+											})
+										)
+									}
+
+									if (files.segments) {
+										const segment = await LoadSegmentFile(files.segments)
+										dispatch(loadNewSegmentData(segment))
+										dispatch(
+											openFile({
+												file: files.segments,
+												key: 'segment',
+												path: files.segments.path
+											})
+										)
+									}
+
+									if (files.velocities) {
+										const velocity = await LoadVelocityFile(files.velocities)
+										dispatch(loadNewVelocityData(velocity))
+										dispatch(
+											openFile({
+												file: files.velocities,
+												key: 'velocity',
+												path: files.velocities.path
+											})
+										)
+									}
+
+									if (files.mesh && folderHandle) {
+										dispatch(clearMeshes())
+										const result = await OpenMeshParametersFile(
+											files.mesh,
+											folderHandle
+										)
+										dispatch(
+											openFile({
+												file: files.mesh,
+												key: 'mesh_params',
+												path: files.mesh.path
+											})
+										)
+										for (const data of result) {
+											dispatch(
+												loadMeshLineData({
+													mesh: data.parameters.mesh_filename,
+													parameters: data.parameters,
+													data: data.line
+												})
+											)
+										}
+									}
+								}
+							}
+						})
+					}}
+					save={async (saveAs): Promise<void> => {
+						const updatedCommand = { ...command }
+						if (segmentFile) {
+							updatedCommand.segment_file_name = GetProjectPath(
+								segmentFile.file
+							)
+						}
+						if (blockFile) {
+							updatedCommand.block_file_name = GetProjectPath(blockFile.file)
+						}
+						if (velocityFile) {
+							updatedCommand.station_file_name = GetProjectPath(
+								velocityFile.file
+							)
+						}
+						if (meshParametersFile) {
+							updatedCommand.mesh_parameters_file_name = GetProjectPath(
+								meshParametersFile.file
+							)
+						}
+						if (saveAs) {
+							setFileOpenCallback({
+								extension: '.json',
+								isSaveFile: true,
+								callback: async (file): Promise<void> => {
+									dispatch(
+										openFile({
+											file,
+											key: 'command',
+											path: file.path
+										})
+									)
+									dispatch(editCommandData({ file_name: file.name }))
+									updatedCommand.file_name = file.name
+									await file.setContents(JSON.stringify(updatedCommand))
+								}
+							})
+						} else if (commandFile) {
+							await commandFile.file.setContents(JSON.stringify(updatedCommand))
+						}
+					}}
+				/>
+			)
+			break
 		default:
 			break
 	}
@@ -1065,7 +1201,7 @@ export default function App(): ReactElement {
 				openFolder={async (): Promise<void> => {
 					const directory = await OpenDirectory()
 					dispatch(setRootFolder(directory))
-					setActiveTab('files')
+					setActiveTab('command')
 				}}
 			/>
 			{selectionMode !== 'normal' ? (

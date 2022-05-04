@@ -98,3 +98,20 @@ export function GenerateRelativePath(source: File, target: File): string {
 	}
 	return finalPath.join('/')
 }
+
+export async function GetProjectFile(
+	commandFile: File,
+	path: string,
+	root: Directory
+): Promise<File | false> {
+	const updatedPath = path
+		.replace('../', '')
+		.replace('./', '')
+		.replace('data/', '../')
+	return GetRelativeFile(commandFile, updatedPath, root)
+}
+
+export function GetProjectPath(targetFile: File): string {
+	const path = targetFile.path.slice(-2)
+	return `../data/${path.join('/')}`
+}

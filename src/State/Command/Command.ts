@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 export const defaultCommand = {
-	file_name: 'basic_command_default_values.json',
+	file_name: 'Default Command',
 	reuse_elastic: 'no',
 	reuse_elastic_file: './celeri_elastic_operators.hdf5',
 	save_elastic: 'yes',
@@ -60,5 +60,7 @@ export const defaultCommand = {
 	block_constraint_weight_steps: 1,
 	slip_file_names: ''
 }
+
+export const fieldNames = Object.keys(defaultCommand)
 
 export type Command = typeof defaultCommand

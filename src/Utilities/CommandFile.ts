@@ -1,12 +1,19 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { Command } from '../State/Command/Command'
-import { defaultCommand } from '../State/Command/Command'
+import { defaultCommand, fieldNames } from '../State/Command/Command'
 import type { ParsedFile } from './FileOpeners'
 import type { File } from './FileSystemInterfaces'
 import { GenerateRelativePath } from './FileSystemInterfaces'
 
 export function createCommand(partial: Partial<Command>): Command {
-	const command = { ...defaultCommand, ...partial } as unknown as Command
+	const command = { ...defaultCommand }
+	for (const field of fieldNames) {
+		if (field in partial) {
+			;(command as unknown as Record<string, number | string>)[field] = (
+				partial as unknown as Record<string, number | string>
+			)[field]
+		}
+	}
 	return command
 }
 
