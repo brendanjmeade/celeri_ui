@@ -3,6 +3,7 @@ import type { Vertex } from '../State/Segment/Vertex'
 
 export type SelectionMode =
 	| 'normal'
+	| { mode: 'lasso'; polygon: Vertex[] }
 	| ({ label: string; subtitle?: string } & (
 			| {
 					mode: 'override'
@@ -55,7 +56,7 @@ export const SelectionModeSelector = createSelector(
 		setSelectedVertex,
 		setActiveTab
 	) => {
-		if (currentMode === 'normal') {
+		if (currentMode === 'normal' || currentMode.mode === 'lasso') {
 			return (type: string, indices: number[]): void => {
 				setSelectedBlock(type === 'block' ? indices : [])
 				setSelectedSegment(type === 'segment' ? indices : [])

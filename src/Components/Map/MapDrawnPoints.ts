@@ -9,9 +9,10 @@ export default function MapDrawnPoints(
 		draw,
 		drawnPointSettings,
 		mapLoaded,
-		internalDrawnPointSource
+		internalDrawnPointSource,
+		internalSelections
 	}: MapState,
-	{ drawnPointSource }: MapProperties
+	{ drawnPointSource, selections }: MapProperties
 ): void {
 	if (map && mapLoaded && internalDrawnPointSource !== drawnPointSource) {
 		console.log('Drawning Points')
@@ -82,10 +83,13 @@ export default function MapDrawnPoints(
 		}
 		if (localDraw) {
 			const data = localDraw.getAll()
-			const selection =
+			let selection =
 				drawnPointSource.points.length !== data.features.length
 					? undefined
-					: localDraw.getSelected()
+					: localDraw
+							.getSelected()
+							.features.map(point => (point.properties?.index as number) ?? -1)
+							.filter(v => v > -1)
 			const updatedFeatures: GeoJSON.FeatureCollection<GeoJSON.Geometry> = {
 				type: 'FeatureCollection',
 				features: drawnPointSource.points.map(point => ({
@@ -103,19 +107,26 @@ export default function MapDrawnPoints(
 				}))
 			}
 			localDraw.set(updatedFeatures)
-			if (
-				selection &&
-				selection.features.length > 0 &&
-				selection.features[0].properties &&
-				typeof selection.features[0].properties.index === 'number'
-			) {
-				const featureId = selection.features[0].id as string
-				if (featureId) {
-					localDraw.changeMode('simple_select', {
-						featureIds: [featureId]
-					})
-				}
+			if (internalSelections.draw !== selections.draw) {
+				selection = selections.draw
+				setState({
+					internalSelections: { ...internalSelections, draw: selections.draw }
+				})
+			}
+			if (selection && selection.length > 0) {
+				localDraw.changeMode('simple_select', {
+					featureIds: selection.map(index => `${index}`)
+				})
 			}
 		}
+	}
+	if (draw && internalSelections.draw !== selections.draw) {
+		const selection = selections.draw ?? []
+		setState({
+			internalSelections: { ...internalSelections, draw: selections.draw }
+		})
+		draw.changeMode('simple_select', {
+			featureIds: selection.map(index => `${index}`)
+		})
 	}
 }

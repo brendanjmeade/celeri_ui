@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-nested-ternary */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -92,6 +93,7 @@ import OpenDirectory, {
 } from 'Utilities/FileSystemInterfaces'
 import GenericSegmentFile from 'Utilities/GenericSegmentFile'
 import MeshFile from 'Utilities/MeshFile'
+import { PointsInPolygon } from 'Utilities/PointUtilities'
 import {
 	GenerateSegmentFileString,
 	LoadSegmentFile
@@ -106,15 +108,17 @@ if (!window.location.search.includes('fake-dir')) {
 }
 
 enum EditMode {
-	Vertex = 'Vertices',
-	Block = 'Blocks',
-	Velocity = 'Velocities'
+	Vertex = 'vertex',
+	Block = 'block',
+	Velocity = 'velocities',
+	Segments = 'segment'
 }
 
 const editModes: Record<string, EditMode> = {
 	Block: EditMode.Block,
 	Vertex: EditMode.Vertex,
-	Velocity: EditMode.Velocity
+	Velocity: EditMode.Velocity,
+	Segment: EditMode.Segments
 }
 
 const windows = {
@@ -297,6 +301,21 @@ export default function App(): ReactElement {
 				}[]
 			})
 		}
+		if (selectionMode !== 'normal' && selectionMode.mode === 'lasso') {
+			sources.push({
+				name: 'selection',
+				color: '#fff',
+				selectedColor: '#fff',
+				radius: 1.5,
+				points: selectionMode.polygon.map((point, index) => ({
+					longitude: point.lon,
+					latitude: point.lat,
+					name: '',
+					description: ``,
+					index
+				}))
+			})
+		}
 		setPointSources(sources)
 	}, [
 		blockSettings,
@@ -308,7 +327,8 @@ export default function App(): ReactElement {
 		vertexSettings.color,
 		vertexSettings.activeColor,
 		vertexSettings.radius,
-		segments.vertecies
+		segments.vertecies,
+		selectionMode
 	])
 
 	useEffect(() => {
@@ -616,25 +636,39 @@ export default function App(): ReactElement {
 	}, [select, velocitiesSettings, velocities])
 
 	useEffect(() => {
-		if (segmentSettings.hideProjection || segmentSettings.hide) {
-			setPolygonSources([])
-		} else {
-			setPolygonSources([
-				{
-					name: 'fault_dip_projections',
-					color: segmentSettings.projectionColor,
-					borderColor: segmentSettings.projectionColor,
-					borderRadius: 0.5,
-					polygons: FaultDipProjection(segments).map((poly, index) => ({
-						polygon: poly,
-						index,
+		const polygons: PolygonSource[] = []
+		if (selectionMode !== 'normal' && selectionMode.mode === 'lasso') {
+			polygons.push({
+				name: 'selection_polygon',
+				color: '#ffffff',
+				borderColor: '#ffffff',
+				borderRadius: 0.5,
+				polygons: [
+					{
+						polygon: selectionMode.polygon,
+						index: 0,
 						name: '',
 						description: ''
-					}))
-				}
-			])
+					}
+				]
+			})
 		}
-	}, [segmentSettings, segments])
+		if (!segmentSettings.hideProjection && !segmentSettings.hide) {
+			polygons.push({
+				name: 'fault_dip_projections',
+				color: segmentSettings.projectionColor,
+				borderColor: segmentSettings.projectionColor,
+				borderRadius: 0.5,
+				polygons: FaultDipProjection(segments).map((poly, index) => ({
+					polygon: poly,
+					index,
+					name: '',
+					description: ''
+				}))
+			})
+		}
+		setPolygonSources(polygons)
+	}, [segmentSettings, segments, selectionMode])
 
 	let view = <span />
 
@@ -1176,6 +1210,60 @@ export default function App(): ReactElement {
 			onKeyDown={(event): void => {
 				if (event.key === 'Escape') {
 					setSelectionMode('normal')
+				} else if (
+					event.key === 'Enter' &&
+					selectionMode !== 'normal' &&
+					selectionMode.mode === 'lasso'
+				) {
+					if (selectionMode.polygon.length > 2) {
+						let selectableItems: { point: Vertex; id: number }[] = []
+						const selectionType = editMode
+
+						switch (selectionType) {
+							case EditMode.Block:
+								selectableItems = blocks.map((value, index) => ({
+									point: { lon: value.interior_lon, lat: value.interior_lat },
+									id: index
+								}))
+								break
+							case EditMode.Velocity:
+								selectableItems = velocities.map((value, index) => ({
+									point: { lon: value.lon, lat: value.lat },
+									id: index
+								}))
+								break
+							case EditMode.Vertex:
+								selectableItems = Object.keys(segments.vertecies).map(
+									index => ({
+										point: segments.vertecies[index as unknown as number],
+										id: index as unknown as number
+									})
+								)
+								break
+							case EditMode.Segments:
+								selectableItems = segments.segments.map((value, index) => {
+									const start = segments.vertecies[value.start]
+									const end = segments.vertecies[value.end]
+									return {
+										point: {
+											lon: (start.lon + end.lon) / 2,
+											lat: (start.lat + end.lat) / 2
+										},
+										id: index
+									}
+								})
+								break
+							default:
+								setSelectionMode('normal')
+								return
+						}
+
+						const { polygon } = selectionMode
+
+						const selectedItems = PointsInPolygon(selectableItems, polygon)
+						select.select(selectionType, selectedItems)
+					}
+					setSelectionMode('normal')
 				}
 			}}
 		>
@@ -1207,10 +1295,14 @@ export default function App(): ReactElement {
 			{selectionMode !== 'normal' ? (
 				<div className='fixed top-12 z-10 left-10 right-10 flex flex-row justify-center'>
 					<div className='flex flex-col justify-center items-center bg-black p-3 gap-1 '>
-						<span className='text-lg font-semibold'>{selectionMode.label}</span>
-						{selectionMode.subtitle ? (
+						<span className='text-lg font-semibold'>
+							{selectionMode.mode === 'lasso' ? 'lasso' : selectionMode.label}
+						</span>
+						{selectionMode.mode === 'lasso' || selectionMode.subtitle ? (
 							<span className='text-md font-thin text-gray-500'>
-								{selectionMode.subtitle}
+								{selectionMode.mode === 'lasso'
+									? 'Press Enter to Select'
+									: selectionMode.subtitle}
 							</span>
 						) : (
 							<></>
@@ -1226,8 +1318,19 @@ export default function App(): ReactElement {
 			<div className='absolute bottom-0 left-0 flex flex-col bg-black  p-2 gap-5 shadow-sm z-50'>
 				<div className='flex flex-row items-center justify-between gap-5'>
 					<span className='p-1 text-sm text-center'>
-						Hold <span className='font-bold'>Shift</span> to box select{' '}
-						<span className='font-bold'>{editMode}</span>
+						<button
+							type='button'
+							className={`${
+								selectionMode !== 'normal' && selectionMode.mode === 'lasso'
+									? 'bg-gray-700'
+									: 'bg-black'
+							} p-2 shaddow-inner hover:bg-gray-800 `}
+							onClick={(): void => {
+								setSelectionMode({ mode: 'lasso', polygon: [] })
+							}}
+						>
+							Lasso Selection
+						</button>
 					</span>
 				</div>
 				<div className='flex flex-row items-center justify-start gap-5'>
@@ -1294,7 +1397,15 @@ export default function App(): ReactElement {
 					segments: selectedSegment,
 					blocks: selectedBlock,
 					velocities: selectedVelocity,
-					vertices: selectedVertex
+					vertices: selectedVertex,
+					draw:
+						editMode === EditMode.Block
+							? selectedBlock
+							: editMode === EditMode.Velocity
+							? selectedVelocity
+							: editMode === EditMode.Vertex
+							? selectedVertex
+							: []
 				}}
 				displayGrid={displayGrid ? 10 : -1}
 				click={(point): void => {
@@ -1303,6 +1414,14 @@ export default function App(): ReactElement {
 						selectionMode.mode === 'mapClick'
 					) {
 						selectionMode.callback(point)
+					} else if (
+						typeof selectionMode !== 'string' &&
+						selectionMode.mode === 'lasso'
+					) {
+						setSelectionMode({
+							mode: 'lasso',
+							polygon: [...selectionMode.polygon, point]
+						})
 					}
 				}}
 				mouseMove={(point): void => {
