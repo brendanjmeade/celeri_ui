@@ -7,7 +7,8 @@ describe('The Selection Mode', () => {
 		const selection = {
 			type: '',
 			value: [0],
-			tab: ''
+			tab: '',
+			lasso: [0]
 		}
 		const select = SelectionModeSelector({
 			mode: 'normal',
@@ -29,6 +30,9 @@ describe('The Selection Mode', () => {
 			setSelectedVertex: v => {
 				selection.type = 'vertex'
 				selection.value = v
+			},
+			setLassoSelection: v => {
+				selection.lasso = v
 			}
 		})
 		select('vertex', [4, 5])
@@ -37,12 +41,59 @@ describe('The Selection Mode', () => {
 		expect(selection.value).to.have.length(2)
 		expect(selection.value[0]).to.equal(4)
 		expect(selection.value[1]).to.equal(5)
+		expect(selection.lasso).to.have.length(1)
+	})
+	it('can set a lasso selection', () => {
+		const selection = {
+			type: '',
+			value: [0],
+			tab: '',
+			lasso: [0]
+		}
+		const select = SelectionModeSelector({
+			mode: {
+				mode: 'lasso',
+				polygon: []
+			},
+			setActiveTab: v => {
+				selection.tab = v
+			},
+			setSelectedBlock: v => {
+				selection.type = 'block'
+				selection.value = v
+			},
+			setSelectedSegment: v => {
+				selection.type = 'segment'
+				selection.value = v
+			},
+			setSelectedVelocity: v => {
+				selection.type = 'velocities'
+				selection.value = v
+			},
+			setSelectedVertex: v => {
+				selection.type = 'vertex'
+				selection.value = v
+			},
+			setLassoSelection: v => {
+				selection.lasso = v
+			}
+		})
+		select('vertex', [4, 5])
+		expect(selection.tab).to.equal('vertex')
+		expect(selection.type).to.equal('vertex')
+		expect(selection.value).to.have.length(2)
+		expect(selection.value[0]).to.equal(4)
+		expect(selection.value[1]).to.equal(5)
+		expect(selection.lasso).to.have.length(2)
+		expect(selection.lasso[0]).to.equal(4)
+		expect(selection.lasso[1]).to.equal(5)
 	})
 	it('can set a selection override', () => {
 		const selection = {
 			type: '',
 			value: [0],
-			tab: ''
+			tab: '',
+			lasso: [0]
 		}
 		const select = SelectionModeSelector({
 			mode: {
@@ -72,6 +123,9 @@ describe('The Selection Mode', () => {
 			setSelectedVertex: v => {
 				selection.type = 'vertex'
 				selection.value = v
+			},
+			setLassoSelection: v => {
+				selection.lasso = v
 			}
 		})
 		select('test', [4, 5])
@@ -85,7 +139,8 @@ describe('The Selection Mode', () => {
 		const selection = {
 			type: '',
 			value: [0],
-			tab: ''
+			tab: '',
+			lasso: [0]
 		}
 		const select = SelectionModeSelector({
 			mode: {
@@ -114,6 +169,9 @@ describe('The Selection Mode', () => {
 			setSelectedVertex: v => {
 				selection.type = 'vertex'
 				selection.value = v
+			},
+			setLassoSelection: v => {
+				selection.lasso = v
 			}
 		})
 		select('test', [4, 5])
