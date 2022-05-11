@@ -200,6 +200,7 @@ export default function App(): ReactElement {
 	const [selectedSegment, setSelectedSegment] = useState<number[]>([])
 	const [selectedVelocity, setSelectedVelocity] = useState<number[]>([])
 	const [selectedVertex, setSelectedVertex] = useState<number[]>([])
+	const [lassoSelection, setLassoSelection] = useState<number[]>([])
 
 	const [select, setSelect] = useState<{
 		select: (type: string, indices: number[]) => void
@@ -210,7 +211,8 @@ export default function App(): ReactElement {
 			setSelectedSegment,
 			setSelectedVelocity,
 			setSelectedVertex,
-			setActiveTab
+			setActiveTab,
+			setLassoSelection
 		})
 	})
 
@@ -236,7 +238,8 @@ export default function App(): ReactElement {
 			setSelectedSegment,
 			setSelectedVelocity,
 			setSelectedVertex,
-			setActiveTab
+			setActiveTab,
+			setLassoSelection
 		})
 	}, [selectionMode, select])
 
@@ -1398,14 +1401,7 @@ export default function App(): ReactElement {
 					blocks: selectedBlock,
 					velocities: selectedVelocity,
 					vertices: selectedVertex,
-					draw:
-						editMode === EditMode.Block
-							? selectedBlock
-							: editMode === EditMode.Velocity
-							? selectedVelocity
-							: editMode === EditMode.Vertex
-							? selectedVertex
-							: []
+					draw: lassoSelection
 				}}
 				displayGrid={displayGrid ? 10 : -1}
 				click={(point): void => {
