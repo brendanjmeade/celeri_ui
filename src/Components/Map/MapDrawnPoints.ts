@@ -120,7 +120,11 @@ export default function MapDrawnPoints(
 			}
 		}
 	}
-	if (draw && internalSelections.draw !== selections.draw) {
+	if (
+		draw &&
+		internalSelections.draw !== selections.draw &&
+		!!selections.draw
+	) {
 		const selection = selections.draw ?? []
 		setState({
 			internalSelections: { ...internalSelections, draw: selections.draw }

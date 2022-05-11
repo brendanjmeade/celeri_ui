@@ -20,6 +20,7 @@ export interface SelectionModeState {
 	setSelectedVelocity: (value: number[]) => void
 	setSelectedVertex: (value: number[]) => void
 	setActiveTab: (tab: string) => void
+	setLassoSelection: (value: number[]) => void
 }
 
 const selectCurrentMode = (state: SelectionModeState): SelectionMode =>
@@ -40,6 +41,9 @@ const selectSelectedVertexSetter = (
 const selectActiveTabSetter = (
 	state: SelectionModeState
 ): ((value: string) => void) => state.setActiveTab
+const selecetLassoSelectionSetter = (
+	state: SelectionModeState
+): ((value: number[]) => void) => state.setLassoSelection
 
 export const SelectionModeSelector = createSelector(
 	selectCurrentMode,
@@ -48,13 +52,15 @@ export const SelectionModeSelector = createSelector(
 	selectSelectedVelocitySetter,
 	selectSelectedVertexSetter,
 	selectActiveTabSetter,
+	selecetLassoSelectionSetter,
 	(
 		currentMode,
 		setSelectedBlock,
 		setSelectedSegment,
 		setSelectedVelocity,
 		setSelectedVertex,
-		setActiveTab
+		setActiveTab,
+		setLassoSelection
 	) => {
 		if (currentMode === 'normal' || currentMode.mode === 'lasso') {
 			return (type: string, indices: number[]): void => {
@@ -62,6 +68,9 @@ export const SelectionModeSelector = createSelector(
 				setSelectedSegment(type === 'segment' ? indices : [])
 				setSelectedVelocity(type === 'velocities' ? indices : [])
 				setSelectedVertex(type === 'vertex' ? indices : [])
+				if (currentMode !== 'normal' && currentMode.mode === 'lasso') {
+					setLassoSelection(indices)
+				}
 				setActiveTab(type)
 			}
 		}
