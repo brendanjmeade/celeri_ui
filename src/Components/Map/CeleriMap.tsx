@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable react-prefer-function-component/react-prefer-function-component */
 import type MapboxDraw from '@mapbox/mapbox-gl-draw'
-import type { MapboxGeoJSONFeature } from 'mapbox-gl'
+import type { LngLat, MapboxGeoJSONFeature } from 'mapbox-gl'
 import mapboxgl, { Map, NavigationControl, Popup } from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import React, { createRef } from 'react'
@@ -56,6 +56,8 @@ export interface MapProperties {
 	mouseMove?: (coordinates: Vertex) => void
 	displayGrid?: number
 	styleUri?: string
+	mapMoved?: (zoom: number, center: LngLat) => void
+	initialPosition?: { zoom: number; center: LngLat }
 }
 
 export class CeleriMap extends React.Component<MapProperties, MapState> {
@@ -79,6 +81,7 @@ export class CeleriMap extends React.Component<MapProperties, MapState> {
 
 	public componentDidMount(): void {
 		const { mapReference, style } = this.state
+		const { initialPosition } = this.props
 		const element =
 			typeof mapReference === 'object' ? mapReference?.current : undefined
 		if (mapboxgl.accessToken && element) {
@@ -86,9 +89,9 @@ export class CeleriMap extends React.Component<MapProperties, MapState> {
 				container: element,
 				style,
 				// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-				center: [0, 0],
+				center: initialPosition ? initialPosition.center : [0, 0],
 				// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-				zoom: 2
+				zoom: initialPosition ? initialPosition.zoom : 2
 			})
 			innerMap.addControl(new NavigationControl())
 
@@ -105,6 +108,12 @@ export class CeleriMap extends React.Component<MapProperties, MapState> {
 				if (mouseMove) {
 					mouseMove(InverseTransformVertexCoordinates([lngLat.lng, lngLat.lat]))
 				}
+			})
+			innerMap.on('moveend', () => {
+				const zoom = innerMap.getZoom()
+				const center = innerMap.getCenter()
+				const { mapMoved } = this.props
+				if (mapMoved) mapMoved(zoom, center)
 			})
 			innerMap.on(
 				'draw.selectionchange',

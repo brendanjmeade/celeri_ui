@@ -39,6 +39,7 @@ import type { VerticesDisplaySettings } from 'Components/VertexPanel'
 import VerticesPanel, {
 	initialVertexDisplaySettings
 } from 'Components/VertexPanel'
+import type { LngLat } from 'mapbox-gl'
 import type { ReactElement } from 'react'
 import { useEffect, useState } from 'react'
 import type { SelectionMode } from 'Selectors/SelectionMode'
@@ -230,6 +231,9 @@ export default function App(): ReactElement {
 
 	const [hoverPoint, setHoverPoint] = useState<Vertex>({ lon: 0, lat: 0 })
 	const [displayGrid, setDisplayGrid] = useState(false)
+
+	const [currentMapPosition, setCurrentMapPosition] =
+		useState<{ zoom: number; center: LngLat }>()
 
 	useEffect(() => {
 		select.select = SelectionModeSelector({
@@ -1424,6 +1428,10 @@ export default function App(): ReactElement {
 					setHoverPoint(point)
 				}}
 				styleUri={`mapbox://styles/${mapSettings.currentStyle.user}/${mapSettings.currentStyle.styleId}`}
+				mapMoved={(zoom, center): void =>
+					setCurrentMapPosition({ zoom, center })
+				}
+				initialPosition={currentMapPosition}
 			/>
 			{folderHandle ? (
 				<InspectorPanel
