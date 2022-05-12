@@ -32,6 +32,16 @@ jobs:
         env:
           VITE_MAPBOX_TOKEN: ${{ secrets.CELERI_MAPBOX_TOKEN }}
 
+      - name: Setup mdBook
+        uses: peaceiris/actions-mdbook@v1
+        with:
+          mdbook-version: '${{ steps.mdbook-version.outputs.MDBOOK_VERSION }}'
+
+      - name: Build Docs
+        run: npm run docs:build
+
+      - run: cp -R ./docs/book ./dist/docs
+
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.1.7
         with:

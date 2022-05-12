@@ -1,0 +1,6 @@
+[book]
+authors = ["lee-orr"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Celeri UI Docs"
