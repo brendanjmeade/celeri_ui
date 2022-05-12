@@ -4,3 +4,6 @@ language = "en"
 multilingual = false
 src = "src"
 title = "Celeri UI Docs"
+
+[output.html]
+site-url="/docs/"
