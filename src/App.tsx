@@ -1300,7 +1300,7 @@ export default function App(): ReactElement {
 				}}
 			/>
 			{selectionMode !== 'normal' ? (
-				<div className='fixed top-12 z-10 left-10 right-10 flex flex-row justify-center'>
+				<div className='fixed top-12 z-10 left-10 right-10 flex flex-row justify-center pointer-events-none'>
 					<div className='flex flex-col justify-center items-center bg-black p-3 gap-1 '>
 						<span className='text-lg font-semibold'>
 							{selectionMode.mode === 'lasso' ? 'lasso' : selectionMode.label}
