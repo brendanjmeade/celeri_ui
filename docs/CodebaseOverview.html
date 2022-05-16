@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Intro - Celeri UI Docs</title>
+        <title>Codebase Overview - Celeri UI Docs</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="Intro.html"><strong aria-hidden="true">1.</strong> Intro</a></li><li class="chapter-item expanded "><a href="Usage.html"><strong aria-hidden="true">2.</strong> Usage</a></li><li class="chapter-item expanded "><a href="Development.html"><strong aria-hidden="true">3.</strong> Development</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="CodebaseOverview.html"><strong aria-hidden="true">3.1.</strong> Codebase Overview</a></li><li class="chapter-item expanded "><a href="DevelopmentCycle.html"><strong aria-hidden="true">3.2.</strong> Development Workflow Example</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="Intro.html"><strong aria-hidden="true">1.</strong> Intro</a></li><li class="chapter-item expanded "><a href="Usage.html"><strong aria-hidden="true">2.</strong> Usage</a></li><li class="chapter-item expanded "><a href="Development.html"><strong aria-hidden="true">3.</strong> Development</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="CodebaseOverview.html" class="active"><strong aria-hidden="true">3.1.</strong> Codebase Overview</a></li><li class="chapter-item expanded "><a href="DevelopmentCycle.html"><strong aria-hidden="true">3.2.</strong> Development Workflow Example</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -134,15 +134,56 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="intro"><a class="header" href="#intro">Intro</a></h1>
-<p><img src="https://github.com/brendanjmeade/celeri_ui/actions/workflows/publish-pages.yml/badge.svg" alt="test workflow" /></p>
-<p>These are the docs for <a href="https://brendanjmeade.github.io/celeri_ui/">Celeri UI</a> - the front end for setting up kinematic earthquake cycle models, for use with <a href="https://github.com/brendanjmeade/celeri">celeri</a></p>
+                        <h1 id="codebase-overview"><a class="header" href="#codebase-overview">Codebase Overview</a></h1>
+<p>When you first look at a new codebase it can be a bit confusing, so here we'll go over the major areas of the codebase to help you understand what's what:</p>
+<ul>
+<li>
+<p><code>./.github/workflows</code> - this folder contains the test &amp; build workflows that are run by github. The <code>test.yml</code> &amp; <code>codeql-analysis.yml</code> workflows are run on every commit to either main or a Pull Request targeting main - these run the tests and ensure the code is in a good place. The <code>publish-pages.yml</code> runs on every commit to main, but only if both the tests &amp; code quality analysis pass, and it deploys a new build to <a href="https://brendanjmeade.github.io/celeri_ui/">github.io</a>. It can be useful to look at the results of the workflows - which can be found here: https://github.com/brendanjmeade/celeri_ui/actions</p>
+</li>
+<li>
+<p><code>./.husky</code> - this folder contains a simple command that runs before you can commit - it ensures the code is properly formatted, and runs all the tests locally.</p>
+</li>
+<li>
+<p><code>./docs/src</code> - this folder contains the documentation sources - mdBook have a nice <a href="https://rust-lang.github.io/mdBook/guide/creating.html">overview of how the folder is structured</a>, as well as an <a href="https://rust-lang.github.io/mdBook/format/markdown.html">overview of markdown</a> - the format used for writing the docs themselves.</p>
+</li>
+<li>
+<p><code>./mocha/tests</code> - this folder contains the automated tests - tests that don't involve visible components have the <code>.spec.ts</code> extension, while those that do involve visible components have the <code>spec.tsx</code> extension</p>
+</li>
+<li>
+<p><code>./public</code> - this folder contains static assets published alongside the app - for example the icon</p>
+</li>
+<li>
+<p><code>./src</code> - this is where the bulk of the app's code is located</p>
+<ul>
+<li><code>Components</code> - this is where we define the various visible components used by the UI - such as the various inspector panels, the top bar &amp; the file explorer
+<ul>
+<li><code>Map</code> - this is where we define the Celeri Map - this is the most complex component in the app, and is used to wrap the MapBox api's and provide an interface for the kinds of data we care about.</li>
+</ul>
+</li>
+<li><code>Selectors</code> - this is where we define more complex selectors - functions that take in some state and create a derived value, and remember the result in case the state hasn't changed - see <a href="https://redux-toolkit.js.org/api/createSelector">createSelector</a> for an overview</li>
+<li><code>State</code> - this is where we define and store the main state structures &amp; the actions that can transform the state. Each sub-directory contains a separate &quot;domain&quot;, where we can define the types we care about and the operations available to change it. For example - the &quot;Block&quot; directory defines what a block looks like in terms of the available properties, and provides operations for loading new block data (for example, from a file), creating blocks, editing blocks, moving blocks, and deleting them.</li>
+<li><code>Utilities</code> - this is where we have utility functions/classes that don't particularly fit anywhere else. For example, the interface for handling the file system or the parsers for different file types (the various CSV, .json &amp; .msh files).</li>
+<li><code>main.tsx</code> - this file just loads the app, it is unlikely to need to change</li>
+<li><code>index.css</code> - this file defines the styles we use - notice that it uses <code>@tailwind</code> to load the styles from <a href="https://tailwindcss.com/docs">TailwindCSS</a></li>
+<li><code>App.tsx</code> - this is the core of the App - this file coordinates the global state &amp; various top-level components</li>
+</ul>
+</li>
+<li>
+<p><code>./index.html</code> - this is the main HTML file for the UI. You are unlikely to need to make changes here, but it is where things like the title of the tab are set</p>
+</li>
+<li>
+<p><code>./package.json</code> - this is where we define the dependencies, development dependencies &amp; runnable scripts for the develoment of celeri ui. The scripts are run using <code>npm run {script name}</code> - for example, <code>npm run test</code> runs the test script.</p>
+</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="next" href="Usage.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="prev" href="Development.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="DevelopmentCycle.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         <div style="clear: both"></div>
@@ -151,7 +192,10 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="next" href="Usage.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="prev" href="Development.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="DevelopmentCycle.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

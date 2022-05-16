@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Intro - Celeri UI Docs</title>
+        <title>Development - Celeri UI Docs</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="Intro.html"><strong aria-hidden="true">1.</strong> Intro</a></li><li class="chapter-item expanded "><a href="Usage.html"><strong aria-hidden="true">2.</strong> Usage</a></li><li class="chapter-item expanded "><a href="Development.html"><strong aria-hidden="true">3.</strong> Development</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="CodebaseOverview.html"><strong aria-hidden="true">3.1.</strong> Codebase Overview</a></li><li class="chapter-item expanded "><a href="DevelopmentCycle.html"><strong aria-hidden="true">3.2.</strong> Development Workflow Example</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="Intro.html"><strong aria-hidden="true">1.</strong> Intro</a></li><li class="chapter-item expanded "><a href="Usage.html"><strong aria-hidden="true">2.</strong> Usage</a></li><li class="chapter-item expanded "><a href="Development.html" class="active"><strong aria-hidden="true">3.</strong> Development</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="CodebaseOverview.html"><strong aria-hidden="true">3.1.</strong> Codebase Overview</a></li><li class="chapter-item expanded "><a href="DevelopmentCycle.html"><strong aria-hidden="true">3.2.</strong> Development Workflow Example</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -134,15 +134,41 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="intro"><a class="header" href="#intro">Intro</a></h1>
-<p><img src="https://github.com/brendanjmeade/celeri_ui/actions/workflows/publish-pages.yml/badge.svg" alt="test workflow" /></p>
-<p>These are the docs for <a href="https://brendanjmeade.github.io/celeri_ui/">Celeri UI</a> - the front end for setting up kinematic earthquake cycle models, for use with <a href="https://github.com/brendanjmeade/celeri">celeri</a></p>
+                        <h1 id="development"><a class="header" href="#development">Development</a></h1>
+<p><a href="https://gitpod.io/#https://github.com/brendanjmeade/celeri_ui">Open a GitPod Workspace</a></p>
+<h2 id="pre-requisites"><a class="header" href="#pre-requisites">Pre-requisites</a></h2>
+<p>Celeri UI is built using a few well-established tools.</p>
+<p>The following are the foundational tools for working in the codebase - you'd need at least a basic understanding of these to be able to contribute to the code:</p>
+<ul>
+<li><a href="https://git-scm.com/">Git</a> - this is the source code management toolset.</li>
+<li><a href="https://www.typescriptlang.org/">Typescript</a> - this is the programming language we use.</li>
+<li><a href="https://reactjs.org/docs/getting-started.html">React</a> - a library that makes it easier to generate &amp; interact with the html in the page, by creating a set of components that manage their own display.</li>
+<li><a href="https://redux.js.org/introduction/getting-started">Redux</a> - a library that handles state management, and makes it easier to have deterministic &amp; testable state changes.</li>
+<li><a href="https://mochajs.org/">Mocha</a> - a library to enable testing in Javascript/Typescript in a fairly isolated fashion.</li>
+<li><a href="https://nodejs.org/en/">NodeJs</a> - this is used to manage the packages we utilize, and execute the tests &amp; build processes.</li>
+</ul>
+<p>If you need to make adjustments to how the map is drawn, or the items displayed on top of the map, you will need to work with <a href="https://docs.mapbox.com/mapbox-gl-js/example/">MapBox</a> &amp; <a href="https://github.com/mapbox/mapbox-gl-draw">MapBox Draw</a> - however, it might be enough to look at things as you go.</p>
+<p>The development server &amp; build pipeline are based on <a href="https://vitejs.dev/">Vite</a>, and the actual build is deployed with github actions, which run the automated tests &amp; a code quality check, before building and publishing the built version. We are using <a href="https://rust-lang.github.io/mdBook/">mdBook</a> for the docs.</p>
+<p>We recommend using <a href="https://gitpod.io">GitPod</a> for development, rather than setting up a local development environment, since it handles all the complexity of that for you. You can open a workspace by using the link above.</p>
+<h3 id="set-up-optional"><a class="header" href="#set-up-optional">Set Up (Optional)</a></h3>
+<p>If you wish to set up a local development enviroment, you will need to install NodeJS on your machine, clone the git repository, and run <code>npm install</code> within it.</p>
+<h2 id="development-command-line-commands"><a class="header" href="#development-command-line-commands">Development Command Line Commands</a></h2>
+<ul>
+<li>If you are running in a local environment, or if you changed the dependencies (in the package.json file), you will need to run <code>npm install</code> to ensure all the correct packages are installed.</li>
+<li>To start the development server, you can run <code>npm run dev</code> in the command line.</li>
+<li>To run the tests, run <code>npm run test</code> in the commad line</li>
+<li>To start the documentation server (so you can view the docs, or your changes to them in real time), run <code>npm run docs:dev</code></li>
+<li>While developing, you will need to use <code>git commit</code>, <code>git pull</code> &amp; <code>git push</code></li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="next" href="Usage.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="prev" href="Usage.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="CodebaseOverview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         <div style="clear: both"></div>
@@ -151,7 +177,10 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="next" href="Usage.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="prev" href="Usage.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="CodebaseOverview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
