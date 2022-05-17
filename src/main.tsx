@@ -4,6 +4,8 @@ import ReactDOM from 'react-dom'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { Provider } from 'react-redux'
 import { store } from 'State/State'
+import FSOpenDirectory from 'Utilities/FileSystem'
+import { SetDirectoryHandle } from 'Utilities/FileSystemInterfaces'
 import { registerSW } from 'virtual:pwa-register'
 import './index.css'
 
@@ -18,6 +20,10 @@ const queryClient = new QueryClient({
 		}
 	}
 })
+
+if (!window.location.search.includes('fake-dir')) {
+	SetDirectoryHandle(FSOpenDirectory)
+}
 
 ReactDOM.render(
 	<StrictMode>

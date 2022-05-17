@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react'
 
-function InspectorPanel({
+function InspectorPanelBase({
 	view,
 	buttons,
 	active,
@@ -56,4 +56,4 @@ function InspectorPanel({
 	)
 }
 
-export default InspectorPanel
+export default InspectorPanelBase

@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { expect } from 'chai'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React from 'react'
-import InspectorPanel from '../../src/Components/InspectorPanel'
+import InspectorPanel from '../../src/Components/InspectorPanelBase'
 
 describe('The inspector panel can display multiple tabs and their content', () => {
 	it('Displays the correct buttons', () => {
