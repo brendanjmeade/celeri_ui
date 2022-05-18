@@ -76,7 +76,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="Intro.html"><strong aria-hidden="true">1.</strong> Intro</a></li><li class="chapter-item expanded "><a href="Usage.html"><strong aria-hidden="true">2.</strong> Usage</a></li><li class="chapter-item expanded "><a href="Development.html"><strong aria-hidden="true">3.</strong> Development</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="CodebaseOverview.html"><strong aria-hidden="true">3.1.</strong> Codebase Overview</a></li><li class="chapter-item expanded "><a href="DevelopmentCycle.html"><strong aria-hidden="true">3.2.</strong> Development Workflow Example</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="Intro.html"><strong aria-hidden="true">1.</strong> Intro</a></li><li class="chapter-item expanded "><a href="Usage.html"><strong aria-hidden="true">2.</strong> Usage</a></li><li class="chapter-item expanded "><a href="Development.html"><strong aria-hidden="true">3.</strong> Development</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="CodebaseOverview.html"><strong aria-hidden="true">3.1.</strong> Codebase Overview</a></li><li class="chapter-item expanded "><a href="DevelopmentCycle.html"><strong aria-hidden="true">3.2.</strong> Development Cycle</a></li><li class="chapter-item expanded "><a href="DevelopmentExample.html"><strong aria-hidden="true">3.3.</strong> Development Example</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -208,6 +208,41 @@
 </li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="development-cycle"><a class="header" href="#development-cycle">Development Cycle</a></h1>
+<p>As a rule, the following process is recommended for making changes:</p>
+<ul>
+<li>
+<p>Start by determining whether it is an automatically testible change. The main criteria for this are the degree to which it relies on interaction with the map display itself, and the variability of the UI. To provide some examples:</p>
+<ul>
+<li>State transformations - such as the &quot;Merge Vertices&quot; operation - are easily testible, since we can create a function that takes in a set of parameters, and outputs a result deterministically based entirely on those initial parameters.</li>
+<li>Most utility functions (so long as they don't require specific browser functions, or those functions can be abstracted away) - such as the parsing of <code>.msh</code> files - are also testible, since they are also entirely deterministic functions.</li>
+<li>Some UI elements - such as the File Explorer &amp; Editable Item components - have a simple, clear interface, and simple state transformations, making them easy to test. However, this is more of a judgement call. For example, I could probably set up a test for the BlockPanel (the inspector for blocks), but decided against it because it is more of an aggregator of functionality, and most of the interaction with it will either involve things that have been tested (such as the Editable Item), or things that cannot be easily tested (such as the Map component). On the flip side, some UI elements felt trivial enough for me to not bother setting up a test (such as the SelectionModeDetails component) - because they basically function as a very simple display.</li>
+</ul>
+</li>
+<li>
+<p>If it's a testible change, you want to follow this process:</p>
+<ul>
+<li>First, start by adding a test case (or adjusting existing test cases) to match the expected behaviour. Ideally you would do this &quot;one requirement at a time&quot;, but sometimes you may need to batch things (for example, if there are a number of existing cases that need to be adjusted)</li>
+<li>Then run the test, to see if it fails. If it doesn't fail, since we didn't implement the behaviour, it means that either the test isn't testing the correct behaviour or the behaviour already exists - investigate that situation, and if the test isn't checking the correct thing adjust it.</li>
+<li>Once the test has failed, go in and implement an initial, simple version that passes the tests.</li>
+<li>Refactor/adjust the simple version to match the requirements better, ensuring it keeps passing the test.</li>
+<li>Repeat the process with the next requirement. This way you ensure that you keep the code as simple as possible while still meeting the requirements, since you focus on providing the simplest solution you can each time, and refactoring/cleaning up as you go along.</li>
+</ul>
+</li>
+<li>
+<p>If it's not a testible change, make sure to have the application open to your local development server (if you are using gitpod, it should have been started automatically, and you can open it by opening the &quot;Remote Explorer&quot; panel on the left hand side, hovering over port 3000, and clicking the &quot;Open Browser&quot; button (the globe))</p>
+<ul>
+<li>You want to first get to the point where the expected changes would be apparent, essentially working through the workflow until it is impossible. This will help you clarify exactly what you are looking to change</li>
+<li>Start by making the simplest change to unblock the next step of the workflow</li>
+<li>Once that next step is working, refactor/adjust the code</li>
+<li>walk through the the workflow again to get to the next point where it's impossible or broken, and repeat the process, until the full flow works</li>
+<li>Go back to the top of this process for any alternative workflow/paths you can think of to get into the situation, to try and find edge cases or other ways it may break. Because these changes aren't autmatically tested, you need to manually work through things to try and find if anything broke during the process - this is why you want to make as much of the code base automatically tested, since it helps reduce accidentaly breakages.</li>
+</ul>
+</li>
+</ul>
+<p>For more information on this test-driven development approach, I'd recommend looking at the <a href="https://www.youtube.com/c/ContinuousDelivery">Continious Delivery</a> youtube channel, specifically this playlist: https://www.youtube.com/playlist?list=PLwLLcwQlnXByqD3a13UPeT4SMhc3rdZ8q</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="development-workflow-example"><a class="header" href="#development-workflow-example">Development Workflow Example</a></h1>
+<p>For this example, I'll be walking through resolving the following bug: https://github.com/brendanjmeade/celeri_ui/issues/40
+In case you want to &quot;follow along&quot;, check out the following commit:</p>
 
                     </main>
 
