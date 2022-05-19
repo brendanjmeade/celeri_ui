@@ -27,6 +27,11 @@ jobs:
       - name: Install dependencies
         run: npm i
 
+      - name: Build Docs
+        run: npm run docs:build
+
+      - run: cp -R ./docs/book ./public/docs
+
       - name: Build
         run: npm run build
         env:
@@ -36,11 +41,6 @@ jobs:
         uses: peaceiris/actions-mdbook@v1
         with:
           mdbook-version: '${{ steps.mdbook-version.outputs.MDBOOK_VERSION }}'
-
-      - name: Build Docs
-        run: npm run docs:build
-
-      - run: cp -R ./docs/book ./dist/docs
 
       - run: echo "" > ./dist/.nojekyll
 
