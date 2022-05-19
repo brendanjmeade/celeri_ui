@@ -84,20 +84,6 @@ describe('Segment Actions mutate state as expected', () => {
 			payload: { index: [0] }
 		})
 		expect(state.segments).to.have.length(0)
-	})
-	it('Can delete a segment', () => {
-		const createSegment = SegmentReducer(initialState, {
-			type: 'createSegmet',
-			payload: {
-				start: { lon: 0, lat: 0 },
-				end: { lon: 1, lat: 1 }
-			}
-		})
-		const state = SegmentReducer(createSegment, {
-			type: 'deleteSegment',
-			payload: { index: [0] }
-		})
-		expect(state.segments).to.have.length(0)
 		expect(state.vertecies).to.be.empty
 	})
 	it('Can delete a segment sharing a vertex with another segment', () => {
@@ -121,6 +107,44 @@ describe('Segment Actions mutate state as expected', () => {
 		})
 		expect(state.segments).to.have.length(1)
 		expect(Object.keys(state.vertecies)).to.have.length(2)
+	})
+	it('Can delete multiple segments & their associated vertices', () => {
+		const firstSegment = SegmentReducer(initialState, {
+			type: 'createSegmet',
+			payload: {
+				start: { lon: 0, lat: 0 },
+				end: { lon: 1, lat: 1 }
+			}
+		})
+		const secondSegment = SegmentReducer(firstSegment, {
+			type: 'createSegmet',
+			payload: {
+				start: { lon: 1, lat: 1 },
+				end: { lon: 2, lat: 2 }
+			}
+		})
+		const thirdSegment = SegmentReducer(secondSegment, {
+			type: 'createSegmet',
+			payload: {
+				start: { lon: 2, lat: 2 },
+				end: { lon: 3, lat: 3 }
+			}
+		})
+		const state = SegmentReducer(thirdSegment, {
+			type: 'deleteSegment',
+			payload: { index: [0, 1] }
+		})
+
+		expect(state.vertecies).to.not.equal(thirdSegment.vertecies)
+		expect(state.vertexDictionary).to.not.equal(thirdSegment.vertexDictionary)
+
+		expect(state.segments).to.have.length(1)
+		expect(Object.keys(state.vertecies)).to.have.length(2)
+
+		expect(state.segments[0].start).to.equal(2)
+		expect(state.segments[0].end).to.equal(3)
+		expect(state.vertecies[2].lat).equal(2)
+		expect(state.vertecies[3].lat).equal(3)
 	})
 	it('Can edit a segments data', () => {
 		const createSegment = SegmentReducer(initialState, {

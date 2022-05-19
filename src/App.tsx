@@ -415,7 +415,7 @@ export default function App(): ReactElement {
 					blocks: selectedBlock,
 					velocities: selectedVelocity,
 					vertices: selectedVertex,
-					draw: lassoSelection
+					draw: editMode === EditMode.Segments ? undefined : lassoSelection
 				}}
 				displayGrid={displayGrid ? 10 : -1}
 				click={(point): void => {

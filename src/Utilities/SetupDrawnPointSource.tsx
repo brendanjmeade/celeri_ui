@@ -35,6 +35,7 @@ export default function SetupDrawnPointSource({
 	velocities: VelocityState
 }): void {
 	switch (editMode) {
+		case EditMode.Segments:
 		case EditMode.Vertex: {
 			setDrawnPointSource({
 				color: vertexSettings.color,
