@@ -53,7 +53,7 @@ export default function MapPolygonSources(
 										: '',
 								index: line.index,
 								name: line.name,
-								selected: selections[source.name]?.includes(line.index) || false
+								selected: selections[source.name]?.includes(line.index) ?? false
 							},
 							geometry: {
 								type: 'Polygon',

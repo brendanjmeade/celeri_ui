@@ -268,5 +268,17 @@ Looks like we forgot to adjust the `internalSelections` property of the map's st
 
 Let's run `tsc` again to confirm that it resolved our issue - and it should return nothing, which means the type issues were resolved!
 
-So now we're basically done, we just have to commit & push the result!
+So now we're basically done, we just have to run the tests locally, commit & push the result!
+
+Once you do that, it is important to wait for the tests & code quality pass to run, and see whether it fails for whatever reason. You can do so here: [Github Actions](https://github.com/brendanjmeade/celeri_ui/actions) - in this case, the tests did fail, and looking through the details of the failure I found this:
+![Test Failure](./TestFailureDetails.png)
+
+Interestingly, running `npm run test` locally doesn't produce that result, but it's still worth resolving. So we go to the two locations mentioned in the error `src/Components/Map/MapLineSegments.ts` line 81 & `src/Components/Map/MapPolygonSources.ts` line 56, and replace the logical or `||` with the nullish operator `??`, like so:
+```typescript
+selected: selections[source.name]?.includes(line.index) || false
+becomes
+selected: selections[source.name]?.includes(line.index) ?? false
+```
+
+and then we run the tests, commit, push, and keep an eye on the github actions again.
 ````

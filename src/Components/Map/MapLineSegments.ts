@@ -78,7 +78,7 @@ export default function MapLineSegments(
 								index: line.index,
 								name: line.name,
 								label: line.label ?? '',
-								selected: selections[source.name]?.includes(line.index) || false
+								selected: selections[source.name]?.includes(line.index) ?? false
 							},
 							geometry: {
 								type: 'LineString',
