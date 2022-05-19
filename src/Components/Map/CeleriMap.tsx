@@ -40,7 +40,7 @@ export interface MapState {
 		color: string
 		radius: number
 	}
-	internalSelections: Record<string, number[]>
+	internalSelections: Record<string, number[] | undefined>
 	mapReference: React.Ref<HTMLDivElement>
 	internalGridDisplay?: number
 }
@@ -51,7 +51,7 @@ export interface MapProperties {
 	lineSources: LineSource[]
 	polygonSources: PolygonSource[]
 	drawnPointSource: DrawnPointSource
-	selections: Record<string, number[]>
+	selections: Record<string, number[] | undefined>
 	click: (coordinates: Vertex) => void
 	mouseMove?: (coordinates: Vertex) => void
 	displayGrid?: number

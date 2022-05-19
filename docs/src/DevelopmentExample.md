@@ -143,4 +143,130 @@ This does seem to trigger our breakpoint - which means it should have the up to 
 So let's try to manually refresh - if we do so by changing the edit mode, it seems things happen as expected as well. But if we just try to toggle the vertex display, we see that it doesn't seem to trigger our breakpoint! And the vertices don't get hidden.
 ![Vertex Display](./VertexDisplay.png)
 
-Once I noticed that, I realized that we actually allow editing vertices while in Segment edit mode - so we actually have vertices passing in to the drawn points in addition to the vertex points, but we probably aren't updating those!
+Once I noticed that, I realized that we actually allow editing vertices while in Segment edit mode - so we actually have vertices passing in to the drawn points (points that can be moved) in addition to the vertex points, but we probably aren't updating those!
+
+So - let's move to see what's happening where those points are set! First, lets get rid of the breakpoint (by clicking on it), and then we'll go in and find where the the drawn points are set - [src/Utilities/SetupDrawnPointSource.tsx](https://github.com/brendanjmeade/celeri_ui/blob/d379b87f459a28667ea1f3785ce34c9eb831dd5a/src/Utilities/SetupDrawnPointSource.tsx), open it up in the browser dev tools and set a breakpoint at line 37/38 - right at the start of the function. Then - we can start experimenting with adjusting the edit mode & the display, to try to find out what happens.
+
+First, I set the edit mode to vertex, which triggered the function, and it went into the "EditMode.Vertex" case, where it sets the data for drawing the vertices. Then, I turned off the Vertex display, which did the same thing, but passes it an empty array of vertices - so the points disappears. I turned the vertex display back on, then swapped to Segment edit mode. This time, it went to the default case, and didn't set the drawn points at all! Meaning that so long as we are in Segment edit mode, the drawn vertices don't get updated. I tried deleting segments with the Lasso again, and saw the same things - it goes to the default case, which does nothing.
+
+So let's try and fix that - we want to make a case for segment edit mode. Now - I think we would likely still want the ability to select & move vertices while in segment edit mode, since vertices & segments are so tightly coupled. The main difference between these modes should be the Lasso. So - we'll just make the Segment edit mode apply the same case as the Vertex edit mode in there `src/Utilities/SetupDrawnPointSource.tsx`:
+
+```typescript
+switch (editMode) {
+		case EditMode.Segments: //added this line here
+		case EditMode.Vertex: {
+			setDrawnPointSource({
+				color: vertexSettings.color,
+				radius: vertexSettings.radius,
+				selectedColor: vertexSettings.activeColor,
+				selectedRadius: vertexSettings.activeRadius,
+				points: vertexSettings.hide
+					? []
+					: (Object.keys(segments.vertecies)
+							.map(v => {
+								const index = Number.parseInt(v, 10)
+								const vert = segments.vertecies[index]
+								if (vert) {
+									return {
+										longitude: vert.lon,
+										latitude: vert.lat,
+										index
+									}
+								}
+								return false
+							})
+							.filter(v => !!v) as unknown as {
+							longitude: number
+							latitude: number
+							index: number
+					  }[]),
+				update: (index, vertex) => {
+					dispatch(moveVertex({ index, vertex }))
+				},
+				select: index => {
+					select.select('vertex', index)
+				}
+			})
+
+			break
+		}
+```
+
+To see how this works/if this works, we should refresh the page, reload the segment file, and then try to lasso-select & delete the segments. This time, it seems to work!
+
+While playing around with this, however - I noticed a curious thing. Sometimes, when I lasso select some segments, it seems to also change the selected Vertices on the map - but not select them in the vertices tab. (note - I made regular vertices tiny and selected vertices huge to highlight the effect)
+![Mystery Vertex Selection](./MysteryVertexSelection.png)
+
+So - lets look at that. The displayed selections on the map get set in [src/App](https://github.com/brendanjmeade/celeri_ui/blob/d379b87f459a28667ea1f3785ce34c9eb831dd5a/src/App.tsx) - where it sets the map selections (line 418). Here we have what seems to be the source of the issue: the lasso selection is automatically set as the selection for "draw" - the points that can be moved on the map.
+
+```typescript
+selections={{
+					segments: selectedSegment,
+					blocks: selectedBlock,
+					velocities: selectedVelocity,
+					vertices: selectedVertex,
+					draw: lassoSelection
+				}}
+```
+
+If we add a condition there to exclude the segment edit mode, then we should avoid selecting those situations!
+
+```typescript
+selections={{
+					segments: selectedSegment,
+					blocks: selectedBlock,
+					velocities: selectedVelocity,
+					vertices: selectedVertex,
+					draw: editMode === EditMode.Segments ? undefined :lassoSelection
+				}}
+```
+
+For now we'll ignore the squiggly line under "draw" - that just means there is a type issue, which we'll fix if this solves the main issue we're seeing. Let's see if that same issue persists - I'll try selecting the same segments that caused the issue before. And it seems like it works!
+![No Longer Mystery](./NoLongerMystery.png)
+
+So now, let's just resolve that type issue. The "selections" property of `CeleryMap` currently has a type of `Record<string, number[]>` - let's adjust that to `Record<string, number[] | undefined>`. We can do that by going to [src/Components/Map/CeleriMap.tsx](https://github.com/brendanjmeade/celeri_ui/blob/d379b87f459a28667ea1f3785ce34c9eb831dd5a/src/Components/Map/CeleriMap.tsx), going to the `MapProperties` interface (line 48), and adjusting the selctions property.
+
+However, since we've made that change, it is worth checking whether that leads to any type issues - this is one of the benefits of using typescript! It can catch issue that might arise from our changes. A good way to do that, if you are running in gitpod, is to use the `tsc` command in the console. In this case, I got the following result:
+
+````
+gitpod /workspace/celeri_ui (development-example) $ tsc
+src/Components/Map/MapArrows.ts:248:6 - error TS2322: Type 'number[] | undefined' is not assignable to type 'number[]'.
+  Type 'undefined' is not assignable to type 'number[]'.
+
+248      updatedInternalSelections[sourcename] = selections[sourcename]
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/Components/Map/MapDrawnPoints.ts:113:51 - error TS2322: Type 'number[] | undefined' is not assignable to type 'number[]'.
+  Type 'undefined' is not assignable to type 'number[]'.
+
+113      internalSelections: { ...internalSelections, draw: selections.draw }
+                                                      ~~~~
+
+src/Components/Map/MapLineSegments.ts:237:6 - error TS2322: Type 'number[] | undefined' is not assignable to type 'number[]'.
+  Type 'undefined' is not assignable to type 'number[]'.
+
+237      updatedInternalSelections[sourcename] = selections[sourcename]
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/Components/Map/MapPoints.ts:170:6 - error TS2322: Type 'number[] | undefined' is not assignable to type 'number[]'.
+  Type 'undefined' is not assignable to type 'number[]'.
+
+170      updatedInternalSelections[sourcename] = selections[sourcename]
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Found 4 errors in 4 files.
+
+Errors  Files
+     1  src/Components/Map/MapArrows.ts:248
+     1  src/Components/Map/MapDrawnPoints.ts:113
+     1  src/Components/Map/MapLineSegments.ts:237
+     1  src/Components/Map/MapPoints.ts:170
+		 ```
+
+Looks like we forgot to adjust the `internalSelections` property of the map's state to match! The map has some internal states that duplicate properties, as a way to help it detect when things changed. So let's make that adjustment - you'll find it in the `MapState` interface (line 26 of `/src/Components/Map/CeleriMap.tsx`) - and we just need to change it to match the type of the `selections` property.
+
+Let's run `tsc` again to confirm that it resolved our issue - and it should return nothing, which means the type issues were resolved!
+
+So now we're basically done, we just have to commit & push the result!
+````
