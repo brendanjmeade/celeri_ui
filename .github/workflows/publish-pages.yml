@@ -40,7 +40,7 @@ jobs:
       - name: Build Docs
         run: npm run docs:build
 
-      - run: cp -R ./docs/book ./dist/public/docs
+      - run: cp -R ./docs/book ./dist/docs
 
       - run: echo "" > ./dist/.nojekyll
 
