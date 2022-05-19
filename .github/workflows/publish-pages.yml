@@ -42,6 +42,8 @@ jobs:
 
       - run: cp -R ./docs/book ./dist/docs
 
+      - run: echo "" > ./dist/.nojekyll
+
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.1.7
         with:
