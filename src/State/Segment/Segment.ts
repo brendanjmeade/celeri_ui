@@ -127,7 +127,7 @@ export const defaultSegment: FileSegment = {
 	burial_depth_flag: 0,
 	resolution_override: 0,
 	resolution_other: 0,
-	patch_file_name: 0,
+	patch_file_name: -1,
 	patch_flag: 0,
 	patch_slip_file: 0,
 	patch_slip_flag: 0
