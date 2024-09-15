@@ -1,14 +1,16 @@
 <!DOCTYPE HTML>
-<html lang="en" class="sidebar-visible no-js light">
+<html lang="en" class="light" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
         <title>Development Example - Celeri UI Docs</title>
+
+
         <!-- Custom HTML head -->
-        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#ffffff">
 
         <link rel="icon" href="favicon.svg">
         <link rel="shortcut icon" href="favicon.png">
@@ -16,25 +18,29 @@
         <link rel="stylesheet" href="css/general.css">
         <link rel="stylesheet" href="css/chrome.css">
         <link rel="stylesheet" href="css/print.css" media="print">
+
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
         <link rel="stylesheet" href="fonts/fonts.css">
+
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
         <link rel="stylesheet" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
+
     </head>
-    <body>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
         <!-- Provide site root to javascript -->
-        <script type="text/javascript">
+        <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
-        <script type="text/javascript">
+        <script>
             try {
                 var theme = localStorage.getItem('mdbook-theme');
                 var sidebar = localStorage.getItem('mdbook-sidebar');
@@ -50,50 +56,81 @@
         </script>
 
         <!-- Set the theme before any content is loaded, prevents flash -->
-        <script type="text/javascript">
+        <script>
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
             var html = document.querySelector('html');
-            html.classList.remove('no-js')
             html.classList.remove('light')
             html.classList.add(theme);
-            html.classList.add('js');
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
         </script>
 
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
         <!-- Hide / unhide sidebar before it is displayed -->
-        <script type="text/javascript">
-            var html = document.querySelector('html');
-            var sidebar = 'hidden';
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
             }
-            html.classList.remove('sidebar-visible');
-            html.classList.add("sidebar-" + sidebar);
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
                 <ol class="chapter"><li class="chapter-item expanded "><a href="Intro.html"><strong aria-hidden="true">1.</strong> Intro</a></li><li class="chapter-item expanded "><a href="Usage.html"><strong aria-hidden="true">2.</strong> Usage</a></li><li class="chapter-item expanded "><a href="Development.html"><strong aria-hidden="true">3.</strong> Development</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="CodebaseOverview.html"><strong aria-hidden="true">3.1.</strong> Codebase Overview</a></li><li class="chapter-item expanded "><a href="DevelopmentCycle.html"><strong aria-hidden="true">3.2.</strong> Development Cycle</a></li><li class="chapter-item expanded "><a href="DevelopmentExample.html" class="active"><strong aria-hidden="true">3.3.</strong> Development Example</a></li></ol></li></ol>
             </div>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
         </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
 
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky bordered">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
                             <i class="fa fa-bars"></i>
-                        </button>
+                        </label>
                         <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
@@ -110,6 +147,7 @@
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
+
                     </div>
                 </div>
 
@@ -123,8 +161,9 @@
                         </ul>
                     </div>
                 </div>
+
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
-                <script type="text/javascript">
+                <script>
                     document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
                     document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
                     Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
@@ -136,7 +175,7 @@
                     <main>
                         <h1 id="development-workflow-example"><a class="header" href="#development-workflow-example">Development Workflow Example</a></h1>
 <p>For this example, I'll be walking through resolving the following bug: https://github.com/brendanjmeade/celeri_ui/issues/40
-In case you want to &quot;follow along&quot;, check out the following commit: <code>d379b87f459a28667ea1f3785ce34c9eb831dd5a</code>
+In case you want to "follow along", check out the following commit: <code>d379b87f459a28667ea1f3785ce34c9eb831dd5a</code>
 You can also look at the <code>development-example</code> branch.</p>
 <p>First up is ensuring you have an up to date code base. I tend to like to create a new gitpod workspace for each issue I'm working on, since it ensures things are fresh and up to date, but if you are working locally you can just checkout <code>main</code> &amp; <code>git pull</code> to ensure it's up to date.</p>
 <p>Then, we want to explore the issue abit more - we need to reproduce it, and try to see where it breaks/causes issues. In this case - I took the following steps:</p>
@@ -153,7 +192,7 @@ You can also look at the <code>development-example</code> branch.</p>
 </ul>
 </li>
 <li>Select one of the segments further one step away from the edge, and delete it <img src="./SelectOneStepAway.png" alt="Select one step away" /></li>
-<li>The Select the &quot;floating&quot; segment and delete it <img src="./SelectFloatingSegment.png" alt="Select Floating Segment" />
+<li>The Select the "floating" segment and delete it <img src="./SelectFloatingSegment.png" alt="Select Floating Segment" />
 <ul>
 <li>This again works correctly - both the vertices connected to that segment are deleted.</li>
 </ul>
@@ -161,7 +200,7 @@ You can also look at the <code>development-example</code> branch.</p>
 <li>All of this suggests, to me, that the issue comes from having multiple segments deleted at once, so lets try that</li>
 <li>Switch to the Segment edit mode, and Lasso-select 3 connected segments, one of which has only one connected segment, then delete them <img src="./LassoSelect.png" alt="Lasso Select" />
 <ul>
-<li>Here we finally replicated the issue - the segments are deleted, but the vertices seem to all remain - including the one that was originally &quot;dangling&quot; <img src="./IssueFound.png" alt="Issue Found" /></li>
+<li>Here we finally replicated the issue - the segments are deleted, but the vertices seem to all remain - including the one that was originally "dangling" <img src="./IssueFound.png" alt="Issue Found" /></li>
 </ul>
 </li>
 </ul>
@@ -248,7 +287,7 @@ expect(state.vertecies[3].lat).equal(3)
 </code></pre>
 <p>and then we run it with <code>npm run test</code> - and it seems to pass. So the issue doesn't show up here, yet.</p>
 <p>On the one hand, this does narrow things down a bit - it loos like this happens between the point where the vertices are changed, and the point where they are actually drawn on the map.</p>
-<p>So now is the time to open the debugger, and look at things as they happen! In the browser, open the dev tools (either by tapping <code>f12</code> on the keyboard, or right clicking somewhere that isn't the map and selecting &quot;Inspect&quot;), then navigate to the &quot;Sources&quot; tab.
+<p>So now is the time to open the debugger, and look at things as they happen! In the browser, open the dev tools (either by tapping <code>f12</code> on the keyboard, or right clicking somewhere that isn't the map and selecting "Inspect"), then navigate to the "Sources" tab.
 <img src="./DebugSourcesTab.png" alt="Sources Tab" /></p>
 <p>Next, we need to find the file where we update drawn points - <code>/src/Utilities/SetupPointSources.tsx</code> - in the file hierarchy on the left - it'll be under <code>workspace/celeri_ui/src/Utilities</code>
 <img src="./DebugFS.png" alt="Debug File Hierarchy" /></p>
@@ -262,7 +301,7 @@ This does seem to trigger our breakpoint - which means it should have the up to 
 <img src="./VertexDisplay.png" alt="Vertex Display" /></p>
 <p>Once I noticed that, I realized that we actually allow editing vertices while in Segment edit mode - so we actually have vertices passing in to the drawn points (points that can be moved) in addition to the vertex points, but we probably aren't updating those!</p>
 <p>So - let's move to see what's happening where those points are set! First, lets get rid of the breakpoint (by clicking on it), and then we'll go in and find where the the drawn points are set - <a href="https://github.com/brendanjmeade/celeri_ui/blob/d379b87f459a28667ea1f3785ce34c9eb831dd5a/src/Utilities/SetupDrawnPointSource.tsx">src/Utilities/SetupDrawnPointSource.tsx</a>, open it up in the browser dev tools and set a breakpoint at line 37/38 - right at the start of the function. Then - we can start experimenting with adjusting the edit mode &amp; the display, to try to find out what happens.</p>
-<p>First, I set the edit mode to vertex, which triggered the function, and it went into the &quot;EditMode.Vertex&quot; case, where it sets the data for drawing the vertices. Then, I turned off the Vertex display, which did the same thing, but passes it an empty array of vertices - so the points disappears. I turned the vertex display back on, then swapped to Segment edit mode. This time, it went to the default case, and didn't set the drawn points at all! Meaning that so long as we are in Segment edit mode, the drawn vertices don't get updated. I tried deleting segments with the Lasso again, and saw the same things - it goes to the default case, which does nothing.</p>
+<p>First, I set the edit mode to vertex, which triggered the function, and it went into the "EditMode.Vertex" case, where it sets the data for drawing the vertices. Then, I turned off the Vertex display, which did the same thing, but passes it an empty array of vertices - so the points disappears. I turned the vertex display back on, then swapped to Segment edit mode. This time, it went to the default case, and didn't set the drawn points at all! Meaning that so long as we are in Segment edit mode, the drawn vertices don't get updated. I tried deleting segments with the Lasso again, and saw the same things - it goes to the default case, which does nothing.</p>
 <p>So let's try and fix that - we want to make a case for segment edit mode. Now - I think we would likely still want the ability to select &amp; move vertices while in segment edit mode, since vertices &amp; segments are so tightly coupled. The main difference between these modes should be the Lasso. So - we'll just make the Segment edit mode apply the same case as the Vertex edit mode in there <code>src/Utilities/SetupDrawnPointSource.tsx</code>:</p>
 <pre><code class="language-typescript">switch (editMode) {
 		case EditMode.Segments: //added this line here
@@ -306,7 +345,7 @@ This does seem to trigger our breakpoint - which means it should have the up to 
 <p>To see how this works/if this works, we should refresh the page, reload the segment file, and then try to lasso-select &amp; delete the segments. This time, it seems to work!</p>
 <p>While playing around with this, however - I noticed a curious thing. Sometimes, when I lasso select some segments, it seems to also change the selected Vertices on the map - but not select them in the vertices tab. (note - I made regular vertices tiny and selected vertices huge to highlight the effect)
 <img src="./MysteryVertexSelection.png" alt="Mystery Vertex Selection" /></p>
-<p>So - lets look at that. The displayed selections on the map get set in <a href="https://github.com/brendanjmeade/celeri_ui/blob/d379b87f459a28667ea1f3785ce34c9eb831dd5a/src/App.tsx">src/App</a> - where it sets the map selections (line 418). Here we have what seems to be the source of the issue: the lasso selection is automatically set as the selection for &quot;draw&quot; - the points that can be moved on the map.</p>
+<p>So - lets look at that. The displayed selections on the map get set in <a href="https://github.com/brendanjmeade/celeri_ui/blob/d379b87f459a28667ea1f3785ce34c9eb831dd5a/src/App.tsx">src/App</a> - where it sets the map selections (line 418). Here we have what seems to be the source of the issue: the lasso selection is automatically set as the selection for "draw" - the points that can be moved on the map.</p>
 <pre><code class="language-typescript">selections={{
 					segments: selectedSegment,
 					blocks: selectedBlock,
@@ -324,9 +363,9 @@ This does seem to trigger our breakpoint - which means it should have the up to 
 					draw: editMode === EditMode.Segments ? undefined :lassoSelection
 				}}
 </code></pre>
-<p>For now we'll ignore the squiggly line under &quot;draw&quot; - that just means there is a type issue, which we'll fix if this solves the main issue we're seeing. Let's see if that same issue persists - I'll try selecting the same segments that caused the issue before. And it seems like it works!
+<p>For now we'll ignore the squiggly line under "draw" - that just means there is a type issue, which we'll fix if this solves the main issue we're seeing. Let's see if that same issue persists - I'll try selecting the same segments that caused the issue before. And it seems like it works!
 <img src="./NoLongerMystery.png" alt="No Longer Mystery" /></p>
-<p>So now, let's just resolve that type issue. The &quot;selections&quot; property of <code>CeleryMap</code> currently has a type of <code>Record&lt;string, number[]&gt;</code> - let's adjust that to <code>Record&lt;string, number[] | undefined&gt;</code>. We can do that by going to <a href="https://github.com/brendanjmeade/celeri_ui/blob/d379b87f459a28667ea1f3785ce34c9eb831dd5a/src/Components/Map/CeleriMap.tsx">src/Components/Map/CeleriMap.tsx</a>, going to the <code>MapProperties</code> interface (line 48), and adjusting the selctions property.</p>
+<p>So now, let's just resolve that type issue. The "selections" property of <code>CeleryMap</code> currently has a type of <code>Record&lt;string, number[]&gt;</code> - let's adjust that to <code>Record&lt;string, number[] | undefined&gt;</code>. We can do that by going to <a href="https://github.com/brendanjmeade/celeri_ui/blob/d379b87f459a28667ea1f3785ce34c9eb831dd5a/src/Components/Map/CeleriMap.tsx">src/Components/Map/CeleriMap.tsx</a>, going to the <code>MapProperties</code> interface (line 48), and adjusting the selctions property.</p>
 <p>However, since we've made that change, it is worth checking whether that leads to any type issues - this is one of the benefits of using typescript! It can catch issue that might arise from our changes. A good way to do that, if you are running in gitpod, is to use the <code>tsc</code> command in the console. In this case, I got the following result:</p>
 <pre><code>gitpod /workspace/celeri_ui (development-example) $ tsc
 src/Components/Map/MapArrows.ts:248:6 - error TS2322: Type 'number[] | undefined' is not assignable to type 'number[]'.
@@ -389,6 +428,8 @@ and then we run the tests, commit, push, and keep an eye on the github actions a
                             <a rel="prev" href="DevelopmentCycle.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
+
+
                         <div style="clear: both"></div>
                     </nav>
                 </div>
@@ -398,20 +439,30 @@ and then we run the tests, commit, push, and keep an eye on the github actions a
                     <a rel="prev" href="DevelopmentCycle.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
+
             </nav>
 
         </div>
 
-        <script type="text/javascript">
+
+
+
+        <script>
             window.playground_copyable = true;
         </script>
-        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
-        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
-        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
+
+
+    </div>
     </body>
 </html>
