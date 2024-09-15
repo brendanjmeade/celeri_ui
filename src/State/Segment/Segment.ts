@@ -33,6 +33,15 @@ export interface Segment {
 	patch_flag: number
 	patch_slip_file: number
 	patch_slip_flag: number
+	ss_rate_bound_flag : number
+  ss_rate_bound_min : number
+  ss_rate_bound_max : number
+  ds_rate_bound_flag : number
+  ds_rate_bound_min : number
+  ds_rate_bound_max : number
+  ts_rate_bound_flag : number
+  ts_rate_bound_min : number
+  ts_rate_bound_max : number
 }
 
 export type FileSegment = Segment & {
@@ -85,7 +94,16 @@ export const fieldNames = [
 	'patch_file_name',
 	'patch_flag',
 	'patch_slip_file',
-	'patch_slip_flag'
+	'patch_slip_flag',
+	'ss_rate_bound_flag',
+  'ss_rate_bound_min',
+  'ss_rate_bound_max',
+  'ds_rate_bound_flag',
+  'ds_rate_bound_min',
+  'ds_rate_bound_max',
+  'ts_rate_bound_flag',
+  'ts_rate_bound_min',
+  'ts_rate_bound_max'
 ]
 
 export const defaultSegment: FileSegment = {
@@ -130,5 +148,14 @@ export const defaultSegment: FileSegment = {
 	patch_file_name: -1,
 	patch_flag: 0,
 	patch_slip_file: 0,
-	patch_slip_flag: 0
+	patch_slip_flag: 0,
+	ss_rate_bound_flag: 0,
+  ss_rate_bound_min: -1.0,
+  ss_rate_bound_max: 1.0,
+  ds_rate_bound_flag: 0,
+  ds_rate_bound_min: -1.0,
+  ds_rate_bound_max: 1.0,
+  ts_rate_bound_flag: 0,
+  ts_rate_bound_min: -1.0,
+  ts_rate_bound_max: 1.0
 }
