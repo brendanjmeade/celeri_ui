@@ -1,0 +1,11 @@
+version: 2
+updates:
+  - package-ecosystem: "npm" # or "pip", "bundler", "maven", etc.
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "monthly" # or "daily", "weekly"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "brendanjmeade"
+    assignees:
+      - "brendanjmeade"
