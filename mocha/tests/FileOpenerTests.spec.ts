@@ -99,7 +99,7 @@ describe('File Openers Work as Expected', () => {
 	it('Can Open Segment Files Properly', async () => {
 		const directoryStructure = {
 			root: {
-				'segment.csv': `name,lon1,lat1,lon2,lat2,dip,res,other3,other6,other7,other8,other9,other10,other11,create_segmesh,locking_depth,locking_depth_sig,locking_depth_flag,dip_sig,dip_flag,ss_rate,ss_rate_sig,ss_rate_flag,ds_rate,ds_rate_sig,ds_rate_flag,ts_rate,ts_rate_sig,ts_rate_flag,resolution_override,resolution_other,patch_file_name,patch_flag,patch_slip_file,patch_slip_flag,ss_rate_bound_flag,ss_rate_bound_min,ss_rate_bound_max,ds_rate_bound_flag,ds_rate_bound_min,ds_rate_bound_max,ts_rate_bound_flag,ts_rate_bound_min,ts_rate_bound_max,
+				'segment.csv': `name,lon1,lat1,lon2,lat2,dip,res,other3,other6,other7,other8,other9,other10,other11,create_ribbon_mesh,locking_depth,locking_depth_sig,locking_depth_flag,dip_sig,dip_flag,ss_rate,ss_rate_sig,ss_rate_flag,ds_rate,ds_rate_sig,ds_rate_flag,ts_rate,ts_rate_sig,ts_rate_flag,resolution_override,resolution_other,patch_file_name,patch_flag,patch_slip_file,patch_slip_flag,ss_rate_bound_flag,ss_rate_bound_min,ss_rate_bound_max,ds_rate_bound_flag,ds_rate_bound_min,ds_rate_bound_max,ts_rate_bound_flag,ts_rate_bound_min,ts_rate_bound_max,
 BRa                                                                ,247.087,43.873,247.764,42.286,90,100,0,0,0,0,0,0,0,0,15,5,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1.0,1.0,0,-1.0,1.0,0,-1.0,1.0,
 BRb                                                                ,245.927,44.722,247.087,43.873,90,100,0,0,0,0,0,0,0,0,15,5,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1.0,1.0,0,-1.0,1.0,0,-1.0,1.0,`
 			}
@@ -121,7 +121,7 @@ BRb                                                                ,245.927,44.7
 	it('Can Write Segment Files Properly', async () => {
 		const directoryStructure = {
 			root: {
-				'segment.csv': `name,lon1,lat1,lon2,lat2,dip,res,other3,other6,other7,other8,other9,other10,other11,create_segmesh,locking_depth,locking_depth_sig,locking_depth_flag,dip_sig,dip_flag,ss_rate,ss_rate_sig,ss_rate_flag,ds_rate,ds_rate_sig,ds_rate_flag,ts_rate,ts_rate_sig,ts_rate_flag,resolution_override,resolution_other,patch_file_name,patch_flag,patch_slip_file,patch_slip_flag,ss_rate_bound_flag,ss_rate_bound_min,ss_rate_bound_max,ds_rate_bound_flag,ds_rate_bound_min,ds_rate_bound_max,ts_rate_bound_flag,ts_rate_bound_min,ts_rate_bound_max`
+				'segment.csv': `name,lon1,lat1,lon2,lat2,dip,res,other3,other6,other7,other8,other9,other10,other11,create_ribbon_mesh,locking_depth,locking_depth_sig,locking_depth_flag,dip_sig,dip_flag,ss_rate,ss_rate_sig,ss_rate_flag,ds_rate,ds_rate_sig,ds_rate_flag,ts_rate,ts_rate_sig,ts_rate_flag,resolution_override,resolution_other,patch_file_name,patch_flag,patch_slip_file,patch_slip_flag,ss_rate_bound_flag,ss_rate_bound_min,ss_rate_bound_max,ds_rate_bound_flag,ds_rate_bound_min,ds_rate_bound_max,ts_rate_bound_flag,ts_rate_bound_min,ts_rate_bound_max`
 			}
 		}
 		const directory = await OpenDirectory(directoryStructure)
@@ -516,7 +516,7 @@ $EndElements`
 				1 1 1 0 2 3
 				1 2 3 3 0 0 1 3 2
 				$EndElements`,
-					'segment_file_name.csv': `name,lon1,lat1,lon2,lat2,dip,res,other3,other6,other7,other8,other9,other10,other11,create_segmesh,locking_depth,locking_depth_sig,locking_depth_flag,dip_sig,dip_flag,ss_rate,ss_rate_sig,ss_rate_flag,ds_rate,ds_rate_sig,ds_rate_flag,ts_rate,ts_rate_sig,ts_rate_flag,resolution_override,resolution_other,patch_file_name,patch_flag,patch_slip_file,patch_slip_flag,ss_rate_bound_flag,ss_rate_bound_min,ss_rate_bound_max,ds_rate_bound_flag,ds_rate_bound_min,ds_rate_bound_max,ts_rate_bound_flag,ts_rate_bound_min,ts_rate_bound_max,
+					'segment_file_name.csv': `name,lon1,lat1,lon2,lat2,dip,res,other3,other6,other7,other8,other9,other10,other11,create_ribbon_mesh,locking_depth,locking_depth_sig,locking_depth_flag,dip_sig,dip_flag,ss_rate,ss_rate_sig,ss_rate_flag,ds_rate,ds_rate_sig,ds_rate_flag,ts_rate,ts_rate_sig,ts_rate_flag,resolution_override,resolution_other,patch_file_name,patch_flag,patch_slip_file,patch_slip_flag,ss_rate_bound_flag,ss_rate_bound_min,ss_rate_bound_max,ds_rate_bound_flag,ds_rate_bound_min,ds_rate_bound_max,ts_rate_bound_flag,ts_rate_bound_min,ts_rate_bound_max,
 				BRa                                                                ,247.087,43.873,247.764,42.286,90,100,0,0,0,0,0,0,0,0,15,5,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1.0,1.0,0,-1.0,1.0,0,-1.0,1.0,
 				BRb                                                                ,245.927,44.722,247.087,43.873,90,100,0,0,0,0,0,0,0,0,15,5,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1.0,1.0,0,-1.0,1.0,0,-1.0,1.0,`,
 					'block_file_name.csv': `other1,other2,other3,other4,other5,other6,name,interior_lon,interior_lat,euler_lon,euler_lon_sig,euler_lat,euler_lat_sig,rotation_rate,rotation_rate_sig,rotation_flag,apriori_flag,strain_rate,strain_rate_sig,strain_rate_flag
