@@ -9,7 +9,7 @@ export interface Segment {
 	other9: number
 	other10: number
 	other11: number
-	create_ribbon_mesh: number
+	create_segmesh: number
 	locking_depth: number
 	locking_depth_sig: number
 	locking_depth_flag: number
@@ -68,7 +68,7 @@ export const fieldNames = [
 	'other9',
 	'other10',
 	'other11',
-	'create_ribbon_mesh',
+	'create_segmesh',
 	'locking_depth',
 	'locking_depth_sig',
 	'locking_depth_flag',
@@ -118,7 +118,7 @@ export const defaultSegment: FileSegment = {
 	other9: 0,
 	other10: 0,
 	other11: 0,
-	create_ribbon_mesh: 0,
+	create_segmesh: 0,
 	// eslint-disable-next-line @typescript-eslint/no-magic-numbers
 	locking_depth: 15,
 	locking_depth_sig: 0,
