@@ -24,6 +24,9 @@ export interface Segment {
 	ts_rate: number
 	ts_rate_sig: number
 	ts_rate_flag: number
+	burial_depth: number
+	burial_depth_sig: number
+	burial_depth_flag: number
 	resolution_override: number
 	resolution_other: number
 	patch_file_name: number
@@ -83,6 +86,9 @@ export const fieldNames = [
 	'ts_rate',
 	'ts_rate_sig',
 	'ts_rate_flag',
+	'burial_depth',
+	'burial_depth_sig',
+	'burial_depth_flag',
 	'resolution_override',
 	'resolution_other',
 	'patch_file_name',
@@ -134,6 +140,9 @@ export const defaultSegment: FileSegment = {
 	ts_rate: 0,
 	ts_rate_sig: 0,
 	ts_rate_flag: 0,
+	burial_depth: 0,
+	burial_depth_sig: 0,
+	burial_depth_flag: 0,
 	resolution_override: 0,
 	resolution_other: 0,
 	patch_file_name: -1,
