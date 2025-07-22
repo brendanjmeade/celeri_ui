@@ -29,8 +29,8 @@ export interface Segment {
 	burial_depth_flag: number
 	resolution_override: number
 	resolution_other: number
-	patch_file_name: number
-	patch_flag: number
+	mesh_file_index: number
+	mesh_flag: number
 	patch_slip_file: number
 	patch_slip_flag: number
 	ss_rate_bound_flag : number
@@ -91,8 +91,8 @@ export const fieldNames = [
 	'burial_depth_flag',
 	'resolution_override',
 	'resolution_other',
-	'patch_file_name',
-	'patch_flag',
+	'mesh_file_index',
+	'mesh_flag',
 	'patch_slip_file',
 	'patch_slip_flag',
 	'ss_rate_bound_flag',
@@ -145,8 +145,8 @@ export const defaultSegment: FileSegment = {
 	burial_depth_flag: 0,
 	resolution_override: 0,
 	resolution_other: 0,
-	patch_file_name: -1,
-	patch_flag: 0,
+	mesh_file_index: -1,
+	mesh_flag: 0,
 	patch_slip_file: 0,
 	patch_slip_flag: 0,
 	ss_rate_bound_flag: 0,
