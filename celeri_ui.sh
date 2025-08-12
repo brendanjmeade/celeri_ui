@@ -31,7 +31,7 @@ sleep 3
 
 # Open in browser
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    open http://localhost:3000/
+    open -a '/Applications/Google Chrome.app' http://localhost:3000/
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     xdg-open http://localhost:3000/
 fi
