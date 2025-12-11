@@ -1,0 +1,19 @@
+{
+	"permissions": {
+		"allow": [
+			"Bash(gh pr view:*)",
+			"Bash(gh run view:*)",
+			"Bash(gh api repos/brendanjmeade/celeri_ui/actions/runs/20147042618/jobs --jq '.jobs[].steps[] | select(.conclusion == \"\"failure\"\") | {name, conclusion}')",
+			"Bash(git stash:*)",
+			"Bash(git checkout:*)",
+			"Bash(npm run lint:*)",
+			"Bash(git stash pop:*)",
+			"Bash(npm run run-eslint:*)",
+			"Bash(cat:*)",
+			"Bash(npm run test:*)",
+			"Bash(git add:*)",
+			"Bash(git commit:*)",
+			"Bash(git push)"
+		]
+	}
+}
