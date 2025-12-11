@@ -25,9 +25,13 @@ export class FileSystemFile implements File {
 		return file.text()
 	}
 
+	// File System Access API types not fully supported by TypeScript's lib.dom.d.ts
 	public async setContents(contents: string): Promise<void> {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const write = await this.handle.createWritable()
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 		await write.write(contents)
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 		await write.close()
 	}
 }
