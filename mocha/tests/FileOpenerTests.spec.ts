@@ -312,19 +312,18 @@ $EndElements`
 					}
 			]`,
 				'mesh.msh': `$MeshFormat
-2 0 8
+4.1 0 8
 $EndMeshFormat
 $Nodes
-3
-1 0.0 0.0 0.0
-2 1.0 0.0 0.0
-3 0.0 -1.0 0.0
+-1.0 0.0 0.0
+-0.1 0.0 0.0
+-0.1 -1.0 0.0
+-1.0 -1.0 0.0
 $EndNodes
 $Elements
-3
-1 1 2 3 0 1 2
-1 1 1 0 2 3
-1 2 3 3 0 0 1 3 2
+2 1 2 2
+0 1 2 3 
+1 3 4 1
 $EndElements`
 			}
 		}
@@ -335,32 +334,37 @@ $EndElements`
 		if (result.length > 0) {
 			const mesh = result[0].line
 
-			expect(mesh).to.have.length(5)
+			expect(mesh).to.have.length(6)
 
-			expect(mesh[0][0].lon).to.equal(0)
+			expect(mesh[0][0].lon).to.equal(359)
 			expect(mesh[0][0].lat).to.equal(0)
-			expect(mesh[0][1].lon).to.equal(1)
+			expect(mesh[0][1].lon).to.equal(359.9)
 			expect(mesh[0][1].lat).to.equal(0)
 
-			expect(mesh[1][0].lon).to.equal(1)
+			expect(mesh[1][0].lon).to.equal(359.9)
 			expect(mesh[1][0].lat).to.equal(0)
-			expect(mesh[1][1].lon).to.equal(0)
+			expect(mesh[1][1].lon).to.equal(359.9)
 			expect(mesh[1][1].lat).to.equal(-1)
 
-			expect(mesh[2][0].lon).to.equal(0)
-			expect(mesh[2][0].lat).to.equal(0)
-			expect(mesh[2][1].lon).to.equal(0)
-			expect(mesh[2][1].lat).to.equal(-1)
+			expect(mesh[2][0].lon).to.equal(359.9)
+			expect(mesh[2][0].lat).to.equal(-1)
+			expect(mesh[2][1].lon).to.equal(359)
+			expect(mesh[2][1].lat).to.equal(0)
 
-			expect(mesh[3][0].lon).to.equal(0)
+			expect(mesh[3][0].lon).to.equal(359.9)
 			expect(mesh[3][0].lat).to.equal(-1)
-			expect(mesh[3][1].lon).to.equal(1)
-			expect(mesh[3][1].lat).to.equal(0)
+			expect(mesh[3][1].lon).to.equal(359)
+			expect(mesh[3][1].lat).to.equal(-1)
 
-			expect(mesh[4][0].lon).to.equal(1)
-			expect(mesh[4][0].lat).to.equal(0)
-			expect(mesh[4][1].lon).to.equal(0)
+			expect(mesh[4][0].lon).to.equal(359)
+			expect(mesh[4][0].lat).to.equal(-1)
+			expect(mesh[4][1].lon).to.equal(359)
 			expect(mesh[4][1].lat).to.equal(0)
+
+			expect(mesh[5][0].lon).to.equal(359)
+			expect(mesh[5][0].lat).to.equal(0)
+			expect(mesh[5][1].lon).to.equal(359.9)
+			expect(mesh[5][1].lat).to.equal(-1)
 		}
 	})
 	it('Can open arbitrary CSV files properly', async () => {
