@@ -8,16 +8,16 @@ import { createVelocity } from '../../src/State/Velocity/Velocity'
 import { BlockFile } from '../../src/Utilities/BlockFile'
 import { CommandFile } from '../../src/Utilities/CommandFile'
 import {
-    OpenCommandFile,
-    OpenMeshParametersFile
+	OpenCommandFile,
+	OpenMeshParametersFile
 } from '../../src/Utilities/FileOpeners'
 import type {
-    DirectoryName,
-    FileName
+	DirectoryName,
+	FileName
 } from '../../src/Utilities/FileSystemInterfaces'
 import {
-    GenerateRelativePath,
-    GetRelativeFile
+	GenerateRelativePath,
+	GetRelativeFile
 } from '../../src/Utilities/FileSystemInterfaces'
 import { GenericSegmentFile } from '../../src/Utilities/GenericSegmentFile'
 import OpenDirectory from '../../src/Utilities/InMemoryFileSystem'
@@ -239,19 +239,18 @@ BRb                                                                ,245.927,44.7
 		const directoryStructure = {
 			root: {
 				'mesh.msh': `$MeshFormat
-2 0 8
+4.1 0 8
 $EndMeshFormat
 $Nodes
-3
 1 0.0 0.0 0.0
 2 1.0 0.0 0.0
 3 0.0 -1.0 0.0
+4 -1.0 -1.0 0.0
 $EndNodes
 $Elements
-3
-1 1 2 3 0 1 2
-1 1 1 0 2 3
-1 2 3 3 0 0 1 3 2
+2 1 2 2
+1 2 3
+2 3 4
 $EndElements`
 			}
 		}
