@@ -260,32 +260,37 @@ $EndElements`
 		await mesh.initialize()
 		if (mesh.data) {
 			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-			expect(mesh.data).to.have.length(5)
+			expect(mesh.data).to.have.length(6)
 
-			expect(mesh.data[0][0].lon).to.equal(0)
+			expect(mesh.data[0][0].lon).to.equal(359)
 			expect(mesh.data[0][0].lat).to.equal(0)
-			expect(mesh.data[0][1].lon).to.equal(1)
+			expect(mesh.data[0][1].lon).to.equal(359.9)
 			expect(mesh.data[0][1].lat).to.equal(0)
 
-			expect(mesh.data[1][0].lon).to.equal(1)
+			expect(mesh.data[1][0].lon).to.equal(359.9)
 			expect(mesh.data[1][0].lat).to.equal(0)
-			expect(mesh.data[1][1].lon).to.equal(0)
+			expect(mesh.data[1][1].lon).to.equal(359.9)
 			expect(mesh.data[1][1].lat).to.equal(-1)
 
-			expect(mesh.data[2][0].lon).to.equal(0)
-			expect(mesh.data[2][0].lat).to.equal(0)
-			expect(mesh.data[2][1].lon).to.equal(0)
-			expect(mesh.data[2][1].lat).to.equal(-1)
+			expect(mesh.data[2][0].lon).to.equal(359.9)
+			expect(mesh.data[2][0].lat).to.equal(-1)
+			expect(mesh.data[2][1].lon).to.equal(359)
+			expect(mesh.data[2][1].lat).to.equal(0)
 
-			expect(mesh.data[3][0].lon).to.equal(0)
+			expect(mesh.data[3][0].lon).to.equal(359.9)
 			expect(mesh.data[3][0].lat).to.equal(-1)
-			expect(mesh.data[3][1].lon).to.equal(1)
-			expect(mesh.data[3][1].lat).to.equal(0)
+			expect(mesh.data[3][1].lon).to.equal(359)
+			expect(mesh.data[3][1].lat).to.equal(-1)
 
-			expect(mesh.data[4][0].lon).to.equal(1)
-			expect(mesh.data[4][0].lat).to.equal(0)
-			expect(mesh.data[4][1].lon).to.equal(0)
+			expect(mesh.data[4][0].lon).to.equal(359)
+			expect(mesh.data[4][0].lat).to.equal(-1)
+			expect(mesh.data[4][1].lon).to.equal(359)
 			expect(mesh.data[4][1].lat).to.equal(0)
+
+			expect(mesh.data[5][0].lon).to.equal(359)
+			expect(mesh.data[5][0].lat).to.equal(0)
+			expect(mesh.data[5][1].lon).to.equal(359.9)
+			expect(mesh.data[5][1].lat).to.equal(-1)
 		} else {
 			expect(mesh.data).to.not.be.undefined
 		}
