@@ -15,7 +15,7 @@ export function ParseNodeSection(section: string): Vertex[] {
 		}
 		const lon = testlon
 		const lat = Number.parseFloat(line[2])
-		// console.log('lon: %10.d3', lon)
+		// console.log('lon: %f', lon)
 		return { lon, lat }
 	})
 	vertices.splice(0, 0, { lon: 0, lat: 0 })
@@ -92,7 +92,6 @@ export function ParseMeshFileV2(file: string): MeshLine[] {
 			vertices = ParseNodeSection(section)
 		} else if (section.startsWith('Elements')) {
 			const match2d = section.lastIndexOf('2 1 2')
-
 			elements = ParseElementSection(section.slice(match2d + 6))
 		}
 	}
