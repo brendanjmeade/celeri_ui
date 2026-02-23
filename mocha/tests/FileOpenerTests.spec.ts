@@ -8,16 +8,16 @@ import { createVelocity } from '../../src/State/Velocity/Velocity'
 import { BlockFile } from '../../src/Utilities/BlockFile'
 import { CommandFile } from '../../src/Utilities/CommandFile'
 import {
-    OpenCommandFile,
-    OpenMeshParametersFile
+	OpenCommandFile,
+	OpenMeshParametersFile
 } from '../../src/Utilities/FileOpeners'
 import type {
-    DirectoryName,
-    FileName
+	DirectoryName,
+	FileName
 } from '../../src/Utilities/FileSystemInterfaces'
 import {
-    GenerateRelativePath,
-    GetRelativeFile
+	GenerateRelativePath,
+	GetRelativeFile
 } from '../../src/Utilities/FileSystemInterfaces'
 import { GenericSegmentFile } from '../../src/Utilities/GenericSegmentFile'
 import OpenDirectory from '../../src/Utilities/InMemoryFileSystem'
@@ -239,19 +239,18 @@ BRb                                                                ,245.927,44.7
 		const directoryStructure = {
 			root: {
 				'mesh.msh': `$MeshFormat
-2 0 8
+4.1 0 8
 $EndMeshFormat
 $Nodes
-3
-1 0.0 0.0 0.0
-2 1.0 0.0 0.0
-3 0.0 -1.0 0.0
+-1.0 0.0 0.0
+-0.1 0.0 0.0
+-0.1 -1.0 0.0
+-1.0 -1.0 0.0
 $EndNodes
 $Elements
-3
-1 1 2 3 0 1 2
-1 1 1 0 2 3
-1 2 3 3 0 0 1 3 2
+2 1 2 2
+0 1 2 3 
+1 3 4 1
 $EndElements`
 			}
 		}
@@ -261,32 +260,37 @@ $EndElements`
 		await mesh.initialize()
 		if (mesh.data) {
 			// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-			expect(mesh.data).to.have.length(5)
+			expect(mesh.data).to.have.length(6)
 
-			expect(mesh.data[0][0].lon).to.equal(0)
+			expect(mesh.data[0][0].lon).to.equal(359)
 			expect(mesh.data[0][0].lat).to.equal(0)
-			expect(mesh.data[0][1].lon).to.equal(1)
+			expect(mesh.data[0][1].lon).to.equal(359.9)
 			expect(mesh.data[0][1].lat).to.equal(0)
 
-			expect(mesh.data[1][0].lon).to.equal(1)
+			expect(mesh.data[1][0].lon).to.equal(359.9)
 			expect(mesh.data[1][0].lat).to.equal(0)
-			expect(mesh.data[1][1].lon).to.equal(0)
+			expect(mesh.data[1][1].lon).to.equal(359.9)
 			expect(mesh.data[1][1].lat).to.equal(-1)
 
-			expect(mesh.data[2][0].lon).to.equal(0)
-			expect(mesh.data[2][0].lat).to.equal(0)
-			expect(mesh.data[2][1].lon).to.equal(0)
-			expect(mesh.data[2][1].lat).to.equal(-1)
+			expect(mesh.data[2][0].lon).to.equal(359.9)
+			expect(mesh.data[2][0].lat).to.equal(-1)
+			expect(mesh.data[2][1].lon).to.equal(359)
+			expect(mesh.data[2][1].lat).to.equal(0)
 
-			expect(mesh.data[3][0].lon).to.equal(0)
+			expect(mesh.data[3][0].lon).to.equal(359.9)
 			expect(mesh.data[3][0].lat).to.equal(-1)
-			expect(mesh.data[3][1].lon).to.equal(1)
-			expect(mesh.data[3][1].lat).to.equal(0)
+			expect(mesh.data[3][1].lon).to.equal(359)
+			expect(mesh.data[3][1].lat).to.equal(-1)
 
-			expect(mesh.data[4][0].lon).to.equal(1)
-			expect(mesh.data[4][0].lat).to.equal(0)
-			expect(mesh.data[4][1].lon).to.equal(0)
+			expect(mesh.data[4][0].lon).to.equal(359)
+			expect(mesh.data[4][0].lat).to.equal(-1)
+			expect(mesh.data[4][1].lon).to.equal(359)
 			expect(mesh.data[4][1].lat).to.equal(0)
+
+			expect(mesh.data[5][0].lon).to.equal(359)
+			expect(mesh.data[5][0].lat).to.equal(0)
+			expect(mesh.data[5][1].lon).to.equal(359.9)
+			expect(mesh.data[5][1].lat).to.equal(-1)
 		} else {
 			expect(mesh.data).to.not.be.undefined
 		}
@@ -308,19 +312,18 @@ $EndElements`
 					}
 			]`,
 				'mesh.msh': `$MeshFormat
-2 0 8
+4.1 0 8
 $EndMeshFormat
 $Nodes
-3
-1 0.0 0.0 0.0
-2 1.0 0.0 0.0
-3 0.0 -1.0 0.0
+-1.0 0.0 0.0
+-0.1 0.0 0.0
+-0.1 -1.0 0.0
+-1.0 -1.0 0.0
 $EndNodes
 $Elements
-3
-1 1 2 3 0 1 2
-1 1 1 0 2 3
-1 2 3 3 0 0 1 3 2
+2 1 2 2
+0 1 2 3 
+1 3 4 1
 $EndElements`
 			}
 		}
@@ -331,32 +334,37 @@ $EndElements`
 		if (result.length > 0) {
 			const mesh = result[0].line
 
-			expect(mesh).to.have.length(5)
+			expect(mesh).to.have.length(6)
 
-			expect(mesh[0][0].lon).to.equal(0)
+			expect(mesh[0][0].lon).to.equal(359)
 			expect(mesh[0][0].lat).to.equal(0)
-			expect(mesh[0][1].lon).to.equal(1)
+			expect(mesh[0][1].lon).to.equal(359.9)
 			expect(mesh[0][1].lat).to.equal(0)
 
-			expect(mesh[1][0].lon).to.equal(1)
+			expect(mesh[1][0].lon).to.equal(359.9)
 			expect(mesh[1][0].lat).to.equal(0)
-			expect(mesh[1][1].lon).to.equal(0)
+			expect(mesh[1][1].lon).to.equal(359.9)
 			expect(mesh[1][1].lat).to.equal(-1)
 
-			expect(mesh[2][0].lon).to.equal(0)
-			expect(mesh[2][0].lat).to.equal(0)
-			expect(mesh[2][1].lon).to.equal(0)
-			expect(mesh[2][1].lat).to.equal(-1)
+			expect(mesh[2][0].lon).to.equal(359.9)
+			expect(mesh[2][0].lat).to.equal(-1)
+			expect(mesh[2][1].lon).to.equal(359)
+			expect(mesh[2][1].lat).to.equal(0)
 
-			expect(mesh[3][0].lon).to.equal(0)
+			expect(mesh[3][0].lon).to.equal(359.9)
 			expect(mesh[3][0].lat).to.equal(-1)
-			expect(mesh[3][1].lon).to.equal(1)
-			expect(mesh[3][1].lat).to.equal(0)
+			expect(mesh[3][1].lon).to.equal(359)
+			expect(mesh[3][1].lat).to.equal(-1)
 
-			expect(mesh[4][0].lon).to.equal(1)
-			expect(mesh[4][0].lat).to.equal(0)
-			expect(mesh[4][1].lon).to.equal(0)
+			expect(mesh[4][0].lon).to.equal(359)
+			expect(mesh[4][0].lat).to.equal(-1)
+			expect(mesh[4][1].lon).to.equal(359)
 			expect(mesh[4][1].lat).to.equal(0)
+
+			expect(mesh[5][0].lon).to.equal(359)
+			expect(mesh[5][0].lat).to.equal(0)
+			expect(mesh[5][1].lon).to.equal(359.9)
+			expect(mesh[5][1].lat).to.equal(-1)
 		}
 	})
 	it('Can open arbitrary CSV files properly', async () => {
