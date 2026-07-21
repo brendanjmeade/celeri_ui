@@ -16,8 +16,8 @@
         <link rel="icon" href="favicon-de23e50b.svg">
         <link rel="shortcut icon" href="favicon-8114d1fc.png">
         <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-2459343d.css">
-        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
         <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-0d63fc45.js";
+            window.path_to_searchindex_js = "searchindex-db28d9d8.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-cf002a65.js"></script>
+        <script src="toc-2375236e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -176,7 +176,7 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="intro"><a class="header" href="#intro">Intro</a></h1>
-<p><img src="https://github.com/brendanjmeade/celeri_ui/actions/workflows/publish-pages.yml/badge.svg" alt="test workflow"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="https://github.com/brendanjmeade/celeri_ui/actions/workflows/publish-pages.yml/badge.svg" alt="test workflow"><span class="img-wrapper"><img src="https://github.com/brendanjmeade/celeri_ui/actions/workflows/publish-pages.yml/badge.svg" alt="test workflow"></span></label></p>
 <p>These are the docs for <a href="https://brendanjmeade.github.io/celeri_ui/">Celeri UI</a> - the front end for setting up kinematic earthquake cycle models, for use with <a href="https://github.com/brendanjmeade/celeri">celeri</a></p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="using-celeri-ui"><a class="header" href="#using-celeri-ui">Using Celeri UI</a></h1>
@@ -293,26 +293,26 @@ You can also look at the <code>development-example</code> branch.</p>
 <p>Then, we want to explore the issue abit more - we need to reproduce it, and try to see where it breaks/causes issues. In this case - I took the following steps:</p>
 <ul>
 <li>Opening a segment file</li>
-<li>Select a single segment connects to two other segments, one on each end, and delete it <img src="SelectSingleSegment.png" alt="Select a Segment">
+<li>Select a single segment connects to two other segments, one on each end, and delete it <label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="SelectSingleSegment.png" alt="Select a Segment"><span class="img-wrapper"><img src="SelectSingleSegment.png" alt="Select a Segment"></span></label>
 <ul>
 <li>this looks like it behaved correctly, neither of the vertices were deleted because they are still connected to other segments.</li>
 </ul>
 </li>
-<li>Select one of the formerly adjacent segments, which now has one vertex that doesn’t connect to any other segments, and delete it <img src="SelectAdjacentSegment.png" alt="Select Adjacent Segment">
+<li>Select one of the formerly adjacent segments, which now has one vertex that doesn’t connect to any other segments, and delete it <label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="SelectAdjacentSegment.png" alt="Select Adjacent Segment"><span class="img-wrapper"><img src="SelectAdjacentSegment.png" alt="Select Adjacent Segment"></span></label>
 <ul>
 <li>this also seems to behave correctly, the dangling vertex was deleted, but the connect vertex wasn’t</li>
 </ul>
 </li>
-<li>Select one of the segments further one step away from the edge, and delete it <img src="SelectOneStepAway.png" alt="Select one step away"></li>
-<li>The Select the “floating” segment and delete it <img src="SelectFloatingSegment.png" alt="Select Floating Segment">
+<li>Select one of the segments further one step away from the edge, and delete it <label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="SelectOneStepAway.png" alt="Select one step away"><span class="img-wrapper"><img src="SelectOneStepAway.png" alt="Select one step away"></span></label></li>
+<li>The Select the “floating” segment and delete it <label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="SelectFloatingSegment.png" alt="Select Floating Segment"><span class="img-wrapper"><img src="SelectFloatingSegment.png" alt="Select Floating Segment"></span></label>
 <ul>
 <li>This again works correctly - both the vertices connected to that segment are deleted.</li>
 </ul>
 </li>
 <li>All of this suggests, to me, that the issue comes from having multiple segments deleted at once, so lets try that</li>
-<li>Switch to the Segment edit mode, and Lasso-select 3 connected segments, one of which has only one connected segment, then delete them <img src="LassoSelect.png" alt="Lasso Select">
+<li>Switch to the Segment edit mode, and Lasso-select 3 connected segments, one of which has only one connected segment, then delete them <label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="LassoSelect.png" alt="Lasso Select"><span class="img-wrapper"><img src="LassoSelect.png" alt="Lasso Select"></span></label>
 <ul>
-<li>Here we finally replicated the issue - the segments are deleted, but the vertices seem to all remain - including the one that was originally “dangling” <img src="IssueFound.png" alt="Issue Found"></li>
+<li>Here we finally replicated the issue - the segments are deleted, but the vertices seem to all remain - including the one that was originally “dangling” <label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="IssueFound.png" alt="Issue Found"><span class="img-wrapper"><img src="IssueFound.png" alt="Issue Found"></span></label></li>
 </ul>
 </li>
 </ul>
@@ -379,9 +379,9 @@ Since our manual tests did suggest that this should correctly isolate the bug, l
 <p>So now we know that the dispatch looks correct - when no data is passed, this is treated as a delete operation, in which case we pass the indices of the segments we want to delete…</p>
 <p>This takes us back to the drawing board - it seems like the issue isn’t with the data coming in to our deletion operation, and it looks like our test suggests that the delete operation itself is working correctly. So lets see if maybe it’s actually an issue with the map not refreshing to display the correct information?</p>
 <p>To test this - we’ll first repeat the steps we took before, so we get back to the step where we reproduced the issue:</p>
-<p><img src="IssueFound.png" alt="Issue Found"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="IssueFound.png" alt="Issue Found"><span class="img-wrapper"><img src="IssueFound.png" alt="Issue Found"></span></label></p>
 <p>Then, we force a refresh of the vertex display on the map, by swapping to Vertex edit mode - at which point our mystery vertices disapper!</p>
-<p><img src="ToEditMode.png" alt="To Edit Mode"></p>
+<p><label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="ToEditMode.png" alt="To Edit Mode"><span class="img-wrapper"><img src="ToEditMode.png" alt="To Edit Mode"></span></label></p>
 <p>This means it’s not triggering an update of the vertices displayed. For most things in the maps, a re-render is triggered by the object representing the state being replaced - so this might be a situation where we are accidentally mutating an object in place rather than actually replacing it during the state change.</p>
 <p>At this point, I’m not sure if this is the case, but it’s the best theory I’ve got so we’re going to try and investigate it. Lets go back out our test in <code>SegmentState.spec.tsx</code>.</p>
 <p>We’ll start by adding something to verify that our vertex object is actually being replaced:</p>
@@ -400,17 +400,17 @@ expect(state.vertecies[3].lat).equal(3)
 <p>and then we run it with <code>npm run test</code> - and it seems to pass. So the issue doesn’t show up here, yet.</p>
 <p>On the one hand, this does narrow things down a bit - it loos like this happens between the point where the vertices are changed, and the point where they are actually drawn on the map.</p>
 <p>So now is the time to open the debugger, and look at things as they happen! In the browser, open the dev tools (either by tapping <code>f12</code> on the keyboard, or right clicking somewhere that isn’t the map and selecting “Inspect”), then navigate to the “Sources” tab.
-<img src="DebugSourcesTab.png" alt="Sources Tab"></p>
+<label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="DebugSourcesTab.png" alt="Sources Tab"><span class="img-wrapper"><img src="DebugSourcesTab.png" alt="Sources Tab"></span></label></p>
 <p>Next, we need to find the file where we update drawn points - <code>/src/Utilities/SetupPointSources.tsx</code> - in the file hierarchy on the left - it’ll be under <code>workspace/celeri_ui/src/Utilities</code>
-<img src="DebugFS.png" alt="Debug File Hierarchy"></p>
+<label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="DebugFS.png" alt="Debug File Hierarchy"><span class="img-wrapper"><img src="DebugFS.png" alt="Debug File Hierarchy"></span></label></p>
 <p>Once we have the file open, we can set break points - points that will stop the execution of the code and let us see what’s going on in real time - by clicking to the left of the line numbers at the points we want to inspect. In this case - we want to see when the vertices are updated, and it looks like that is hidden behind the if statement at line 38 - so we’ll put the break point right after that:
-<img src="Breakpoint.png" alt="Breakpoint"></p>
+<label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="Breakpoint.png" alt="Breakpoint"><span class="img-wrapper"><img src="Breakpoint.png" alt="Breakpoint"></span></label></p>
 <p>Now, let’s lasso-select a few segments again - you’ll notice that the moment we switch to Lasso Selection mode, or to Segment edit mode (if you weren’t in that mode before), the breakpoint triggers. This is too early for us to get information, so let’s click the breakpoint again to remove it, and click the play button or <code>f8</code> to resume.
-<img src="PlayButton.png" alt="Play Button"></p>
+<label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="PlayButton.png" alt="Play Button"><span class="img-wrapper"><img src="PlayButton.png" alt="Play Button"></span></label></p>
 <p>First, we need to select some segments, with the lasso select tool. Then we’ll re-add the breakpoint at the same place, and then we’ll click the delete button in the segment panel.
 This does seem to trigger our breakpoint - which means it should have the up to date information, but when we resume (by clicking play or <code>f8</code>), we see the issue persists…</p>
 <p>So let’s try to manually refresh - if we do so by changing the edit mode, it seems things happen as expected as well. But if we just try to toggle the vertex display, we see that it doesn’t seem to trigger our breakpoint! And the vertices don’t get hidden.
-<img src="VertexDisplay.png" alt="Vertex Display"></p>
+<label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="VertexDisplay.png" alt="Vertex Display"><span class="img-wrapper"><img src="VertexDisplay.png" alt="Vertex Display"></span></label></p>
 <p>Once I noticed that, I realized that we actually allow editing vertices while in Segment edit mode - so we actually have vertices passing in to the drawn points (points that can be moved) in addition to the vertex points, but we probably aren’t updating those!</p>
 <p>So - let’s move to see what’s happening where those points are set! First, lets get rid of the breakpoint (by clicking on it), and then we’ll go in and find where the the drawn points are set - <a href="https://github.com/brendanjmeade/celeri_ui/blob/d379b87f459a28667ea1f3785ce34c9eb831dd5a/src/Utilities/SetupDrawnPointSource.tsx">src/Utilities/SetupDrawnPointSource.tsx</a>, open it up in the browser dev tools and set a breakpoint at line 37/38 - right at the start of the function. Then - we can start experimenting with adjusting the edit mode &amp; the display, to try to find out what happens.</p>
 <p>First, I set the edit mode to vertex, which triggered the function, and it went into the “EditMode.Vertex” case, where it sets the data for drawing the vertices. Then, I turned off the Vertex display, which did the same thing, but passes it an empty array of vertices - so the points disappears. I turned the vertex display back on, then swapped to Segment edit mode. This time, it went to the default case, and didn’t set the drawn points at all! Meaning that so long as we are in Segment edit mode, the drawn vertices don’t get updated. I tried deleting segments with the Lasso again, and saw the same things - it goes to the default case, which does nothing.</p>
@@ -456,7 +456,7 @@ This does seem to trigger our breakpoint - which means it should have the up to 
 </code></pre>
 <p>To see how this works/if this works, we should refresh the page, reload the segment file, and then try to lasso-select &amp; delete the segments. This time, it seems to work!</p>
 <p>While playing around with this, however - I noticed a curious thing. Sometimes, when I lasso select some segments, it seems to also change the selected Vertices on the map - but not select them in the vertices tab. (note - I made regular vertices tiny and selected vertices huge to highlight the effect)
-<img src="MysteryVertexSelection.png" alt="Mystery Vertex Selection"></p>
+<label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="MysteryVertexSelection.png" alt="Mystery Vertex Selection"><span class="img-wrapper"><img src="MysteryVertexSelection.png" alt="Mystery Vertex Selection"></span></label></p>
 <p>So - lets look at that. The displayed selections on the map get set in <a href="https://github.com/brendanjmeade/celeri_ui/blob/d379b87f459a28667ea1f3785ce34c9eb831dd5a/src/App.tsx">src/App</a> - where it sets the map selections (line 418). Here we have what seems to be the source of the issue: the lasso selection is automatically set as the selection for “draw” - the points that can be moved on the map.</p>
 <pre><code class="language-typescript">selections={{
 					segments: selectedSegment,
@@ -476,7 +476,7 @@ This does seem to trigger our breakpoint - which means it should have the up to 
 				}}
 </code></pre>
 <p>For now we’ll ignore the squiggly line under “draw” - that just means there is a type issue, which we’ll fix if this solves the main issue we’re seeing. Let’s see if that same issue persists - I’ll try selecting the same segments that caused the issue before. And it seems like it works!
-<img src="NoLongerMystery.png" alt="No Longer Mystery"></p>
+<label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="NoLongerMystery.png" alt="No Longer Mystery"><span class="img-wrapper"><img src="NoLongerMystery.png" alt="No Longer Mystery"></span></label></p>
 <p>So now, let’s just resolve that type issue. The “selections” property of <code>CeleryMap</code> currently has a type of <code>Record&lt;string, number[]&gt;</code> - let’s adjust that to <code>Record&lt;string, number[] | undefined&gt;</code>. We can do that by going to <a href="https://github.com/brendanjmeade/celeri_ui/blob/d379b87f459a28667ea1f3785ce34c9eb831dd5a/src/Components/Map/CeleriMap.tsx">src/Components/Map/CeleriMap.tsx</a>, going to the <code>MapProperties</code> interface (line 48), and adjusting the selctions property.</p>
 <p>However, since we’ve made that change, it is worth checking whether that leads to any type issues - this is one of the benefits of using typescript! It can catch issue that might arise from our changes. A good way to do that, if you are running in gitpod, is to use the <code>tsc</code> command in the console. In this case, I got the following result:</p>
 <pre><code>gitpod /workspace/celeri_ui (development-example) $ tsc
@@ -565,11 +565,11 @@ and then we run the tests, commit, push, and keep an eye on the github actions a
 
         <script src="elasticlunr-ef4e11c1.min.js"></script>
         <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-c2a407aa.js"></script>
+        <script src="searcher-09f2665d.js"></script>
 
         <script src="clipboard-1626706a.min.js"></script>
         <script src="highlight-abc7f01d.js"></script>
-        <script src="book-a0b12cfe.js"></script>
+        <script src="book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
 
