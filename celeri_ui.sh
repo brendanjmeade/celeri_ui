@@ -34,6 +34,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     open -a '/Applications/Google Chrome.app' http://localhost:3000/
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     xdg-open http://localhost:3000/
+elif [[ "$OSTYPE" == "msys"* ]]; then 
+	START "Chrome" "C:\Program Files\Google\Chrome\Application\chrome.exe" http://localhost:3000/
 fi
 
 echo "Celeri UI is running at http://localhost:3000/"
